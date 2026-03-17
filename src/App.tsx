@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink } from "lucide-react";
-import logo from "./assets/logo.webp";
-import qris from "./assets/qris.png";
 
 interface CartItem {
   id: string;
@@ -245,14 +243,10 @@ export default function App() {
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center">
           <div className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full">
             <img 
-              src={logo} 
+              src="/logo.webp" 
               alt="Martabak Gresik Logo" 
               className="w-24 md:w-48 h-auto shrink-0"
               referrerPolicy="no-referrer"
-              onError={(e) => {
-                // Fallback to PNG if WebP fails
-                e.currentTarget.src = "/src/assets/logo.png";
-              }}
             />
             <div className="text-left">
               <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 inline-block">
@@ -888,7 +882,7 @@ export default function App() {
                   <h4 className="font-black uppercase italic text-sm mb-4">Pembayaran QRIS:</h4>
                   <div className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-inner mb-4">
                     <img 
-                      src={qris} 
+                      src="/qris.png" 
                       alt="QRIS Pembayaran" 
                       className="w-48 h-48 object-contain mx-auto"
                     />
