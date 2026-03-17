@@ -1,5 +1,14 @@
-import { motion } from "motion/react";
-import { Phone, MapPin, ShoppingBag, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle } from "lucide-react";
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  category?: string;
+}
 
 const MENU_SWEET = [
   {
@@ -110,6 +119,55 @@ const formatPrice = (price: number) => {
 };
 
 export default function App() {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const addToCart = (item: Omit<CartItem, 'quantity' | 'id'>) => {
+    const id = `${item.name}-${item.category || ''}`;
+    setCart(prev => {
+      const existing = prev.find(i => i.id === id);
+      if (existing) {
+        return prev.map(i => i.id === id ? { ...i, quantity: i.quantity + 1 } : i);
+      }
+      return [...prev, { ...item, id, quantity: 1 }];
+    });
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart(prev => prev.filter(i => i.id !== id));
+  };
+
+  const updateQuantity = (id: string, delta: number) => {
+    setCart(prev => prev.map(i => {
+      if (i.id === id) {
+        const newQty = Math.max(1, i.quantity + delta);
+        return { ...i, quantity: newQty };
+      }
+      return i;
+    }));
+  };
+
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const sendWhatsAppOrder = () => {
+    const phoneNumber = "6281330763633";
+    let message = "*PESANAN BARU - MARTABAK GRESIK*\n\n";
+    
+    cart.forEach((item, index) => {
+      message += `${index + 1}. *${item.name}*\n`;
+      if (item.category) message += `   (${item.category})\n`;
+      message += `   ${item.quantity}x ${formatPrice(item.price)} = *${formatPrice(item.price * item.quantity)}*\n\n`;
+    });
+
+    message += `--------------------------\n`;
+    message += `*TOTAL PEMBAYARAN: ${formatPrice(totalPrice)}*\n\n`;
+    message += `Mohon segera diproses ya, terima kasih! 🙏`;
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-brand-yellow selection:bg-brand-orange selection:text-white">
       {/* Hero Section */}
@@ -185,14 +243,22 @@ export default function App() {
                   </h3>
                   <div className="space-y-3">
                     {section.items.map((item) => (
-                      <div key={item.name} className="flex justify-between items-center group">
-                        <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black'}`}>
-                          {item.name}
-                        </span>
-                        <div className="flex-grow border-b border-dotted border-brand-black/20 mx-4 group-hover:border-brand-orange/50 transition-colors" />
-                        <span className="font-bold tabular-nums">
-                          {formatPrice(item.price)}
-                        </span>
+                      <div key={item.name} className="flex flex-col gap-2 group">
+                        <div className="flex justify-between items-center">
+                          <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black'}`}>
+                            {item.name}
+                          </span>
+                          <div className="flex-grow border-b border-dotted border-brand-black/20 mx-4 group-hover:border-brand-orange/50 transition-colors" />
+                          <span className="font-bold tabular-nums mr-4">
+                            {formatPrice(item.price)}
+                          </span>
+                          <button 
+                            onClick={() => addToCart({ name: item.name, price: item.price, category: section.category })}
+                            className="bg-brand-black text-white p-1.5 rounded-full hover:bg-brand-orange transition-colors active:scale-90"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -228,11 +294,22 @@ export default function App() {
                         <h4 className="text-brand-orange font-bold text-lg italic border-b border-brand-orange/30 pb-2">
                           {variant.type}
                         </h4>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {variant.prices.map((p) => (
-                            <div key={p.qty} className="flex justify-between items-center">
+                            <div key={p.qty} className="flex justify-between items-center bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors">
                               <span className="text-sm opacity-80">{p.qty} Telor</span>
-                              <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
+                              <div className="flex items-center gap-3">
+                                <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
+                                <button 
+                                  onClick={() => addToCart({ 
+                                    name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
+                                    price: p.price 
+                                  })}
+                                  className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           ))}
                         </div>
@@ -297,6 +374,125 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Floating Cart Button */}
+      <AnimatePresence>
+        {totalItems > 0 && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            onClick={() => setIsCartOpen(true)}
+            className="fixed bottom-8 right-8 z-50 bg-brand-black text-white p-4 rounded-full shadow-2xl flex items-center gap-3 hover:bg-brand-orange transition-colors group"
+          >
+            <div className="relative">
+              <ShoppingBag className="w-6 h-6" />
+              <span className="absolute -top-2 -right-2 bg-brand-yellow text-brand-black text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-brand-black">
+                {totalItems}
+              </span>
+            </div>
+            <span className="font-bold pr-2 hidden md:block">Lihat Pesanan</span>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
+      {/* Cart Sidebar */}
+      <AnimatePresence>
+        {isCartOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsCartOpen(false)}
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[60]"
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-brand-yellow z-[70] shadow-2xl flex flex-col"
+            >
+              <div className="p-6 bg-brand-black text-white flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                  <ShoppingBag className="w-6 h-6 text-brand-yellow" />
+                  <h2 className="text-xl font-black uppercase italic tracking-tight">Pesanan Anda</h2>
+                </div>
+                <button 
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-y-auto p-6 space-y-4">
+                {cart.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                    <ShoppingBag className="w-16 h-16 mb-4" />
+                    <p className="font-bold uppercase italic">Keranjang masih kosong</p>
+                  </div>
+                ) : (
+                  cart.map((item) => (
+                    <div key={item.id} className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-sm flex flex-col gap-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold leading-tight">{item.name}</h4>
+                          {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
+                        </div>
+                        <button 
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-brand-orange hover:bg-brand-orange/10 p-1 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3 bg-brand-black/5 rounded-xl p-1">
+                          <button 
+                            onClick={() => updateQuantity(item.id, -1)}
+                            className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="font-black w-4 text-center">{item.quantity}</span>
+                          <button 
+                            onClick={() => updateQuantity(item.id, 1)}
+                            className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <span className="font-black text-lg">{formatPrice(item.price * item.quantity)}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {cart.length > 0 && (
+                <div className="p-6 bg-white border-t-4 border-brand-black space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold uppercase opacity-60">Total Pembayaran</span>
+                    <span className="text-2xl font-black text-brand-black">{formatPrice(totalPrice)}</span>
+                  </div>
+                  <button 
+                    onClick={sendWhatsAppOrder}
+                    className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
+                  >
+                    <MessageCircle className="w-6 h-6" />
+                    Pesan via WhatsApp
+                  </button>
+                  <p className="text-[10px] text-center opacity-40 font-bold uppercase">
+                    Klik tombol di atas untuk mengirim pesanan otomatis ke WhatsApp kami
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
