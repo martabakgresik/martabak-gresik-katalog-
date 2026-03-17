@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink } from "lucide-react";
 import logo from "./assets/logo.webp";
-import qris from "./assets/qris.webp";
+import qris from "./assets/qris.png";
 
 interface CartItem {
   id: string;
