@@ -247,17 +247,24 @@ export default function App() {
               <h3 className="text-2xl font-black uppercase mb-6 text-center italic">Bisa Pesan Disini:</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { name: "GrabFood", color: "bg-[#00B14F]" },
-                  { name: "GoFood", color: "bg-[#EE2737]" },
-                  { name: "ShopeeFood", color: "bg-[#EE4D2D]" },
+                  { 
+                    name: "GrabFood", 
+                    color: "bg-[#00B14F]", 
+                    url: "https://r.grab.com/o/R7F36f6j" 
+                  },
+                  { name: "GoFood", color: "bg-[#EE2737]", url: "https://gofood.co.id/surabaya/restaurant/martabak-gresik-drojogan-usman-sadar-no-10-84fc235a-673a-4163-a15c-d7ca0b077a4e" },
+                  { name: "ShopeeFood", color: "bg-[#EE4D2D]", url: "https://spf.shopee.co.id/qeqAKpT0c" },
                 ].map((app) => (
-                  <button
+                  <a
                     key={app.name}
-                    className={`${app.color} text-white py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform active:scale-95 shadow-lg`}
+                    href={app.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${app.color} text-white py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform active:scale-95 shadow-lg text-center`}
                   >
                     <ShoppingBag className="w-5 h-5" />
                     {app.name}
-                  </button>
+                  </a>
                 ))}
               </div>
             </motion.div>
@@ -279,9 +286,7 @@ export default function App() {
           <div className="mt-8 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
             <p>© 2026 Martabak Gresik. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-brand-yellow transition-colors">Instagram</a>
-              <a href="#" className="hover:text-brand-yellow transition-colors">WhatsApp</a>
-              <a href="#" className="hover:text-brand-yellow transition-colors">Facebook</a>
+              <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors">WhatsApp</a>
             </div>
           </div>
         </div>
