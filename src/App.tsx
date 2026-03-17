@@ -124,7 +124,7 @@ export default function App() {
             className="mb-6 flex flex-col items-center"
           >
             <img 
-              src="https://ais-dev-6hzfwmlwe535jcrzimwj24-24233205576.asia-east1.run.app/logo.png" 
+              src="public/logo.png" 
               alt="Martabak Gresik Logo" 
               className="w-48 md:w-64 h-auto mb-6 drop-shadow-2xl"
               referrerPolicy="no-referrer"
