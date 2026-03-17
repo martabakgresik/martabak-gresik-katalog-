@@ -891,10 +891,6 @@ export default function App() {
                       src={qris} 
                       alt="QRIS Pembayaran" 
                       className="w-48 h-48 object-contain mx-auto"
-                      referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MartabakGresikPayment";
-                      }}
                     />
                   </div>
                   <p className="text-[10px] font-bold uppercase opacity-60 leading-tight">
