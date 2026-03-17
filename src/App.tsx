@@ -356,7 +356,7 @@ export default function App() {
             </div>
             <div className="flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
               <img
-                src="/terang-bulan.png"
+                src="/terang-bulan.webp"
                 alt="Ilustrasi Terang Bulan"
                 className="w-full h-full object-contain"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -429,7 +429,7 @@ export default function App() {
             </div>
             <div className="flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
               <img
-                src="/martabak.png"
+                src="/martabak.webp"
                 alt="Ilustrasi Martabak Telor"
                 className="w-full h-full object-contain"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
@@ -557,7 +557,7 @@ export default function App() {
           </p>
 
           <a
-            href="/katalog.png"
+            href="/katalog.webp"
             download
             className="bg-brand-orange text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-white hover:text-brand-orange transition-all shadow-lg text-sm uppercase tracking-wider mb-8 active:scale-95"
           >
