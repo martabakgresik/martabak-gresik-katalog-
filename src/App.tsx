@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle } from "lucide-react";
+import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink } from "lucide-react";
+import logo from "./assets/logo.webp";
+import qris from "./assets/qris.png";
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
+  category?: string;
+}
+
+interface FavoriteItem {
+  id: string;
+  name: string;
+  price: number;
   category?: string;
 }
 
@@ -120,9 +129,51 @@ const formatPrice = (price: number) => {
 
 export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"cart" | "favorites">("cart");
+  const [shareItem, setShareItem] = useState<{ name: string; price: number; category?: string } | null>(null);
+  const [isGeneralShareOpen, setIsGeneralShareOpen] = useState(false);
+  const [isOrderConfirmationOpen, setIsOrderConfirmationOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const addToCart = (item: Omit<CartItem, 'quantity' | 'id'>) => {
+  const APP_URL = window.location.origin;
+
+  const handleCopyLink = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareToWhatsApp = (item: { name: string; price: number; category?: string }) => {
+    const message = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${item.name}*\n${item.category ? `(${item.category})\n` : ""}Harga: *${formatPrice(item.price)}*\n\nCek katalog lengkapnya di sini: ${APP_URL}`;
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/6281330763633?text=${encodedMessage}`, "_blank");
+  };
+
+  const shareGeneral = (platform: string) => {
+    const text = "Cek Martabak Gresik - Terang Bulan dan Martabak Telor Terenak!";
+    const url = APP_URL;
+    let shareUrl = "";
+
+    switch (platform) {
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        break;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        break;
+      case "threads":
+        shareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(text + " " + url)}`;
+        break;
+      default:
+        handleCopyLink(url);
+        return;
+    }
+    window.open(shareUrl, "_blank");
+  };
+
+  const addToCart = (item: Omit<CartItem, 'id' | 'quantity'>) => {
     const id = `${item.name}-${item.category || ''}`;
     setCart(prev => {
       const existing = prev.find(i => i.id === id);
@@ -131,6 +182,22 @@ export default function App() {
       }
       return [...prev, { ...item, id, quantity: 1 }];
     });
+  };
+
+  const toggleFavorite = (item: Omit<FavoriteItem, 'id'>) => {
+    const id = `${item.name}-${item.category || ''}`;
+    setFavorites(prev => {
+      const existing = prev.find(f => f.id === id);
+      if (existing) {
+        return prev.filter(f => f.id !== id);
+      }
+      return [...prev, { ...item, id }];
+    });
+  };
+
+  const isFavorite = (name: string, category?: string) => {
+    const id = `${name}-${category || ''}`;
+    return favorites.some(f => f.id === id);
   };
 
   const removeFromCart = (id: string) => {
@@ -175,34 +242,39 @@ export default function App() {
         {/* Wavy Background Element */}
         <div className="absolute bottom-0 left-0 w-full h-16 bg-brand-yellow rounded-t-[100%] translate-y-8" />
         
-        <div className="max-w-6xl mx-auto flex flex-col items-center text-center relative z-10">
+        <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 flex flex-col items-center"
+            className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full"
           >
             <img 
-              src="/logo.png" 
+              src={logo} 
               alt="Martabak Gresik Logo" 
-              className="w-48 md:w-64 h-auto mb-6 drop-shadow-2xl"
+              className="w-24 md:w-48 h-auto shrink-0"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                e.currentTarget.src = "https://picsum.photos/seed/martabak/400/400";
+              }}
             />
-            <div className="bg-brand-yellow text-brand-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 inline-block">
-              Since 2020
+            <div className="text-left">
+              <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 inline-block">
+                Since 2020
+              </div>
+              <h1 className="text-3xl md:text-7xl font-display font-black tracking-tighter text-brand-yellow uppercase leading-none">
+                Martabak <br className="md:hidden" /> Gresik
+              </h1>
+              <p className="text-xs md:text-2xl font-medium text-brand-orange italic mt-1 md:mt-2">
+                Terang Bulan dan Martabak Telor
+              </p>
             </div>
-            <h1 className="text-5xl md:text-7xl font-display font-black tracking-tighter text-brand-yellow uppercase">
-              Martabak Gresik
-            </h1>
-            <p className="text-xl md:text-2xl font-medium text-brand-orange italic mt-2">
-              Terang Bulan dan Martabak Telor
-            </p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="flex flex-col md:flex-row gap-4 md:gap-8 text-sm md:text-base opacity-80"
+            className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-sm md:text-base opacity-80 w-full"
           >
             <div className="flex items-center justify-center gap-2">
               <MapPin className="w-4 h-4 text-brand-orange" />
@@ -213,6 +285,18 @@ export default function App() {
               <span>081 330 763 633</span>
             </div>
           </motion.div>
+
+          <motion.button
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsGeneralShareOpen(true)}
+            className="mt-8 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-all border border-white/20"
+          >
+            <Share2 className="w-4 h-4" />
+            Bagikan Katalog
+          </motion.button>
         </div>
       </header>
 
@@ -252,12 +336,31 @@ export default function App() {
                           <span className="font-bold tabular-nums mr-4">
                             {formatPrice(item.price)}
                           </span>
-                          <button 
-                            onClick={() => addToCart({ name: item.name, price: item.price, category: section.category })}
-                            className="bg-brand-black text-white p-1.5 rounded-full hover:bg-brand-orange transition-colors active:scale-90"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => setShareItem({ name: item.name, price: item.price, category: section.category })}
+                              className="p-1.5 rounded-full bg-brand-black/5 text-brand-black hover:bg-brand-orange/20 transition-all active:scale-90"
+                              title="Bagikan"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
+                              className={`p-1.5 rounded-full transition-all active:scale-90 ${
+                                isFavorite(item.name, section.category) 
+                                ? 'bg-brand-orange text-white' 
+                                : 'bg-brand-black/5 text-brand-black hover:bg-brand-orange/20'
+                              }`}
+                            >
+                              <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
+                            </button>
+                            <button 
+                              onClick={() => addToCart({ name: item.name, price: item.price, category: section.category })}
+                              className="bg-brand-black text-white p-1.5 rounded-full hover:bg-brand-orange transition-colors active:scale-90"
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -300,15 +403,40 @@ export default function App() {
                               <span className="text-sm opacity-80">{p.qty} Telor</span>
                               <div className="flex items-center gap-3">
                                 <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
-                                <button 
-                                  onClick={() => addToCart({ 
-                                    name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
-                                    price: p.price 
-                                  })}
-                                  className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
-                                >
-                                  <Plus className="w-4 h-4" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button 
+                                    onClick={() => setShareItem({ 
+                                      name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
+                                      price: p.price 
+                                    })}
+                                    className="p-1.5 rounded-full bg-white/10 text-brand-yellow hover:bg-brand-orange/20 transition-all active:scale-90"
+                                    title="Bagikan"
+                                  >
+                                    <Share2 className="w-4 h-4" />
+                                  </button>
+                                  <button 
+                                    onClick={() => toggleFavorite({ 
+                                      name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
+                                      price: p.price 
+                                    })}
+                                    className={`p-1.5 rounded-full transition-all active:scale-90 ${
+                                      isFavorite(`${section.title} (${variant.type} - ${p.qty} Telor)`) 
+                                      ? 'bg-brand-orange text-white' 
+                                      : 'bg-white/10 text-brand-yellow hover:bg-brand-orange/20'
+                                    }`}
+                                  >
+                                    <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.qty} Telor)`) ? 'fill-current' : ''}`} />
+                                  </button>
+                                  <button 
+                                    onClick={() => addToCart({ 
+                                      name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
+                                      price: p.price 
+                                    })}
+                                    className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -414,71 +542,147 @@ export default function App() {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed top-0 right-0 h-full w-full max-w-md bg-brand-yellow z-[70] shadow-2xl flex flex-col"
             >
-              <div className="p-6 bg-brand-black text-white flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <ShoppingBag className="w-6 h-6 text-brand-yellow" />
-                  <h2 className="text-xl font-black uppercase italic tracking-tight">Pesanan Anda</h2>
+              <div className="p-6 bg-brand-black text-white">
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-3">
+                    <ShoppingBag className="w-6 h-6 text-brand-yellow" />
+                    <h2 className="text-xl font-black uppercase italic tracking-tight">Menu Anda</h2>
+                  </div>
+                  <button 
+                    onClick={() => setIsCartOpen(false)}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
                 </div>
-                <button 
-                  onClick={() => setIsCartOpen(false)}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+                
+                <div className="flex bg-white/10 p-1 rounded-xl">
+                  <button 
+                    onClick={() => setActiveTab("cart")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                      activeTab === "cart" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    <ShoppingBag className="w-3 h-3" />
+                    Keranjang ({totalItems})
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("favorites")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                      activeTab === "favorites" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    <Heart className="w-3 h-3" />
+                    Favorit ({favorites.length})
+                  </button>
+                </div>
               </div>
 
               <div className="flex-grow overflow-y-auto p-6 space-y-4">
-                {cart.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-                    <ShoppingBag className="w-16 h-16 mb-4" />
-                    <p className="font-bold uppercase italic">Keranjang masih kosong</p>
-                  </div>
-                ) : (
-                  cart.map((item) => (
-                    <div key={item.id} className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-sm flex flex-col gap-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-bold leading-tight">{item.name}</h4>
-                          {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
+                {activeTab === "cart" ? (
+                  cart.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                      <ShoppingBag className="w-16 h-16 mb-4" />
+                      <p className="font-bold uppercase italic">Keranjang masih kosong</p>
+                    </div>
+                  ) : (
+                    cart.map((item) => (
+                      <div key={item.id} className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-sm flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold leading-tight">{item.name}</h4>
+                            {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => setShareItem({ name: item.name, price: item.price, category: item.category })}
+                              className="text-brand-black/40 hover:text-brand-orange p-1 rounded-lg transition-colors"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => removeFromCart(item.id)}
+                              className="text-brand-orange hover:bg-brand-orange/10 p-1 rounded-lg transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
-                        <button 
-                          onClick={() => removeFromCart(item.id)}
-                          className="text-brand-orange hover:bg-brand-orange/10 p-1 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-3 bg-brand-black/5 rounded-xl p-1">
+                            <button 
+                              onClick={() => updateQuantity(item.id, -1)}
+                              className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="font-black w-4 text-center">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateQuantity(item.id, 1)}
+                              className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <span className="font-black text-lg">{formatPrice(item.price * item.quantity)}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3 bg-brand-black/5 rounded-xl p-1">
+                    ))
+                  )
+                ) : (
+                  favorites.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                      <Heart className="w-16 h-16 mb-4" />
+                      <p className="font-bold uppercase italic">Belum ada favorit</p>
+                      <p className="text-xs mt-2">Klik ikon hati pada menu untuk menambahkan</p>
+                    </div>
+                  ) : (
+                    favorites.map((item) => (
+                      <div key={item.id} className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-sm flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold leading-tight">{item.name}</h4>
+                            {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <button 
+                              onClick={() => setShareItem({ name: item.name, price: item.price, category: item.category })}
+                              className="text-brand-black/40 hover:text-brand-orange p-1 rounded-lg transition-colors"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={() => toggleFavorite({ name: item.name, price: item.price, category: item.category })}
+                              className="text-brand-orange hover:bg-brand-orange/10 p-1 rounded-lg transition-colors"
+                            >
+                              <Heart className="w-4 h-4 fill-current" />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-black text-lg">{formatPrice(item.price)}</span>
                           <button 
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="font-black w-4 text-center">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item.id, 1)}
-                            className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
+                            onClick={() => addToCart({ name: item.name, price: item.price, category: item.category })}
+                            className="bg-brand-black text-white px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-brand-orange transition-colors active:scale-95 flex items-center gap-2"
                           >
                             <Plus className="w-3 h-3" />
+                            Tambah
                           </button>
                         </div>
-                        <span className="font-black text-lg">{formatPrice(item.price * item.quantity)}</span>
                       </div>
-                    </div>
-                  ))
+                    ))
+                  )
                 )}
               </div>
 
-              {cart.length > 0 && (
+              {activeTab === "cart" && cart.length > 0 && (
                 <div className="p-6 bg-white border-t-4 border-brand-black space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="font-bold uppercase opacity-60">Total Pembayaran</span>
                     <span className="text-2xl font-black text-brand-black">{formatPrice(totalPrice)}</span>
                   </div>
                   <button 
-                    onClick={sendWhatsAppOrder}
+                    onClick={() => setIsOrderConfirmationOpen(true)}
                     className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
                   >
                     <MessageCircle className="w-6 h-6" />
@@ -489,6 +693,232 @@ export default function App() {
                   </p>
                 </div>
               )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Item Share Modal */}
+      <AnimatePresence>
+        {shareItem && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShareItem(null)}
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[80]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white rounded-[2rem] border-4 border-brand-black z-[90] p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-xl font-black uppercase italic">Bagikan Menu</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider">Kirim ke teman via WhatsApp</p>
+                </div>
+                <button 
+                  onClick={() => setShareItem(null)}
+                  className="p-2 hover:bg-brand-black/5 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="bg-brand-black/5 p-4 rounded-2xl mb-6">
+                <p className="text-sm font-bold">{shareItem.name}</p>
+                <p className="text-xs opacity-60">{shareItem.category}</p>
+                <p className="text-lg font-black mt-2">{formatPrice(shareItem.price)}</p>
+              </div>
+
+              <div className="space-y-3">
+                <button 
+                  onClick={() => shareToWhatsApp(shareItem)}
+                  className="w-full bg-[#25D366] text-white py-4 rounded-xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Kirim ke WhatsApp
+                </button>
+                <button 
+                  onClick={() => {
+                    const msg = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${shareItem.name}*\n${shareItem.category ? `(${shareItem.category})\n` : ""}Harga: *${formatPrice(shareItem.price)}*\n\nCek katalog lengkapnya di sini: ${APP_URL}`;
+                    handleCopyLink(msg);
+                  }}
+                  className="w-full bg-brand-black text-white py-4 rounded-xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
+                >
+                  {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                  {copied ? "Berhasil Disalin!" : "Salin Pesan"}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* General Share Modal */}
+      <AnimatePresence>
+        {isGeneralShareOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsGeneralShareOpen(false)}
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[80]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-brand-yellow rounded-[2rem] border-4 border-brand-black z-[90] p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h3 className="text-xl font-black uppercase italic">Bagikan Katalog</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider">Ajak teman jajan Martabak!</p>
+                </div>
+                <button 
+                  onClick={() => setIsGeneralShareOpen(false)}
+                  className="p-2 hover:bg-brand-black/5 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <button 
+                  onClick={() => shareGeneral("facebook")}
+                  className="bg-[#1877F2] text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
+                >
+                  <Facebook className="w-6 h-6" />
+                  <span className="text-[10px] font-bold uppercase">Facebook</span>
+                </button>
+                <button 
+                  onClick={() => shareGeneral("twitter")}
+                  className="bg-black text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
+                >
+                  <Twitter className="w-6 h-6" />
+                  <span className="text-[10px] font-bold uppercase">X (Twitter)</span>
+                </button>
+                <button 
+                  onClick={() => shareGeneral("threads")}
+                  className="bg-black text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
+                >
+                  <ExternalLink className="w-6 h-6" />
+                  <span className="text-[10px] font-bold uppercase">Threads</span>
+                </button>
+                <button 
+                  onClick={() => handleCopyLink(APP_URL)}
+                  className="bg-brand-orange text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
+                >
+                  {copied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
+                  <span className="text-[10px] font-bold uppercase">{copied ? "Disalin!" : "Salin Link"}</span>
+                </button>
+              </div>
+
+              <div className="text-center space-y-2">
+                <p className="text-[10px] font-bold uppercase opacity-40">Atau bagikan via:</p>
+                <div className="flex justify-center gap-4">
+                  <button onClick={() => window.open(`https://www.instagram.com/`, "_blank")} className="p-2 bg-white rounded-full border-2 border-brand-black hover:bg-brand-orange hover:text-white transition-all">
+                    <Instagram className="w-5 h-5" />
+                  </button>
+                  <button onClick={() => window.open(`https://www.tiktok.com/`, "_blank")} className="p-2 bg-white rounded-full border-2 border-brand-black hover:bg-brand-orange hover:text-white transition-all">
+                    <MessageCircle className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      {/* Order Confirmation Modal */}
+      <AnimatePresence>
+        {isOrderConfirmationOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOrderConfirmationOpen(false)}
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[100]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-lg bg-white rounded-[2rem] border-4 border-brand-black z-[110] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+            >
+              <div className="p-6 bg-brand-black text-white flex justify-between items-center shrink-0">
+                <div>
+                  <h3 className="text-xl font-black uppercase italic">Konfirmasi Pesanan</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider">Periksa kembali pesanan Anda</p>
+                </div>
+                <button 
+                  onClick={() => setIsOrderConfirmationOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow overflow-y-auto p-6 space-y-6">
+                {/* Order Summary */}
+                <div className="space-y-4">
+                  <h4 className="font-black uppercase italic text-sm border-b-2 border-brand-black pb-2">Ringkasan Menu:</h4>
+                  <div className="space-y-3">
+                    {cart.map((item) => (
+                      <div key={item.id} className="flex justify-between items-start gap-4">
+                        <div className="flex-grow">
+                          <p className="font-bold text-sm leading-tight">{item.name}</p>
+                          {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
+                          <p className="text-xs opacity-60">{item.quantity}x {formatPrice(item.price)}</p>
+                        </div>
+                        <span className="font-black text-sm shrink-0">{formatPrice(item.price * item.quantity)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-4 border-t-2 border-dashed border-brand-black/20 flex justify-between items-center">
+                    <span className="font-black uppercase">Total Bayar</span>
+                    <span className="text-xl font-black text-brand-orange">{formatPrice(totalPrice)}</span>
+                  </div>
+                </div>
+
+                {/* QRIS Section */}
+                <div className="bg-brand-yellow/20 p-6 rounded-3xl border-2 border-brand-black/10 flex flex-col items-center text-center">
+                  <h4 className="font-black uppercase italic text-sm mb-4">Pembayaran QRIS:</h4>
+                  <div className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-inner mb-4">
+                    <img 
+                      src={qris} 
+                      alt="QRIS Pembayaran" 
+                      className="w-48 h-48 object-contain mx-auto"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=MartabakGresikPayment";
+                      }}
+                    />
+                  </div>
+                  <p className="text-[10px] font-bold uppercase opacity-60 leading-tight">
+                    Scan kode QR di atas untuk melakukan pembayaran.<br/>
+                    Simpan bukti bayar untuk dikirim via WhatsApp.
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-6 bg-white border-t-4 border-brand-black shrink-0">
+                <button 
+                  onClick={() => {
+                    sendWhatsAppOrder();
+                    setIsOrderConfirmationOpen(false);
+                  }}
+                  className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
+                >
+                  <MessageCircle className="w-6 h-6" />
+                  Konfirmasi & Kirim WhatsApp
+                </button>
+              </div>
             </motion.div>
           </>
         )}
