@@ -245,7 +245,7 @@ export default function App() {
   };
 
   const updateNote = (id: string, note: string) => {
-    setCart(prev => prev.map(i => 
+    setCart(prev => prev.map(i =>
       i.id === id ? { ...i, note } : i
     ));
   };
@@ -256,7 +256,7 @@ export default function App() {
   const sendWhatsAppOrder = () => {
     const phoneNumber = "6281330763633";
     let message = "*PESANAN BARU - MARTABAK GRESIK*\n\n";
-    
+
     cart.forEach((item, index) => {
       message += `${index + 1}. *${item.name}*\n`;
       if (item.category) message += `   (${item.category})\n`;
@@ -278,12 +278,12 @@ export default function App() {
       <header className="relative bg-brand-black text-white py-12 px-6 overflow-hidden">
         {/* Wavy Background Element */}
         <div className="absolute bottom-0 left-0 w-full h-16 bg-brand-yellow rounded-t-[100%] translate-y-8" />
-        
+
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center">
           <div className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full">
-            <img 
-              src="/logo.webp" 
-              alt="Martabak Gresik Logo" 
+            <img
+              src="/logo.webp"
+              alt="Martabak Gresik Logo"
               className="w-24 md:w-48 h-auto shrink-0"
               referrerPolicy="no-referrer"
             />
@@ -316,7 +316,7 @@ export default function App() {
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
@@ -357,17 +357,17 @@ export default function App() {
       {/* Main Content */}
       <main id="menu-section" className="max-w-7xl mx-auto px-4 py-12 md:py-20 scroll-mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-          
+
           {/* Sweet Martabak Column */}
           <section className="space-y-12">
             <div className="flex items-center gap-4 mb-4">
               <div className="h-1 w-12 bg-brand-black rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight">Terang Bulan</h2>
             </div>
-            <div className="mb-8 flex justify-center w-full max-w-xs h-40 md:h-48 mx-auto">
-              <img 
-                src="/terang-bulan.png" 
-                alt="Ilustrasi Terang Bulan" 
+            <div className="mb-8 flex justify-center w-full max-w-xs h-100 md:h-108 mx-auto">
+              <img
+                src="/terang-bulan.png"
+                alt="Ilustrasi Terang Bulan"
                 className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
@@ -399,24 +399,23 @@ export default function App() {
                             {formatPrice(item.price)}
                           </span>
                           <div className="flex items-center gap-2">
-                            <button 
+                            <button
                               onClick={() => setShareItem({ name: item.name, price: item.price, category: section.category })}
                               className="p-1.5 rounded-full bg-brand-black/5 text-brand-black hover:bg-brand-orange/20 transition-all active:scale-90"
                               title="Bagikan"
                             >
                               <Share2 className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
-                              className={`p-1.5 rounded-full transition-all active:scale-90 ${
-                                isFavorite(item.name, section.category) 
-                                ? 'bg-brand-orange text-white' 
+                              className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(item.name, section.category)
+                                ? 'bg-brand-orange text-white'
                                 : 'bg-brand-black/5 text-brand-black hover:bg-brand-orange/20'
-                              }`}
+                                }`}
                             >
                               <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
                             </button>
-                            <button 
+                            <button
                               onClick={() => addToCart({ name: item.name, price: item.price, category: section.category })}
                               className="bg-brand-black text-white p-1.5 rounded-full hover:bg-brand-orange transition-colors active:scale-90"
                             >
@@ -438,10 +437,10 @@ export default function App() {
               <div className="h-1 w-12 bg-brand-black rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight">Martabak Telor</h2>
             </div>
-            <div className="mb-8 flex justify-center w-full max-w-xs h-40 md:h-48 mx-auto">
-              <img 
-                src="/martabak.png" 
-                alt="Ilustrasi Martabak Telor" 
+            <div className="mb-8 flex justify-center w-full max-w-xs h-100 md:h-108 mx-auto">
+              <img
+                src="/martabak.png"
+                alt="Ilustrasi Martabak Telor"
                 className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
@@ -460,7 +459,7 @@ export default function App() {
                   <h3 className="text-3xl font-display font-black text-brand-yellow uppercase mb-8 italic">
                     {section.title}
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {section.variants.map((variant) => (
                       <div key={variant.type} className="space-y-4">
@@ -476,33 +475,32 @@ export default function App() {
                               <div className="flex items-center gap-3">
                                 <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
                                 <div className="flex items-center gap-2">
-                                  <button 
-                                    onClick={() => setShareItem({ 
-                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`, 
-                                      price: p.price 
+                                  <button
+                                    onClick={() => setShareItem({
+                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
+                                      price: p.price
                                     })}
                                     className="p-1.5 rounded-full bg-white/10 text-brand-yellow hover:bg-brand-orange/20 transition-all active:scale-90"
                                     title="Bagikan"
                                   >
                                     <Share2 className="w-4 h-4" />
                                   </button>
-                                  <button 
-                                    onClick={() => toggleFavorite({ 
-                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`, 
-                                      price: p.price 
+                                  <button
+                                    onClick={() => toggleFavorite({
+                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
+                                      price: p.price
                                     })}
-                                    className={`p-1.5 rounded-full transition-all active:scale-90 ${
-                                      isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`) 
-                                      ? 'bg-brand-orange text-white' 
+                                    className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`)
+                                      ? 'bg-brand-orange text-white'
                                       : 'bg-white/10 text-brand-yellow hover:bg-brand-orange/20'
-                                    }`}
+                                      }`}
                                   >
                                     <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`) ? 'fill-current' : ''}`} />
                                   </button>
-                                  <button 
-                                    onClick={() => addToCart({ 
-                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`, 
-                                      price: p.price 
+                                  <button
+                                    onClick={() => addToCart({
+                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
+                                      price: p.price
                                     })}
                                     className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
                                   >
@@ -530,10 +528,10 @@ export default function App() {
               <h3 className="text-2xl font-black uppercase mb-6 text-center italic">Bisa Pesan Disini:</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
-                  { 
-                    name: "GrabFood", 
-                    color: "bg-[#00B14F]", 
-                    url: "https://r.grab.com/o/R7F36f6j" 
+                  {
+                    name: "GrabFood",
+                    color: "bg-[#00B14F]",
+                    url: "https://r.grab.com/o/R7F36f6j"
                   },
                   { name: "GoFood", color: "bg-[#EE2737]", url: "https://gofood.co.id/surabaya/restaurant/martabak-gresik-drojogan-usman-sadar-no-10-84fc235a-673a-4163-a15c-d7ca0b077a4e" },
                   { name: "ShopeeFood", color: "bg-[#EE4D2D]", url: "https://spf.shopee.co.id/qeqAKpT0c" },
@@ -559,11 +557,11 @@ export default function App() {
       <footer className="bg-brand-black text-white py-12 px-6 mt-20 relative overflow-hidden">
         {/* Wavy Background Element */}
         <div className="absolute top-0 left-0 w-full h-16 bg-brand-yellow rounded-b-[100%] -translate-y-8" />
-        
+
         <div className="max-w-6xl mx-auto text-center relative z-10">
           <h2 className="text-3xl font-display font-black text-brand-yellow uppercase mb-4">Martabak Gresik</h2>
           <p className="opacity-60 text-sm max-w-md mx-auto">
-            Nikmati kelezatan martabak autentik dengan bahan berkualitas. 
+            Nikmati kelezatan martabak autentik dengan bahan berkualitas.
             Buka setiap hari untuk menemani waktu santai Anda.
           </p>
           <div className="mt-8 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
@@ -620,29 +618,27 @@ export default function App() {
                     <ShoppingBag className="w-6 h-6 text-brand-yellow" />
                     <h2 className="text-xl font-black uppercase italic tracking-tight">Menu Anda</h2>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsCartOpen(false)}
                     className="p-2 hover:bg-white/10 rounded-full transition-colors"
                   >
                     <X className="w-6 h-6" />
                   </button>
                 </div>
-                
+
                 <div className="flex bg-white/10 p-1 rounded-xl">
-                  <button 
+                  <button
                     onClick={() => setActiveTab("cart")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                      activeTab === "cart" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
-                    }`}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === "cart" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
+                      }`}
                   >
                     <ShoppingBag className="w-3 h-3" />
                     Keranjang ({totalItems})
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab("favorites")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                      activeTab === "favorites" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
-                    }`}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === "favorites" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
+                      }`}
                   >
                     <Heart className="w-3 h-3" />
                     Favorit ({favorites.length})
@@ -666,13 +662,13 @@ export default function App() {
                             {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
                           </div>
                           <div className="flex items-center gap-1">
-                            <button 
+                            <button
                               onClick={() => setShareItem({ name: item.name, price: item.price, category: item.category })}
                               className="text-brand-black/40 hover:text-brand-orange p-1 rounded-lg transition-colors"
                             >
                               <Share2 className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => removeFromCart(item.id)}
                               className="text-brand-orange hover:bg-brand-orange/10 p-1 rounded-lg transition-colors"
                             >
@@ -682,14 +678,14 @@ export default function App() {
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-3 bg-brand-black/5 rounded-xl p-1">
-                            <button 
+                            <button
                               onClick={() => updateQuantity(item.id, -1)}
                               className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
                             >
                               <Minus className="w-3 h-3" />
                             </button>
                             <span className="font-black w-4 text-center">{item.quantity}</span>
-                            <button 
+                            <button
                               onClick={() => updateQuantity(item.id, 1)}
                               className="bg-white p-1 rounded-lg shadow-sm hover:bg-brand-orange hover:text-white transition-colors"
                             >
@@ -724,13 +720,13 @@ export default function App() {
                             {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
                           </div>
                           <div className="flex items-center gap-1">
-                            <button 
+                            <button
                               onClick={() => setShareItem({ name: item.name, price: item.price, category: item.category })}
                               className="text-brand-black/40 hover:text-brand-orange p-1 rounded-lg transition-colors"
                             >
                               <Share2 className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                               onClick={() => toggleFavorite({ name: item.name, price: item.price, category: item.category })}
                               className="text-brand-orange hover:bg-brand-orange/10 p-1 rounded-lg transition-colors"
                             >
@@ -740,7 +736,7 @@ export default function App() {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="font-black text-lg">{formatPrice(item.price)}</span>
-                          <button 
+                          <button
                             onClick={() => addToCart({ name: item.name, price: item.price, category: item.category })}
                             className="bg-brand-black text-white px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-brand-orange transition-colors active:scale-95 flex items-center gap-2"
                           >
@@ -760,7 +756,7 @@ export default function App() {
                     <span className="font-bold uppercase opacity-60">Total Pembayaran</span>
                     <span className="text-2xl font-black text-brand-black">{formatPrice(totalPrice)}</span>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsOrderConfirmationOpen(true)}
                     className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
                   >
@@ -799,7 +795,7 @@ export default function App() {
                   <h3 className="text-xl font-black uppercase italic">Bagikan Menu</h3>
                   <p className="text-xs font-bold opacity-40 uppercase tracking-wider">Kirim ke teman via WhatsApp</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setShareItem(null)}
                   className="p-2 hover:bg-brand-black/5 rounded-full transition-colors"
                 >
@@ -814,14 +810,14 @@ export default function App() {
               </div>
 
               <div className="space-y-3">
-                <button 
+                <button
                   onClick={() => shareToWhatsApp(shareItem)}
                   className="w-full bg-[#25D366] text-white py-4 rounded-xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
                 >
                   <MessageCircle className="w-5 h-5" />
                   Kirim ke WhatsApp
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     const msg = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${shareItem.name}*\n${shareItem.category ? `(${shareItem.category})\n` : ""}Harga: *${formatPrice(shareItem.price)}*\n\nCek katalog lengkapnya di sini: ${APP_URL}`;
                     handleCopyLink(msg);
@@ -859,7 +855,7 @@ export default function App() {
                   <h3 className="text-xl font-black uppercase italic">Bagikan Katalog</h3>
                   <p className="text-xs font-bold opacity-40 uppercase tracking-wider">Ajak teman jajan Martabak!</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsGeneralShareOpen(false)}
                   className="p-2 hover:bg-brand-black/5 rounded-full transition-colors"
                 >
@@ -868,28 +864,28 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-6">
-                <button 
+                <button
                   onClick={() => shareGeneral("facebook")}
                   className="bg-[#1877F2] text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
                 >
                   <Facebook className="w-6 h-6" />
                   <span className="text-[10px] font-bold uppercase">Facebook</span>
                 </button>
-                <button 
+                <button
                   onClick={() => shareGeneral("twitter")}
                   className="bg-black text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
                 >
                   <Twitter className="w-6 h-6" />
                   <span className="text-[10px] font-bold uppercase">X (Twitter)</span>
                 </button>
-                <button 
+                <button
                   onClick={() => shareGeneral("threads")}
                   className="bg-black text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
                 >
                   <ExternalLink className="w-6 h-6" />
                   <span className="text-[10px] font-bold uppercase">Threads</span>
                 </button>
-                <button 
+                <button
                   onClick={() => handleCopyLink(APP_URL)}
                   className="bg-brand-orange text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
                 >
@@ -935,7 +931,7 @@ export default function App() {
                   <h3 className="text-xl font-black uppercase italic">Konfirmasi Pesanan</h3>
                   <p className="text-xs font-bold opacity-40 uppercase tracking-wider">Periksa kembali pesanan Anda</p>
                 </div>
-                <button 
+                <button
                   onClick={() => setIsOrderConfirmationOpen(false)}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors"
                 >
@@ -970,14 +966,14 @@ export default function App() {
                 <div className="bg-brand-yellow/20 p-6 rounded-3xl border-2 border-brand-black/10 flex flex-col items-center text-center">
                   <h4 className="font-black uppercase italic text-sm mb-4">Pembayaran QRIS:</h4>
                   <div className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-inner mb-4">
-                    <img 
-                      src="/qris.png" 
-                      alt="QRIS Pembayaran" 
+                    <img
+                      src="/qris.png"
+                      alt="QRIS Pembayaran"
                       className="w-48 h-48 object-contain mx-auto"
                     />
                   </div>
-                  
-                  <a 
+
+                  <a
                     href="/qris.png"
                     download="QRIS_Martabak_Gresik.png"
                     className="mb-4 bg-brand-black text-white px-6 py-3 rounded-xl font-bold text-sm uppercase flex items-center gap-2 hover:bg-brand-orange transition-colors active:scale-95 shadow-md"
@@ -987,14 +983,14 @@ export default function App() {
                   </a>
 
                   <p className="text-[10px] font-bold uppercase opacity-60 leading-tight">
-                    Scan kode QR di atas untuk melakukan pembayaran.<br/>
+                    Scan kode QR di atas untuk melakukan pembayaran.<br />
                     Simpan bukti bayar untuk dikirim via WhatsApp.
                   </p>
                 </div>
               </div>
 
               <div className="p-6 bg-white border-t-4 border-brand-black shrink-0">
-                <button 
+                <button
                   onClick={() => {
                     sendWhatsAppOrder();
                     setIsOrderConfirmationOpen(false);
