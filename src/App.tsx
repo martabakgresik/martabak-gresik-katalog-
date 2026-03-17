@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink } from "lucide-react";
+import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink, Download } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -887,6 +887,16 @@ export default function App() {
                       className="w-48 h-48 object-contain mx-auto"
                     />
                   </div>
+                  
+                  <a 
+                    href="/qris.png"
+                    download="QRIS_Martabak_Gresik.png"
+                    className="mb-4 bg-brand-black text-white px-6 py-3 rounded-xl font-bold text-sm uppercase flex items-center gap-2 hover:bg-brand-orange transition-colors active:scale-95 shadow-md"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download QRIS
+                  </a>
+
                   <p className="text-[10px] font-bold uppercase opacity-60 leading-tight">
                     Scan kode QR di atas untuk melakukan pembayaran.<br/>
                     Simpan bukti bayar untuk dikirim via WhatsApp.
