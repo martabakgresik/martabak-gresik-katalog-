@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink, Download } from "lucide-react";
 
@@ -8,6 +8,7 @@ interface CartItem {
   price: number;
   quantity: number;
   category?: string;
+  note?: string;
 }
 
 interface FavoriteItem {
@@ -115,6 +116,23 @@ const MENU_SAVORY = [
       },
     ],
   },
+  {
+    title: "Menu Pedas",
+    variants: [
+      {
+        type: "Samyang Ayam Pedas",
+        prices: [
+          { qty: 2, price: 30000, desc: "2 Telor Bebek + Daging Ayam" },
+        ],
+      },
+      {
+        type: "Samyang Sapi Pedas",
+        prices: [
+          { qty: 2, price: 32000, desc: "2 Telor Bebek + Daging Sapi" },
+        ],
+      },
+    ],
+  },
 ];
 
 const formatPrice = (price: number) => {
@@ -126,14 +144,28 @@ const formatPrice = (price: number) => {
 };
 
 export default function App() {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const saved = localStorage.getItem('martabak_cart');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [favorites, setFavorites] = useState<FavoriteItem[]>(() => {
+    const saved = localStorage.getItem('martabak_favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"cart" | "favorites">("cart");
   const [shareItem, setShareItem] = useState<{ name: string; price: number; category?: string } | null>(null);
   const [isGeneralShareOpen, setIsGeneralShareOpen] = useState(false);
   const [isOrderConfirmationOpen, setIsOrderConfirmationOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('martabak_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  useEffect(() => {
+    localStorage.setItem('martabak_favorites', JSON.stringify(favorites));
+  }, [favorites]);
 
   const APP_URL = window.location.origin;
 
@@ -212,6 +244,12 @@ export default function App() {
     }));
   };
 
+  const updateNote = (id: string, note: string) => {
+    setCart(prev => prev.map(i => 
+      i.id === id ? { ...i, note } : i
+    ));
+  };
+
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -222,6 +260,7 @@ export default function App() {
     cart.forEach((item, index) => {
       message += `${index + 1}. *${item.name}*\n`;
       if (item.category) message += `   (${item.category})\n`;
+      if (item.note) message += `   Catatan: _${item.note}_\n`;
       message += `   ${item.quantity}x ${formatPrice(item.price)} = *${formatPrice(item.price * item.quantity)}*\n\n`;
     });
 
@@ -277,29 +316,61 @@ export default function App() {
             </div>
           </motion.div>
 
-          <motion.button
+          <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsGeneralShareOpen(true)}
-            className="mt-8 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-all border border-white/20"
+            transition={{ delay: 0.4 }}
+            className="mt-8 flex flex-wrap items-center justify-center gap-4"
           >
-            <Share2 className="w-4 h-4" />
-            Bagikan Katalog
-          </motion.button>
+            <motion.a
+              href="#menu-section"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              Pesan Sekarang
+            </motion.a>
+            <motion.a
+              href="/katalog.png"
+              download
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-all border border-white/20"
+            >
+              <Download className="w-4 h-4" />
+              Download Katalog
+            </motion.a>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsGeneralShareOpen(true)}
+              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-all border border-white/20"
+            >
+              <Share2 className="w-4 h-4" />
+              Bagikan
+            </motion.button>
+          </motion.div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-12 md:py-20">
+      <main id="menu-section" className="max-w-7xl mx-auto px-4 py-12 md:py-20 scroll-mt-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           
           {/* Sweet Martabak Column */}
           <section className="space-y-12">
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-4 mb-4">
               <div className="h-1 w-12 bg-brand-black rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight">Terang Bulan</h2>
+            </div>
+            <div className="mb-8 flex justify-center w-full max-w-xs h-40 md:h-48 mx-auto">
+              <img 
+                src="/terang-bulan.png" 
+                alt="Ilustrasi Terang Bulan" 
+                className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
             </div>
 
             <div className="space-y-10">
@@ -363,9 +434,17 @@ export default function App() {
 
           {/* Savory Martabak Column */}
           <section className="space-y-12">
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-4 mb-4">
               <div className="h-1 w-12 bg-brand-black rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight">Martabak Telor</h2>
+            </div>
+            <div className="mb-8 flex justify-center w-full max-w-xs h-40 md:h-48 mx-auto">
+              <img 
+                src="/martabak.png" 
+                alt="Ilustrasi Martabak Telor" 
+                className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
             </div>
 
             <div className="space-y-12">
@@ -391,13 +470,15 @@ export default function App() {
                         <div className="space-y-3">
                           {variant.prices.map((p) => (
                             <div key={p.qty} className="flex justify-between items-center bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors">
-                              <span className="text-sm opacity-80">{p.qty} Telor</span>
+                              <span className="text-sm opacity-80">
+                                {p.desc ? p.desc : `${p.qty} Telor`}
+                              </span>
                               <div className="flex items-center gap-3">
                                 <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
                                 <div className="flex items-center gap-2">
                                   <button 
                                     onClick={() => setShareItem({ 
-                                      name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
+                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`, 
                                       price: p.price 
                                     })}
                                     className="p-1.5 rounded-full bg-white/10 text-brand-yellow hover:bg-brand-orange/20 transition-all active:scale-90"
@@ -407,20 +488,20 @@ export default function App() {
                                   </button>
                                   <button 
                                     onClick={() => toggleFavorite({ 
-                                      name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
+                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`, 
                                       price: p.price 
                                     })}
                                     className={`p-1.5 rounded-full transition-all active:scale-90 ${
-                                      isFavorite(`${section.title} (${variant.type} - ${p.qty} Telor)`) 
+                                      isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`) 
                                       ? 'bg-brand-orange text-white' 
                                       : 'bg-white/10 text-brand-yellow hover:bg-brand-orange/20'
                                     }`}
                                   >
-                                    <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.qty} Telor)`) ? 'fill-current' : ''}`} />
+                                    <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`) ? 'fill-current' : ''}`} />
                                   </button>
                                   <button 
                                     onClick={() => addToCart({ 
-                                      name: `${section.title} (${variant.type} - ${p.qty} Telor)`, 
+                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`, 
                                       price: p.price 
                                     })}
                                     className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
@@ -502,15 +583,15 @@ export default function App() {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={() => setIsCartOpen(true)}
-            className="fixed bottom-8 right-8 z-50 bg-brand-black text-white p-4 rounded-full shadow-2xl flex items-center gap-3 hover:bg-brand-orange transition-colors group"
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] md:w-auto md:left-auto md:translate-x-0 md:bg-brand-black md:right-8 z-50 bg-brand-black text-white px-8 py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite]"
           >
             <div className="relative">
-              <ShoppingBag className="w-6 h-6" />
+              <ShoppingBag className="w-6 h-6 animate-[bounce_2s_infinite]" />
               <span className="absolute -top-2 -right-2 bg-brand-yellow text-brand-black text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-brand-black">
                 {totalItems}
               </span>
             </div>
-            <span className="font-bold pr-2 hidden md:block">Lihat Pesanan</span>
+            <span className="font-bold text-lg md:text-base pr-2 tracking-wide uppercase">Lihat Pesanan</span>
           </motion.button>
         )}
       </AnimatePresence>
@@ -617,6 +698,13 @@ export default function App() {
                           </div>
                           <span className="font-black text-lg">{formatPrice(item.price * item.quantity)}</span>
                         </div>
+                        <input
+                          type="text"
+                          placeholder="Catatan (opsional)..."
+                          value={item.note || ""}
+                          onChange={(e) => updateNote(item.id, e.target.value)}
+                          className="mt-1 w-full text-xs p-2 bg-brand-black/5 rounded-lg outline-none focus:ring-2 focus:ring-brand-orange transition-shadow"
+                        />
                       </div>
                     ))
                   )
@@ -865,6 +953,7 @@ export default function App() {
                         <div className="flex-grow">
                           <p className="font-bold text-sm leading-tight">{item.name}</p>
                           {item.category && <p className="text-[10px] uppercase font-bold opacity-40">{item.category}</p>}
+                          {item.note && <p className="text-[10px] italic opacity-60">Catatan: {item.note}</p>}
                           <p className="text-xs opacity-60">{item.quantity}x {formatPrice(item.price)}</p>
                         </div>
                         <span className="font-black text-sm shrink-0">{formatPrice(item.price * item.quantity)}</span>
