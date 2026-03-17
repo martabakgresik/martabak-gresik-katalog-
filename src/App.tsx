@@ -121,8 +121,14 @@ export default function App() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
+            className="mb-6 flex flex-col items-center"
           >
+            <img 
+              src="https://ais-dev-6hzfwmlwe535jcrzimwj24-24233205576.asia-east1.run.app/logo.png" 
+              alt="Martabak Gresik Logo" 
+              className="w-48 md:w-64 h-auto mb-6 drop-shadow-2xl"
+              referrerPolicy="no-referrer"
+            />
             <div className="bg-brand-yellow text-brand-black px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-4 inline-block">
               Since 2020
             </div>
