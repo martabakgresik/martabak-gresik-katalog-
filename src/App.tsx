@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink, Download } from "lucide-react";
+import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink, Download, Store } from "lucide-react";
 
 interface CartItem {
   id: string;
@@ -349,21 +349,21 @@ export default function App() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
 
           {/* Sweet Martabak Column */}
-          <section className="space-y-12">
-            <div className="flex items-center gap-4 mb-4">
+          <section className="space-y-6 md:space-y-8">
+            <div className="flex items-center gap-4 mb-2">
               <div className="h-1 w-12 bg-brand-black rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight">Terang Bulan</h2>
             </div>
-            <div className="mb-8 flex justify-center w-full max-w-xs h-100 md:h-108 mx-auto">
+            <div className="flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
               <img
                 src="/terang-bulan.png"
                 alt="Ilustrasi Terang Bulan"
-                className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-contain"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             </div>
 
-            <div className="space-y-10">
+            <div className="space-y-6">
               {MENU_SWEET.map((section, idx) => (
                 <motion.div
                   key={section.category}
@@ -422,21 +422,21 @@ export default function App() {
           </section>
 
           {/* Savory Martabak Column */}
-          <section className="space-y-12">
-            <div className="flex items-center gap-4 mb-4">
+          <section className="space-y-6 md:space-y-8">
+            <div className="flex items-center gap-4 mb-2">
               <div className="h-1 w-12 bg-brand-black rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight">Martabak Telor</h2>
             </div>
-            <div className="mb-8 flex justify-center w-full max-w-xs h-100 md:h-108 mx-auto">
+            <div className="flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
               <img
                 src="/martabak.png"
                 alt="Ilustrasi Martabak Telor"
-                className="w-full h-full object-contain drop-shadow-xl hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-contain"
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             </div>
 
-            <div className="space-y-12">
+            <div className="space-y-8">
               {MENU_SAVORY.map((section, idx) => (
                 <motion.div
                   key={section.title}
@@ -521,19 +521,20 @@ export default function App() {
                   {
                     name: "GrabFood",
                     color: "bg-[#00B14F]",
-                    url: "https://r.grab.com/o/R7F36f6j"
+                    url: "https://r.grab.com/o/R7F36f6j",
+                    icon: ShoppingBag
                   },
-                  { name: "GoFood", color: "bg-[#EE2737]", url: "https://gofood.co.id/surabaya/restaurant/martabak-gresik-drojogan-usman-sadar-no-10-84fc235a-673a-4163-a15c-d7ca0b077a4e" },
-                  { name: "ShopeeFood", color: "bg-[#EE4D2D]", url: "https://spf.shopee.co.id/qeqAKpT0c" },
+                  { name: "GoFood", color: "bg-[#EE2737]", url: "https://gofood.co.id/surabaya/restaurant/martabak-gresik-drojogan-usman-sadar-no-10-84fc235a-673a-4163-a15c-d7ca0b077a4e", icon: ShoppingBag },
+                  { name: "ShopeeFood", color: "bg-[#EE4D2D]", url: "https://spf.shopee.co.id/qeqAKpT0c", icon: ShoppingBag },
                 ].map((app) => (
                   <a
                     key={app.name}
                     href={app.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`${app.color} text-white py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform active:scale-95 shadow-lg text-center`}
+                    className={`${app.color} !text-white py-4 px-6 rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-105 transition-transform active:scale-95 shadow-lg text-center`}
                   >
-                    <ShoppingBag className="w-5 h-5" />
+                    <app.icon className="w-5 h-5 shrink-0 text-white" />
                     {app.name}
                   </a>
                 ))}
