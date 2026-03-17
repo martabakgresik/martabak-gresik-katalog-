@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Phone, MapPin, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink } from "lucide-react";
-import logo from "./assets/logo.webp";
+import logo from "./assets/logo.png";
 import qris from "./assets/qris.png";
 
 interface CartItem {
@@ -253,9 +253,6 @@ export default function App() {
               alt="Martabak Gresik Logo" 
               className="w-24 md:w-48 h-auto shrink-0"
               referrerPolicy="no-referrer"
-              onError={(e) => {
-                e.currentTarget.src = "https://picsum.photos/seed/martabak/400/400";
-              }}
             />
             <div className="text-left">
               <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 inline-block">
