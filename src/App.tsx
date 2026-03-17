@@ -310,10 +310,10 @@ export default function App() {
               <MapPin className="w-4 h-4 text-brand-orange" />
               <span>Jl. Usman Sadar No 10, Gresik</span>
             </div>
-            <div className="flex items-center justify-center gap-2">
+            <a href="tel:081330763633" className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
               <Phone className="w-4 h-4 text-brand-orange" />
-              <span>081 330 763 633</span>
-            </div>
+              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">081 330 763 633</span>
+            </a>
           </motion.div>
 
           <motion.div
@@ -330,16 +330,6 @@ export default function App() {
             >
               <ShoppingBag className="w-5 h-5" />
               Pesan Sekarang
-            </motion.a>
-            <motion.a
-              href="/katalog.png"
-              download
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-all border border-white/20"
-            >
-              <Download className="w-4 h-4" />
-              Download Katalog
             </motion.a>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -558,14 +548,24 @@ export default function App() {
         {/* Wavy Background Element */}
         <div className="absolute top-0 left-0 w-full h-16 bg-brand-yellow rounded-b-[100%] -translate-y-8" />
 
-        <div className="max-w-6xl mx-auto text-center relative z-10">
+        <div className="max-w-6xl mx-auto text-center relative z-10 flex flex-col items-center">
           <h2 className="text-3xl font-display font-black text-brand-yellow uppercase mb-4">Martabak Gresik</h2>
-          <p className="opacity-60 text-sm max-w-md mx-auto">
+          <p className="opacity-60 text-sm max-w-md mb-8">
             Nikmati kelezatan martabak autentik dengan bahan berkualitas.
             Buka setiap hari untuk menemani waktu santai Anda.
           </p>
-          <div className="mt-8 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
-            <p>© 2026 Martabak Gresik. All rights reserved.</p>
+
+          <a
+            href="/katalog.png"
+            download
+            className="bg-brand-orange text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-white hover:text-brand-orange transition-all shadow-lg text-sm uppercase tracking-wider mb-8 active:scale-95"
+          >
+            <Download className="w-4 h-4" />
+            Download Katalog Lengkap
+          </a>
+
+          <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
+            <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors">WhatsApp</a>
             </div>
