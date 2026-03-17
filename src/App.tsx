@@ -243,16 +243,16 @@ export default function App() {
         <div className="absolute bottom-0 left-0 w-full h-16 bg-brand-yellow rounded-t-[100%] translate-y-8" />
         
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full"
-          >
+          <div className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full">
             <img 
               src={logo} 
               alt="Martabak Gresik Logo" 
               className="w-24 md:w-48 h-auto shrink-0"
               referrerPolicy="no-referrer"
+              onError={(e) => {
+                // Fallback to PNG if WebP fails
+                e.currentTarget.src = "/src/assets/logo.png";
+              }}
             />
             <div className="text-left">
               <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 inline-block">
@@ -265,7 +265,7 @@ export default function App() {
                 Terang Bulan dan Martabak Telor
               </p>
             </div>
-          </motion.div>
+          </div>
 
           <motion.div
             initial={{ opacity: 0 }}
