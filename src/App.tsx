@@ -200,12 +200,15 @@ export default function App() {
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
 
   useEffect(() => {
+    const metaThemeColor = document.getElementById('theme-color-meta');
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
+      if (metaThemeColor) metaThemeColor.setAttribute('content', '#000000');
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
+      if (metaThemeColor) metaThemeColor.setAttribute('content', '#1E1E1E');
     }
   }, [isDarkMode]);
 
