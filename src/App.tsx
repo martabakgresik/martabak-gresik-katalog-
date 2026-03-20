@@ -612,7 +612,7 @@ export default function App() {
                 </div>
                 <div className={`px-3 py-0.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border-2 ${isHoliday ? 'bg-orange-600 border-orange-700' : isOpen ? 'bg-green-500 border-green-600' : 'bg-red-500 border-red-600'} text-white`}>
                   <div className={`w-2 h-2 rounded-full animate-pulse ${isHoliday || isOpen ? 'bg-white' : 'bg-white/50'}`} />
-                  {isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'BUKA SEKARANG' : 'TUTUP (Buka 16:00)'}
+                  {isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'BUKA' : 'TUTUP (Buka 16:00)'}
                 </div>
               </div>
               <h1 className="text-3xl md:text-7xl font-display font-black tracking-tighter text-brand-yellow uppercase leading-none">
@@ -983,7 +983,7 @@ export default function App() {
                   <span className="font-bold text-sm">Martabak Assistant</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <button 
+                  <button
                     onClick={() => setAiMessages([{ role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu? atau pesan skala besar?😁\n\nAtau tanya apa saja juga boleh!" }])}
                     title="Mulai Ulang Chat"
                     className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
