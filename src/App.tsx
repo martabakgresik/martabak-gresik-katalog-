@@ -4,7 +4,9 @@ import {
   Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, 
   MessageCircle, CheckCircle, Heart, Share2, Copy, Check, 
   Facebook, Twitter, Instagram, ExternalLink, Download, Store, 
-  Sun, Moon, ArrowUp, Clock, Link2 
+  Sun, Moon, ArrowUp, Clock, Link2, 
+  MessageCircleCodeIcon,
+  MessageCircleQuestionIcon
 } from "lucide-react";
 
 interface Addon {
@@ -907,10 +909,10 @@ export default function App() {
           </div>
 
           <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
-            <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p> <p> Design by <a href="https://ariftirtana.my.id">Arif Tirtana</a></p>
             <div className="flex gap-6">
               <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
-                <CheckCircle className="w-3 h-3" />
+                <MessageCircleQuestionIcon className="w-3 h-3" />
                 WhatsApp</a>
             </div>
           </div>
