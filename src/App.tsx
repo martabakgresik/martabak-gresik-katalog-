@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink, Download, Store, Sun, Moon, ArrowUp, Clock, Link2 } from "lucide-react";
+import { 
+  Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, 
+  MessageCircle, CheckCircle, Heart, Share2, Copy, Check, 
+  Facebook, Twitter, Instagram, ExternalLink, Download, Store, 
+  Sun, Moon, ArrowUp, Clock, Link2 
+} from "lucide-react";
 
 interface Addon {
   name: string;
@@ -218,6 +223,7 @@ export default function App() {
     { role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu?" }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiTimer, setAiTimer] = useState(0);
   const aiMessagesEndRef = useRef<HTMLDivElement>(null);
   const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -235,6 +241,17 @@ export default function App() {
       }
     }
   }, [aiMessages, isAiOpen, aiInput]);
+
+  useEffect(() => {
+    let interval: number;
+    if (isAiLoading) {
+      setAiTimer(0);
+      interval = window.setInterval(() => {
+        setAiTimer((prev) => prev + 10);
+      }, 10);
+    }
+    return () => window.clearInterval(interval);
+  }, [isAiLoading]);
 
   // Opening Status & Holiday Logic
   const [isOpen, setIsOpen] = useState(false);
@@ -474,13 +491,14 @@ export default function App() {
       - Alamat: Jl. Usman Sadar No 10, Gresik
       - Jam Buka: 16.00 - 23.00 WIB
       - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km)
+      - No Tlp: 081330763633
 
       ATURAN:
       1. Jawab dengan gaya santai tapi sopan.
-      2. Jika ditanya menu, berikan rekomendasi dalam bentuk DAFTAR BULLET yang jelas.
+      2. Jika ditanya menu, berikan rekomendasi dalam bentuk DAFTAR BULLET yang jelas dan rapi.
       3. Jangan sarankan menu yang tidak ada di daftar.
       4. Gunakan emoji agar menarik.
-      5. Jawab dalam Bahasa Indonesia.
+      5. Jawab dalam Bahasa Indonesia atau bahasa yang di input oleh pengguna.
       6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.`;
 
       const response = await fetch('/api/chat', {
@@ -501,7 +519,7 @@ export default function App() {
       setAiMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
     } catch (error) {
       console.error("AI Error:", error);
-      setAiMessages([...newMessages, { role: 'assistant', content: "Maaf ya, koneksi saya lagi agak lemot. Coba tanya lagi bentar lagi ya! 🙏" }]);
+      setAiMessages([...newMessages, { role: 'assistant', content: "Maaf ya, mungkin koneksi saya saat ini sedang bermasalah. Coba tanya bentar lagi ya! 🙏. atau bisa hubungi via whatsapp di nomor berikut: 081330763633" }]);
     } finally {
       setIsAiLoading(false);
     }
@@ -892,7 +910,7 @@ export default function App() {
             <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
             <div className="flex gap-6">
               <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
-                <MessageCircle className="w-3 h-3" />
+                <CheckCircle className="w-3 h-3" />
                 WhatsApp</a>
             </div>
           </div>
@@ -970,10 +988,16 @@ export default function App() {
                 ))}
                 {isAiLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-white dark:bg-white/10 p-3 rounded-2xl rounded-tl-none flex gap-1">
-                      <div className="w-1.5 h-1.5 bg-brand-orange rounded-full animate-bounce" />
-                      <div className="w-1.5 h-1.5 bg-brand-orange rounded-full animate-bounce [animation-delay:0.2s]" />
-                      <div className="w-1.5 h-1.5 bg-brand-orange rounded-full animate-bounce [animation-delay:0.4s]" />
+                    <div className="bg-white dark:bg-white/10 p-4 rounded-2xl rounded-tl-none flex flex-col gap-2 min-w-[180px]">
+                      <div className="flex items-center gap-3 text-[10px] font-bold dark:text-brand-yellow">
+                        <div className="w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin" />
+                        <span className="animate-pulse">Mohon tunggu AI meracik jawaban...</span>
+                      </div>
+                      <div className="flex justify-end pr-1">
+                        <span className="text-[9px] font-mono opacity-40 tabular-nums">
+                          {aiTimer.toString().padStart(4, '0')} ms
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -994,7 +1018,7 @@ export default function App() {
                       if (aiInput.trim() && !isAiLoading) getAiResponse(aiInput);
                     }
                   }}
-                  placeholder="Tanya info menu..."
+                  placeholder="Tanya info seputar martabak Gresik..."
                   className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
                 />
                 <button 
@@ -1014,12 +1038,7 @@ export default function App() {
               initial={{ opacity: 0, y: 10, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.9 }}
-              transition={{ 
-                repeat: Infinity, 
-                repeatType: "reverse", 
-                duration: 2,
-                repeatDelay: 1
-              }}
+              transition={{ duration: 0.3 }}
               className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg relative mb-2 flex items-center justify-center mx-auto"
             >
               Tanya Kami 👋
