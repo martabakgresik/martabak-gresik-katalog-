@@ -209,6 +209,7 @@ export default function App() {
   });
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [distance, setDistance] = useState<number>(0);
+  const [showPromo, setShowPromo] = useState(true);
 
   // Opening Status & Holiday Logic
   const [isOpen, setIsOpen] = useState(false);
@@ -445,13 +446,24 @@ export default function App() {
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
       {/* Promo Banner */}
-      <motion.div
-        initial={{ y: -50 }}
-        animate={{ y: 0 }}
-        className="bg-brand-orange text-white text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md"
-      >
-        {PROMO_TEXT}
-      </motion.div>
+      <AnimatePresence>
+        {showPromo && (
+          <motion.div
+            initial={{ y: -50 }}
+            animate={{ y: 0 }}
+            exit={{ y: -50 }}
+            className="bg-brand-orange text-white text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
+          >
+            <span className="flex-grow">{PROMO_TEXT}</span>
+            <button
+              onClick={() => setShowPromo(false)}
+              className="p-1 hover:bg-white/20 rounded-full transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Hero Section */}
       <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
