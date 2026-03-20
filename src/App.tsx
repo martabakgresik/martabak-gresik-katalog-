@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink, Download, Store, Sun, Moon, ArrowUp } from "lucide-react";
+import { Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, MessageCircle, Heart, Share2, Copy, Check, Facebook, Twitter, Instagram, ExternalLink, Download, Store, Sun, Moon, ArrowUp, Clock, Link2 } from "lucide-react";
 
 interface Addon {
   name: string;
@@ -168,8 +168,25 @@ const formatPrice = (price: number) => {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(price);
 };
+
+// --- CONSTANTS ---
+const OPEN_HOUR = 16; // 16:00
+const CLOSE_HOUR = 23; // 23:00
+const SHIPPING_RATE_PER_KM = 2500;
+const MAX_SHIPPING_DISTANCE = 10;
+const PROMO_TEXT = "🔥 Diskon 10% untuk Pembelian Pertama via Katalog! (Gunakan kode: MARTABAKBARU)";
+
+// Daftar Tanggal Libur (Format: YYYY-MM-DD)
+const HOLIDAYS = [
+  "2026-03-19", // Contoh: Libur Idul Fitri
+  "2026-03-20",
+  "2026-03-21",
+  "2026-03-23",
+  "2026-03-24"
+];
 
 export default function App() {
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -191,10 +208,61 @@ export default function App() {
     return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
   const [showBackToTop, setShowBackToTop] = useState(false);
-  
-  // Search state
+  const [distance, setDistance] = useState<number>(0);
+
+  // Opening Status & Holiday Logic
+  const [isOpen, setIsOpen] = useState(false);
+  const [isHoliday, setIsHoliday] = useState(false);
+
+  useEffect(() => {
+    const checkStatus = () => {
+      const now = new Date();
+      const dateString = now.toISOString().split('T')[0];
+      const hour = now.getHours();
+
+      const holidayFound = HOLIDAYS.includes(dateString);
+      setIsHoliday(holidayFound);
+
+      if (holidayFound) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(hour >= OPEN_HOUR && hour < CLOSE_HOUR);
+      }
+    };
+    checkStatus();
+    const timer = setInterval(checkStatus, 60000); // Re-check every minute
+    return () => clearInterval(timer);
+  }, []);
+
+  // Deep Linking Effect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const itemName = params.get('item');
+    if (itemName) {
+      setTimeout(() => {
+        const elements = document.getElementsByTagName('*');
+        for (let i = 0; i < elements.length; i++) {
+          if (elements[i].textContent?.toLowerCase() === itemName.toLowerCase()) {
+            elements[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add a temporary highlight
+            const target = elements[i] as HTMLElement;
+            target.style.transition = 'background-color 0.5s';
+            target.style.backgroundColor = 'rgba(255, 145, 0, 0.2)';
+            setTimeout(() => target.style.backgroundColor = '', 3000);
+            break;
+          }
+        }
+      }, 1000);
+    }
+  }, []);
+  // Image loading state
+  const [imagesLoaded, setImagesLoaded] = useState<Record<string, boolean>>({});
+  const handleImageLoad = (src: string) => {
+    setImagesLoaded(prev => ({ ...prev, [src]: true }));
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Add-ons modal state
   const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
@@ -319,10 +387,12 @@ export default function App() {
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => {
+  const itemsPrice = cart.reduce((sum, item) => {
     const itemAddonsPrice = item.addons ? item.addons.reduce((a, b) => a + (b.price * (b.quantity || 1)), 0) : 0;
     return sum + ((item.price + itemAddonsPrice) * item.quantity);
   }, 0);
+  const shippingCost = distance * SHIPPING_RATE_PER_KM;
+  const totalPrice = itemsPrice + shippingCost;
 
   const sendWhatsAppOrder = () => {
     const phoneNumber = "6281330763633";
@@ -331,19 +401,22 @@ export default function App() {
     cart.forEach((item, index) => {
       message += `${index + 1}. *${item.name}*\n`;
       if (item.category) message += `   (${item.category})\n`;
-      
+
       const itemAddonsPrice = item.addons ? item.addons.reduce((a, b) => a + (b.price * (b.quantity || 1)), 0) : 0;
       if (item.addons && item.addons.length > 0) {
         item.addons.forEach(addon => {
           message += `   + ${addon.name} ${addon.quantity && addon.quantity > 1 ? `(${addon.quantity}x)` : ''}\n`;
         });
       }
-      
+
       if (item.note) message += `   Catatan: _${item.note}_\n`;
       message += `   ${item.quantity}x ${formatPrice(item.price + itemAddonsPrice)} = *${formatPrice((item.price + itemAddonsPrice) * item.quantity)}*\n\n`;
     });
 
     message += `--------------------------\n`;
+    if (distance > 0) {
+      message += `Ongkir (${distance}km): ${formatPrice(shippingCost)}\n`;
+    }
     message += `*TOTAL PEMBAYARAN: ${formatPrice(totalPrice)}*\n\n`;
     message += `Mohon segera diproses ya, terima kasih! 🙏`;
 
@@ -353,17 +426,17 @@ export default function App() {
 
   const filteredSweet = MENU_SWEET.map(section => ({
     ...section,
-    items: section.items.filter(item => 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    items: section.items.filter(item =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       section.category.toLowerCase().includes(searchQuery.toLowerCase())
     )
   })).filter(section => section.items.length > 0);
-  
+
   const filteredSavory = MENU_SAVORY.map(section => ({
     ...section,
     variants: section.variants.map(variant => ({
       ...variant,
-      prices: variant.prices.filter(p => 
+      prices: variant.prices.filter(p =>
         `${section.title} ${variant.type} ${p.desc || `${p.qty} Telor`} ${formatPrice(p.price)}`.toLowerCase().includes(searchQuery.toLowerCase())
       )
     })).filter(v => v.prices.length > 0)
@@ -371,6 +444,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
+      {/* Promo Banner */}
+      <motion.div
+        initial={{ y: -50 }}
+        animate={{ y: 0 }}
+        className="bg-brand-orange text-white text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md"
+      >
+        {PROMO_TEXT}
+      </motion.div>
+
       {/* Hero Section */}
       <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
         {/* Theme Toggle Button */}
@@ -391,15 +473,25 @@ export default function App() {
 
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center">
           <div className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full">
-            <img
-              src="/logo.webp"
-              alt="Martabak Gresik Logo"
-              className="w-24 md:w-48 h-auto shrink-0"
-              referrerPolicy="no-referrer"
-            />
+            <div className="relative">
+              {!imagesLoaded['/logo.webp'] && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />}
+              <img
+                src="/logo.webp"
+                alt="Martabak Gresik Logo"
+                className={`w-24 md:w-48 h-auto shrink-0 transition-opacity duration-500 ${imagesLoaded['/logo.webp'] ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => handleImageLoad('/logo.webp')}
+                referrerPolicy="no-referrer"
+              />
+            </div>
             <div className="text-left">
-              <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest mb-2 inline-block">
-                Since 2020
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest inline-block">
+                  Since 2020
+                </div>
+                <div className={`px-3 py-0.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border-2 ${isHoliday ? 'bg-orange-600 border-orange-700' : isOpen ? 'bg-green-500 border-green-600' : 'bg-red-500 border-red-600'} text-white`}>
+                  <div className={`w-2 h-2 rounded-full animate-pulse ${isHoliday || isOpen ? 'bg-white' : 'bg-white/50'}`} />
+                  {isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'BUKA SEKARANG' : 'TUTUP (Buka 16:00)'}
+                </div>
               </div>
               <h1 className="text-3xl md:text-7xl font-display font-black tracking-tighter text-brand-yellow uppercase leading-none">
                 Martabak <br className="md:hidden" /> Gresik
@@ -424,6 +516,10 @@ export default function App() {
               <Phone className="w-4 h-4 text-brand-orange" />
               <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">081 330 763 633</span>
             </a>
+            <div className="flex items-center justify-center gap-2">
+              <Clock className="w-4 h-4 text-brand-orange" />
+              <span>16.00 - 23.00 WIB</span>
+            </div>
           </motion.div>
 
           <motion.div
@@ -456,7 +552,7 @@ export default function App() {
 
       {/* Main Content */}
       <main id="menu-section" className="max-w-7xl mx-auto px-4 py-12 md:py-20 scroll-mt-8">
-        
+
         {/* Search Bar */}
         <div className="mb-12 max-w-2xl mx-auto">
           <div className="relative group">
@@ -481,11 +577,13 @@ export default function App() {
               <div className="h-1 w-12 bg-brand-black dark:bg-brand-yellow rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">Terang Bulan</h2>
             </div>
-            <div className="flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
+            <div className="relative flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
+              {!imagesLoaded['/terang-bulan.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}
               <img
                 src="/terang-bulan.webp"
                 alt="Ilustrasi Terang Bulan"
-                className="w-full h-full object-contain"
+                className={`w-full h-full object-contain transition-opacity duration-500 ${imagesLoaded['/terang-bulan.webp'] ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => handleImageLoad('/terang-bulan.webp')}
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             </div>
@@ -554,11 +652,13 @@ export default function App() {
               <div className="h-1 w-12 bg-brand-black dark:bg-brand-yellow rounded-full" />
               <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">Martabak Telor</h2>
             </div>
-            <div className="flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
+            <div className="relative flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
+              {!imagesLoaded['/martabak.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}
               <img
                 src="/martabak.webp"
                 alt="Ilustrasi Martabak Telor"
-                className="w-full h-full object-contain"
+                className={`w-full h-full object-contain transition-opacity duration-500 ${imagesLoaded['/martabak.webp'] ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => handleImageLoad('/martabak.webp')}
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             </div>
@@ -697,7 +797,9 @@ export default function App() {
           <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
             <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors">WhatsApp</a>
+              <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
+                <MessageCircle className="w-3 h-3" />
+                WhatsApp</a>
             </div>
           </div>
         </div>
@@ -757,7 +859,7 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-               className="fixed top-0 right-0 h-full w-full max-w-md bg-brand-yellow dark:bg-brand-black z-[70] shadow-2xl flex flex-col"
+              className="fixed top-0 right-0 h-full w-full max-w-md bg-brand-yellow dark:bg-brand-black z-[70] shadow-2xl flex flex-col"
             >
               <div className="p-6 bg-brand-black dark:bg-black text-white">
                 <div className="flex justify-between items-center mb-6">
@@ -906,16 +1008,50 @@ export default function App() {
 
               {activeTab === "cart" && cart.length > 0 && (
                 <div className="p-6 bg-white dark:bg-brand-black border-t-4 border-brand-black dark:border-brand-yellow space-y-4">
+                  {/* Shipping Distance Selector */}
+                  <div className="bg-brand-black/5 dark:bg-white/10 p-4 rounded-2xl">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold uppercase dark:text-brand-yellow/60">Jarak Pengiriman</span>
+                      <span className={`text-sm font-black ${distance > MAX_SHIPPING_DISTANCE ? 'text-red-500' : 'dark:text-white'}`}>
+                        {distance} KM {distance > MAX_SHIPPING_DISTANCE && "(Maks 10km)"}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="15"
+                      step="1"
+                      value={distance}
+                      onChange={(e) => setDistance(parseInt(e.target.value))}
+                      className="w-full h-2 bg-brand-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                    />
+                    <div className="flex justify-between mt-1 opacity-40 text-[10px] font-bold">
+                      <span>0km</span>
+                      <span>5km</span>
+                      <span>10km</span>
+                      <span>15km</span>
+                    </div>
+                    {distance > 0 && distance <= MAX_SHIPPING_DISTANCE && (
+                      <p className="text-[10px] mt-2 font-bold text-brand-orange animate-pulse">
+                        Estimasi Ongkir: + {formatPrice(shippingCost)}
+                      </p>
+                    )}
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <span className="font-bold uppercase opacity-60 dark:text-brand-yellow/60">Total Pembayaran</span>
                     <span className="text-2xl font-black text-brand-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
                   </div>
                   <button
                     onClick={() => setIsOrderConfirmationOpen(true)}
-                    className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
+                    disabled={distance > MAX_SHIPPING_DISTANCE || isHoliday}
+                    className={`w-full py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 transition-all shadow-xl ${distance > MAX_SHIPPING_DISTANCE || isHoliday
+                        ? 'bg-gray-400 cursor-not-allowed grayscale'
+                        : 'bg-[#25D366] text-white hover:scale-[1.02] active:scale-95'
+                      }`}
                   >
                     <MessageCircle className="w-6 h-6" />
-                    Pesan via WhatsApp
+                    {isHoliday ? 'Maaf, Kami Sedang Libur' : distance > MAX_SHIPPING_DISTANCE ? 'Jarak Terlalu Jauh' : 'Pesan via WhatsApp'}
                   </button>
                   <p className="text-[10px] text-center opacity-40 font-bold uppercase">
                     Klik tombol di atas untuk mengirim pesanan otomatis ke WhatsApp kami
@@ -961,15 +1097,15 @@ export default function App() {
               <div className="space-y-3 mb-6">
                 {(selectedItemForAddon.type === 'sweet' ? ADDONS_SWEET : ADDONS_SAVORY).map((addon) => {
                   const isSelected = selectedAddons.some(a => a.name === addon.name);
-                  const baseClasses = addon.disabled 
+                  const baseClasses = addon.disabled
                     ? 'border-brand-black/5 dark:border-white/5 bg-brand-black/5 dark:bg-white/5 opacity-60 cursor-not-allowed'
-                    : isSelected 
-                      ? 'border-brand-orange bg-brand-orange/5 dark:bg-brand-orange/10 cursor-pointer' 
+                    : isSelected
+                      ? 'border-brand-orange bg-brand-orange/5 dark:bg-brand-orange/10 cursor-pointer'
                       : 'border-brand-black/10 dark:border-white/10 hover:bg-brand-black/5 dark:hover:bg-white/5 cursor-pointer';
 
                   return (
                     <div key={addon.name} className={`p-3 rounded-xl border-2 transition-all ${baseClasses}`}>
-                      <div 
+                      <div
                         className="flex items-center justify-between cursor-pointer"
                         onClick={() => {
                           if (addon.disabled) return;
@@ -992,9 +1128,9 @@ export default function App() {
                         </div>
                         <div className="flex flex-col items-end">
                           <span className={`text-xs font-bold ${addon.disabled ? 'text-brand-black/40 dark:text-white/40 line-through' : 'opacity-60 dark:text-brand-yellow'}`}>
-                            {isSelected 
+                            {isSelected
                               ? formatPrice(addon.price * (selectedAddons.find(a => a.name === addon.name)?.quantity || addon.defaultQty || 1))
-                              : addon.defaultQty && addon.defaultQty > 1 
+                              : addon.defaultQty && addon.defaultQty > 1
                                 ? `${formatPrice(addon.price * addon.defaultQty)} (Standar ${addon.defaultQty}x)`
                                 : formatPrice(addon.price)}
                           </span>
@@ -1090,11 +1226,11 @@ export default function App() {
                 </button>
               </div>
 
-               <div className="bg-brand-black/5 dark:bg-white/10 p-4 rounded-2xl mb-6">
-                 <p className="text-sm font-bold dark:text-white">{shareItem.name}</p>
-                 <p className="text-xs opacity-60 dark:text-brand-yellow/60">{shareItem.category}</p>
-                 <p className="text-lg font-black mt-2 dark:text-brand-yellow">{formatPrice(shareItem.price)}</p>
-               </div>
+              <div className="bg-brand-black/5 dark:bg-white/10 p-4 rounded-2xl mb-6">
+                <p className="text-sm font-bold dark:text-white">{shareItem.name}</p>
+                <p className="text-xs opacity-60 dark:text-brand-yellow/60">{shareItem.category}</p>
+                <p className="text-lg font-black mt-2 dark:text-brand-yellow">{formatPrice(shareItem.price)}</p>
+              </div>
 
               <div className="space-y-3">
                 <button
@@ -1229,25 +1365,25 @@ export default function App() {
               <div className="flex-grow overflow-y-auto p-6 space-y-6">
                 {/* Order Summary */}
                 <div className="space-y-4">
-                   <h4 className="font-black uppercase italic text-sm border-b-2 border-brand-black dark:border-brand-yellow pb-2 dark:text-brand-yellow">Ringkasan Menu:</h4>
-                   <div className="space-y-3">
-                     {cart.map((item) => (
-                       <div key={item.id} className="flex justify-between items-start gap-4">
-                         <div className="flex-grow">
-                           <p className="font-bold text-sm leading-tight dark:text-white">{item.name}</p>
-                           {item.category && <p className="text-[10px] uppercase font-bold opacity-40 dark:text-brand-yellow/60">{item.category}</p>}
-                           {item.note && <p className="text-[10px] italic opacity-60 dark:text-white/40">Catatan: {item.note}</p>}
-                           <p className="text-xs opacity-60 dark:text-white/40">{item.quantity}x {formatPrice(item.price)}</p>
-                         </div>
-                         <span className="font-black text-sm shrink-0 dark:text-white">{formatPrice(item.price * item.quantity)}</span>
-                       </div>
-                     ))}
-                   </div>
-                   <div className="pt-4 border-t-2 border-dashed border-brand-black/20 dark:border-brand-yellow/20 flex justify-between items-center">
-                     <span className="font-black uppercase dark:text-brand-yellow/60">Total Bayar</span>
-                     <span className="text-xl font-black text-brand-orange">{formatPrice(totalPrice)}</span>
-                   </div>
-                 </div>
+                  <h4 className="font-black uppercase italic text-sm border-b-2 border-brand-black dark:border-brand-yellow pb-2 dark:text-brand-yellow">Ringkasan Menu:</h4>
+                  <div className="space-y-3">
+                    {cart.map((item) => (
+                      <div key={item.id} className="flex justify-between items-start gap-4">
+                        <div className="flex-grow">
+                          <p className="font-bold text-sm leading-tight dark:text-white">{item.name}</p>
+                          {item.category && <p className="text-[10px] uppercase font-bold opacity-40 dark:text-brand-yellow/60">{item.category}</p>}
+                          {item.note && <p className="text-[10px] italic opacity-60 dark:text-white/40">Catatan: {item.note}</p>}
+                          <p className="text-xs opacity-60 dark:text-white/40">{item.quantity}x {formatPrice(item.price)}</p>
+                        </div>
+                        <span className="font-black text-sm shrink-0 dark:text-white">{formatPrice(item.price * item.quantity)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-4 border-t-2 border-dashed border-brand-black/20 dark:border-brand-yellow/20 flex justify-between items-center">
+                    <span className="font-black uppercase dark:text-brand-yellow/60">Total Bayar</span>
+                    <span className="text-xl font-black text-brand-orange">{formatPrice(totalPrice)}</span>
+                  </div>
+                </div>
 
                 {/* QRIS Section */}
                 <div className="bg-brand-yellow/20 p-6 rounded-3xl border-2 border-brand-black/10 flex flex-col items-center text-center">
