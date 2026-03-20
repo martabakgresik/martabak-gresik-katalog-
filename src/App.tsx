@@ -219,6 +219,7 @@ export default function App() {
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const aiMessagesEndRef = useRef<HTMLDivElement>(null);
+  const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollAiToBottom = () => {
     aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -227,8 +228,13 @@ export default function App() {
   useEffect(() => {
     if (isAiOpen) {
       scrollAiToBottom();
+      // Auto-expand textarea
+      if (aiTextareaRef.current) {
+        aiTextareaRef.current.style.height = 'auto';
+        aiTextareaRef.current.style.height = `${Math.min(aiTextareaRef.current.scrollHeight, 120)}px`;
+      }
     }
-  }, [aiMessages, isAiOpen]);
+  }, [aiMessages, isAiOpen, aiInput]);
 
   // Opening Status & Holiday Logic
   const [isOpen, setIsOpen] = useState(false);
@@ -477,18 +483,16 @@ export default function App() {
       5. Jawab dalam Bahasa Indonesia.
       6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.`;
 
-      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_POLLINATIONS_API_KEY || ''}`
         },
         body: JSON.stringify({
           messages: [
             { role: 'system', content: systemPrompt },
             ...newMessages
-          ],
-          model: 'openai'
+          ]
         })
       });
 
@@ -952,8 +956,8 @@ export default function App() {
                 </div>
                 <button onClick={() => setIsAiOpen(false)} className="hover:bg-white/10 p-1 rounded-full"><X className="w-5 h-5" /></button>
               </div>
-              <div className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20">
-                {aiMessages.map((msg, i) => (
+                <div className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20">
+                  {aiMessages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm whitespace-pre-wrap ${
                       msg.role === 'user' 
@@ -977,18 +981,25 @@ export default function App() {
               </div>
               <form 
                 onSubmit={(e) => { e.preventDefault(); if(aiInput.trim()) getAiResponse(aiInput); }}
-                className="p-3 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex gap-2"
+                className="p-3 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex items-end gap-2"
               >
-                <input 
-                  type="text" 
+                <textarea 
+                  ref={aiTextareaRef}
+                  rows={1}
                   value={aiInput}
                   onChange={(e) => setAiInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (aiInput.trim() && !isAiLoading) getAiResponse(aiInput);
+                    }
+                  }}
                   placeholder="Tanya info menu..."
-                  className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white"
+                  className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
                 />
                 <button 
-                  disabled={isAiLoading}
-                  className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50"
+                  disabled={isAiLoading || !aiInput.trim()}
+                  className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5"
                 >
                   <MessageCircle className="w-4 h-4" />
                 </button>
