@@ -33,17 +33,9 @@
     <meta property="twitter:title" content="Martabak Gresik - Terang Bulan & Martabak Telor Autentik" />
     <meta property="twitter:description" content="Katalog menu digital Martabak Gresik. Terang Bulan Manis & Martabak Telor Asin Spesial." />
     <meta property="twitter:image" content="https://martabakgresik.my.id/logo.webp" />
-    <link rel="manifest" href="/manifest.json" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
-        });
-      }
-    </script>
   </body>
 </html>
