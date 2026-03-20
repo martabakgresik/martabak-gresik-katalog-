@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { 
-  Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, 
-  MessageCircle, CheckCircle, Heart, Share2, Copy, Check, 
-  Facebook, Twitter, Instagram, ExternalLink, Download, Store, 
-  Sun, Moon, ArrowUp, Clock, Link2, 
+import {
+  Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X,
+  MessageCircle, CheckCircle, Heart, Share2, Copy, Check,
+  Facebook, Twitter, Instagram, ExternalLink, Download, Store,
+  Sun, Moon, ArrowUp, Clock, Link2, RotateCcw,
   MessageCircleCodeIcon,
   MessageCircleQuestionIcon
 } from "lucide-react";
@@ -222,7 +222,7 @@ export default function App() {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu?" }
+    { role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu? atau pesan skala besar?😁\n\nAtau tanya apa saja juga boleh!" }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiTimer, setAiTimer] = useState(0);
@@ -232,6 +232,14 @@ export default function App() {
   const scrollAiToBottom = () => {
     aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const AI_SUGGESTIONS = [
+    "Rekomendasi Menu 🍕",
+    "Promo Hari Ini 🎁",
+    "Cek Ongkir 🛵",
+    "Pesan Skala Besar 📦",
+    "Jam Buka ⏰"
+  ];
 
   useEffect(() => {
     if (isAiOpen) {
@@ -974,16 +982,24 @@ export default function App() {
                   </div>
                   <span className="font-bold text-sm">Martabak Assistant</span>
                 </div>
-                <button onClick={() => setIsAiOpen(false)} className="hover:bg-white/10 p-1 rounded-full"><X className="w-5 h-5" /></button>
+                <div className="flex items-center gap-1.5">
+                  <button 
+                    onClick={() => setAiMessages([{ role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu? atau pesan skala besar?😁\n\nAtau tanya apa saja juga boleh!" }])}
+                    title="Mulai Ulang Chat"
+                    className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => setIsAiOpen(false)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+                </div>
               </div>
-                <div className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20">
-                  {aiMessages.map((msg, i) => (
+              <div className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20">
+                {aiMessages.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm whitespace-pre-wrap ${
-                      msg.role === 'user' 
-                        ? 'bg-brand-orange text-white rounded-tr-none' 
-                        : 'bg-white dark:bg-white/10 dark:text-white rounded-tl-none'
-                    }`}>
+                    <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm whitespace-pre-wrap ${msg.role === 'user'
+                      ? 'bg-brand-orange text-white rounded-tr-none'
+                      : 'bg-white dark:bg-white/10 dark:text-white rounded-tl-none'
+                      }`}>
                       {msg.content}
                     </div>
                   </div>
@@ -1005,11 +1021,30 @@ export default function App() {
                 )}
                 <div ref={aiMessagesEndRef} />
               </div>
-              <form 
-                onSubmit={(e) => { e.preventDefault(); if(aiInput.trim()) getAiResponse(aiInput); }}
+
+              {/* Shortcuts/Suggestions */}
+              <div className="bg-brand-yellow/5 dark:bg-black/20 px-4 pb-3">
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
+                  {AI_SUGGESTIONS.map((suggestion, idx) => (
+                    <motion.button
+                      key={idx}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => !isAiLoading && getAiResponse(suggestion)}
+                      disabled={isAiLoading}
+                      className="whitespace-nowrap bg-white dark:bg-white/10 border border-brand-black/10 dark:border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm transition-all hover:bg-brand-yellow dark:hover:bg-brand-yellow hover:text-brand-black hover:border-brand-yellow disabled:opacity-50"
+                    >
+                      {suggestion}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              <form
+                onSubmit={(e) => { e.preventDefault(); if (aiInput.trim()) getAiResponse(aiInput); }}
                 className="p-3 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex items-end gap-2"
               >
-                <textarea 
+                <textarea
                   ref={aiTextareaRef}
                   rows={1}
                   value={aiInput}
@@ -1023,7 +1058,7 @@ export default function App() {
                   placeholder="Tanya info seputar martabak Gresik..."
                   className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
                 />
-                <button 
+                <button
                   disabled={isAiLoading || !aiInput.trim()}
                   className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5"
                 >
@@ -1053,9 +1088,8 @@ export default function App() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsAiOpen(!isAiOpen)}
-          className={`p-4 rounded-full shadow-2xl transition-all border-4 border-brand-black dark:border-brand-yellow ${
-            isAiOpen ? 'bg-brand-black text-white' : 'bg-brand-yellow text-brand-black'
-          }`}
+          className={`p-4 rounded-full shadow-2xl transition-all border-4 border-brand-black dark:border-brand-yellow ${isAiOpen ? 'bg-brand-black text-white' : 'bg-brand-yellow text-brand-black'
+            }`}
         >
           {isAiOpen ? <X className="w-6 h-6" /> : <Store className="w-6 h-6" />}
         </motion.button>
@@ -1264,8 +1298,8 @@ export default function App() {
                     onClick={() => setIsOrderConfirmationOpen(true)}
                     disabled={distance > MAX_SHIPPING_DISTANCE || isHoliday}
                     className={`w-full py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 transition-all shadow-xl ${distance > MAX_SHIPPING_DISTANCE || isHoliday
-                        ? 'bg-gray-400 cursor-not-allowed grayscale'
-                        : 'bg-[#25D366] text-white hover:scale-[1.02] active:scale-95'
+                      ? 'bg-gray-400 cursor-not-allowed grayscale'
+                      : 'bg-[#25D366] text-white hover:scale-[1.02] active:scale-95'
                       }`}
                   >
                     <MessageCircle className="w-6 h-6" />
