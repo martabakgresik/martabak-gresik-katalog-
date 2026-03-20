@@ -530,7 +530,7 @@ export default function App() {
             </a>
             <div className="flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-brand-orange" />
-              <span>16.00 - 23.00 WIB</span>
+              <span>Jam Buka: 16.00 - 23.00 WIB</span>
             </div>
           </motion.div>
 
