@@ -372,15 +372,15 @@ export default function App() {
             </div>
             <input
               type="text"
-              placeholder="Cari menu (Misal: Keju, Ayam, Jumbo)..."
+              placeholder="Cari menu (Misal: Keju, Ayam)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block flex-grow py-5 bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-lg"
+              className="block flex-grow min-w-0 py-5 bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-base md:text-lg"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="pr-4 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
+                className="pr-6 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
                 aria-label="Bersihkan pencarian"
               >
                 <div className="bg-brand-black/5 p-2 rounded-full hover:bg-brand-orange/10">
@@ -388,11 +388,6 @@ export default function App() {
                 </div>
               </button>
             )}
-            <div className="pr-2">
-              <div className="bg-brand-orange hover:bg-brand-orange/90 cursor-pointer text-white px-6 py-3.5 rounded-full flex items-center gap-2 font-black uppercase tracking-wider text-sm shadow-md transition-transform active:scale-95">
-                <span className="hidden sm:inline">Cari</span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -451,13 +446,7 @@ export default function App() {
                             {formatPrice(item.price)}
                           </span>
                           <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setShareItem({ name: item.name, price: item.price, category: section.category })}
-                              className="p-1.5 rounded-full bg-brand-black/5 dark:bg-white/10 text-brand-black dark:text-white hover:bg-brand-orange/20 dark:hover:bg-brand-orange/20 transition-all active:scale-90"
-                              title="Bagikan"
-                            >
-                              <Share2 className="w-4 h-4" />
-                            </button>
+
                             <button
                               onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
                               className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(item.name, section.category)
@@ -539,16 +528,7 @@ export default function App() {
                               <div className="flex items-center gap-3">
                                 <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
                                 <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => setShareItem({
-                                      name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
-                                      price: p.price
-                                    })}
-                                    className="p-1.5 rounded-full bg-white/10 text-brand-yellow hover:bg-brand-orange/20 transition-all active:scale-90"
-                                    title="Bagikan"
-                                  >
-                                    <Share2 className="w-4 h-4" />
-                                  </button>
+
                                   <button
                                     onClick={() => toggleFavorite({
                                       name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
@@ -776,12 +756,7 @@ export default function App() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              onClick={() => setShareItem({ name: item.name, price: item.price, category: item.category })}
-                              className="text-brand-black/40 dark:text-white/40 hover:text-brand-orange dark:hover:text-brand-yellow p-1 rounded-lg transition-colors"
-                            >
-                              <Share2 className="w-4 h-4" />
-                            </button>
+
                             <button
                               onClick={() => removeFromCart(item.id)}
                               className="text-brand-orange dark:text-brand-yellow hover:bg-brand-orange/10 dark:hover:bg-brand-yellow/10 p-1 rounded-lg transition-colors"
@@ -834,12 +809,7 @@ export default function App() {
                             {item.category && <p className="text-[10px] uppercase font-bold opacity-40 dark:text-brand-yellow">{item.category}</p>}
                           </div>
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() => setShareItem({ name: item.name, price: item.price, category: item.category })}
-                              className="text-brand-black/40 dark:text-white/40 hover:text-brand-orange dark:hover:text-brand-yellow p-1 rounded-lg transition-colors"
-                            >
-                              <Share2 className="w-4 h-4" />
-                            </button>
+
                             <button
                               onClick={() => toggleFavorite({ name: item.name, price: item.price, category: item.category })}
                               className="text-brand-orange dark:text-brand-yellow hover:bg-brand-orange/10 dark:hover:bg-brand-yellow/10 p-1 rounded-lg transition-colors"
@@ -881,7 +851,8 @@ export default function App() {
                       step="1"
                       value={distance}
                       onChange={(e) => setDistance(parseInt(e.target.value))}
-                      className="w-full h-2 bg-brand-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                      style={{ backgroundSize: `${(distance / 15) * 100}% 100%` }}
+                      className="w-full h-2 bg-brand-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-brand-orange bg-gradient-to-r from-brand-orange to-brand-orange bg-no-repeat"
                     />
                     <div className="flex justify-between mt-1 opacity-40 text-[10px] font-bold">
                       <span>0km</span>
