@@ -159,11 +159,22 @@ export default function App() {
     window.open(`https://wa.me/6281330763633?text=${encodedMessage}`, "_blank");
   };
 
-  const shareGeneral = (platform: string) => {
+  const shareGeneral = async (platform: string) => {
+    const title = "Martabak Gresik";
     const text = "Cek Martabak Gresik - Terang Bulan dan Martabak Telor Terenak!";
     const url = APP_URL;
-    let shareUrl = "";
 
+    // Use Web Share API if available (best for mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (err) {
+        // Fallback for non-supporting browsers or user cancellation
+      }
+    }
+
+    let shareUrl = "";
     switch (platform) {
       case "facebook":
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
@@ -174,6 +185,14 @@ export default function App() {
       case "threads":
         shareUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(text + " " + url)}`;
         break;
+      case "instagram":
+        // Instagram doesn't have a direct sharer, fallback to copy
+        handleCopyLink(url);
+        return;
+      case "tiktok":
+        // TikTok doesn't have a direct sharer, fallback to copy
+        handleCopyLink(url);
+        return;
       default:
         handleCopyLink(url);
         return;
@@ -1115,10 +1134,18 @@ export default function App() {
               <div className="text-center space-y-2">
                 <p className="text-[10px] font-bold uppercase opacity-40 dark:text-white/40">Atau bagikan via:</p>
                 <div className="flex justify-center gap-4">
-                  <button onClick={() => window.open(`https://www.instagram.com/`, "_blank")} className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white">
+                  <button 
+                    onClick={() => shareGeneral("instagram")} 
+                    title="Bagikan ke Instagram"
+                    className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white"
+                  >
                     <Instagram className="w-5 h-5" />
                   </button>
-                  <button onClick={() => window.open(`https://www.tiktok.com/@martabakgresik_`, "_blank")} className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white">
+                  <button 
+                    onClick={() => shareGeneral("tiktok")} 
+                    title="Bagikan ke TikTok"
+                    className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white"
+                  >
                     <Music2 className="w-5 h-5" />
                   </button>
                 </div>
