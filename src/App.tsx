@@ -474,24 +474,20 @@ export default function App() {
                           <div className="flex items-center gap-3">
                             {('image' in item) && (
                               <div 
-                                className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all"
+                                className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all relative"
                                 onClick={() => setZoomedImage({src: (item as any).image, alt: item.name})}
                               >
                                 <img src={(item as any).image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                {(item as any).isBestSeller && (
+                                  <div className="absolute top-0 left-0 bg-yellow-400 text-yellow-900 text-[6px] font-black px-1 py-0.5 rounded-br shadow-sm uppercase z-10 flex items-center gap-0.5">
+                                    <Trophy className="w-1.5 h-1.5" /> 
+                                  </div>
+                                )}
                               </div>
                             )}
-                            <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-2`}>
-                              {item.name}
-                              {(item as any).isBestSeller && (
-                                <motion.span 
-                                  animate={{ scale: [1, 1.1, 1] }} 
-                                  transition={{ repeat: Infinity, duration: 2 }}
-                                  className="bg-yellow-400 text-yellow-900 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 uppercase italic shadow-sm"
-                                >
-                                  <Trophy className="w-2 h-2" /> Terlaris
-                                </motion.span>
-                              )}
-                            </span>
+                             <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'}`}>
+                               {item.name}
+                             </span>
                           </div>
                           <div className="flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-4 group-hover:border-brand-orange/50 transition-colors" />
                           <span className="font-bold tabular-nums mr-4 dark:text-brand-yellow">
@@ -567,23 +563,19 @@ export default function App() {
                               <div className="flex items-center gap-3">
                                 {('image' in p) && (
                                   <div 
-                                    className="w-10 h-10 rounded-lg bg-black/20 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all"
+                                    className="w-10 h-10 rounded-lg bg-black/20 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all relative"
                                     onClick={() => setZoomedImage({src: (p as any).image, alt: `${section.title} ${variant.type}`})}
                                   >
                                     <img src={(p as any).image} alt={`${p.qty} Telor`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                    {(p as any).isBestSeller && (
+                                      <div className="absolute top-0 left-0 bg-yellow-400 text-yellow-900 text-[6px] font-black px-1 py-0.5 rounded-br shadow-sm uppercase z-10 flex items-center gap-0.5">
+                                        <Trophy className="w-1.5 h-1.5" /> 
+                                      </div>
+                                    )}
                                   </div>
                                 )}
-                                <span className="text-sm opacity-80 flex items-center gap-2">
+                                <span className="text-sm opacity-80">
                                   {p.desc ? p.desc : `${p.qty} Telor`}
-                                  {(p as any).isBestSeller && (
-                                    <motion.span 
-                                      animate={{ scale: [1, 1.1, 1] }} 
-                                      transition={{ repeat: Infinity, duration: 2 }}
-                                      className="bg-yellow-400 text-yellow-900 text-[7px] font-black px-1 py-0.5 rounded flex items-center gap-0.5 uppercase italic shadow-sm"
-                                    >
-                                      <Trophy className="w-2 h-2" /> Terlaris
-                                    </motion.span>
-                                  )}
                                 </span>
                               </div>
                               <div className="flex items-center gap-3">
