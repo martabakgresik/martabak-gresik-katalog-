@@ -1,33 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X,
-  MessageCircle, CheckCircle, Heart, Share2, Copy, Check,
-  Facebook, Twitter, Instagram, ExternalLink, Download, Store,
-  Sun, Moon, ArrowUp, Clock, Link2, RotateCcw,
-  MessageCircleCodeIcon,
+  MessageCircle, Heart, Share2, Copy, Check,
+  Facebook, Twitter, Instagram, ExternalLink, Download,
+  Sun, Moon, ArrowUp, Clock,
   MessageCircleQuestionIcon
 } from "lucide-react";
-
-interface Addon {
-  name: string;
-  price: number;
-  disabled?: boolean;
-  minQty?: number;
-  maxQty?: number;
-  defaultQty?: number;
-  quantity?: number;
-}
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  category?: string;
-  note?: string;
-  addons?: Addon[];
-}
+import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
+import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "./data/menu";
+import { AiAssistant } from "./components/AiAssistant";
 
 interface FavoriteItem {
   id: string;
@@ -36,154 +18,9 @@ interface FavoriteItem {
   category?: string;
 }
 
-const MENU_SWEET = [
-  {
-    category: "Terang Bulan Standard",
-    items: [
-      { name: "Kacang", price: 12000 },
-      { name: "Coklat", price: 12000 },
-      { name: "Kacang + Coklat", price: 14000 },
-      { name: "Kacang + Coklat + Keju", price: 19000 },
-      { name: "Keju", price: 17000, highlight: true },
-      { name: "Keju + Kacang", price: 18000, highlight: true },
-      { name: "Keju + Coklat", price: 18000, highlight: true },
-    ],
-  },
-  {
-    category: "Terang Bulan Pandan",
-    items: [
-      { name: "Pandan Kacang", price: 13000 },
-      { name: "Pandan Coklat", price: 13000 },
-      { name: "Pandan Kacang + Coklat", price: 15000 },
-      { name: "Pandan Kacang + Coklat + Keju", price: 21000 },
-      { name: "Pandan Keju", price: 20000, highlight: true },
-      { name: "Pandan Coklat Keju", price: 20000, highlight: true },
-      { name: "Pandan Kacang + Keju", price: 20000, highlight: true },
-    ],
-  },
-  {
-    category: "Terang Bulan Red Velvet",
-    items: [
-      { name: "Red Velvet Kacang", price: 14000 },
-      { name: "Red Velvet Coklat", price: 14000 },
-      { name: "Red Velvet Kacang Coklat", price: 16000 },
-      { name: "Red Velvet Kacang Coklat Keju", price: 21000 },
-      { name: "Red Velvet Keju", price: 20000, highlight: true },
-      { name: "Red Velvet Keju + Coklat", price: 21000, highlight: true },
-      { name: "Red Velvet Keju + Kacang", price: 21000, highlight: true },
-    ],
-  },
-  {
-    category: "Terang Bulan Blackforest",
-    items: [
-      { name: "Blackforest Kacang", price: 25000 },
-      { name: "Blackforest Coklat", price: 25000 },
-      { name: "Blackforest Kacang Coklat", price: 26000 },
-      { name: "Blackforest Kacang Coklat Keju", price: 29000 },
-      { name: "Blackforest Keju", price: 27000, highlight: true },
-      { name: "Blackforest Keju Kacang", price: 28000, highlight: true },
-      { name: "Blackforest Keju Coklat", price: 28000, highlight: true },
-    ],
-  },
-];
-
-const MENU_SAVORY = [
-  {
-    title: "Daging Sapi",
-    variants: [
-      {
-        type: "Telor Ayam",
-        prices: [
-          { qty: 2, price: 25000 },
-          { qty: 3, price: 34000 },
-          { qty: 4, price: 42000 },
-          { qty: 5, price: 45000 },
-        ],
-      },
-      {
-        type: "Telor Bebek",
-        prices: [
-          { qty: 2, price: 26000 },
-          { qty: 3, price: 35000 },
-          { qty: 4, price: 44000 },
-          { qty: 5, price: 50000 },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Daging Ayam",
-    variants: [
-      {
-        type: "Telor Ayam",
-        prices: [
-          { qty: 2, price: 22000 },
-          { qty: 3, price: 30000 },
-          { qty: 4, price: 35000 },
-          { qty: 5, price: 40000 },
-        ],
-      },
-      {
-        type: "Telor Bebek",
-        prices: [
-          { qty: 2, price: 24000 },
-          { qty: 3, price: 32000 },
-          { qty: 4, price: 40000 },
-          { qty: 5, price: 45000 },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Menu Pedas",
-    variants: [
-      {
-        type: "Samyang Ayam Pedas",
-        prices: [
-          { qty: 2, price: 30000, desc: "2 Telor Bebek + Daging Ayam" },
-        ],
-      },
-      {
-        type: "Samyang Sapi Pedas",
-        prices: [
-          { qty: 2, price: 32000, desc: "2 Telor Bebek + Daging Sapi" },
-        ],
-      },
-    ],
-  },
-];
-
-const ADDONS_SWEET: Addon[] = [
-  { name: 'Tambah Coklat', price: 3000 },
-  { name: 'Tambah Kacang', price: 2000 },
-  { name: 'Tambah Keju', price: 7000 },
-  { name: 'Tambah Milo', price: 5000 },
-];
-
-const ADDONS_SAVORY: Addon[] = [
-  { name: 'Tambah Sosis', price: 2000, minQty: 1, maxQty: 20, defaultQty: 3 },
-  { name: 'Tambah Kornet', price: 13000, disabled: true },
-  { name: 'Tambah Jamur', price: 10000, disabled: true },
-  { name: 'Tambah Acar', price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
-  { name: 'Tambah Irisan Cabe', price: 400, minQty: 1, maxQty: 20, defaultQty: 5 },
-  { name: 'Tambah Saus', price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
-  { name: 'Tambah Sambal Pedas', price: 5000, minQty: 1, maxQty: 20, defaultQty: 1 },
-];
-
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0
-  }).format(price);
-};
-
 // --- CONSTANTS ---
 const OPEN_HOUR = 16; // 16:00
 const CLOSE_HOUR = 23; // 23:00
-const SHIPPING_RATE_PER_KM = 2500;
-const MAX_SHIPPING_DISTANCE = 10;
 const PROMO_TEXT = "🔥 Diskon 10% untuk Pembelian Pertama via Katalog! (Gunakan kode: MARTABAKBARU)";
 
 // Daftar Tanggal Libur (Format: YYYY-MM-DD)
@@ -196,10 +33,20 @@ const HOLIDAYS = [
 ];
 
 export default function App() {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = localStorage.getItem('martabak_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const {
+    cart,
+    distance,
+    setDistance,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    updateNote,
+    totalItems,
+    shippingCost,
+    totalPrice,
+    sendWhatsAppOrder
+  } = useCart();
+
   const [favorites, setFavorites] = useState<FavoriteItem[]>(() => {
     const saved = localStorage.getItem('martabak_favorites');
     return saved ? JSON.parse(saved) : [];
@@ -215,55 +62,8 @@ export default function App() {
     return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [distance, setDistance] = useState<number>(0);
   const [showPromo, setShowPromo] = useState(true);
 
-  // AI Assistant State
-  const [isAiOpen, setIsAiOpen] = useState(false);
-  const [aiInput, setAiInput] = useState("");
-  const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu? atau pesan skala besar?😁\n\nAtau tanya apa saja juga boleh!" }
-  ]);
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiTimer, setAiTimer] = useState(0);
-  const aiMessagesEndRef = useRef<HTMLDivElement>(null);
-  const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const scrollAiToBottom = () => {
-    aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const AI_SUGGESTIONS = [
-    "Rekomendasi Menu 🍕",
-    "Promo Hari Ini 🎁",
-    "Cek Ongkir 🛵",
-    "Pesan Skala Besar 📦",
-    "Jam Buka ⏰"
-  ];
-
-  useEffect(() => {
-    if (isAiOpen) {
-      scrollAiToBottom();
-      // Auto-expand textarea
-      if (aiTextareaRef.current) {
-        aiTextareaRef.current.style.height = 'auto';
-        aiTextareaRef.current.style.height = `${Math.min(aiTextareaRef.current.scrollHeight, 120)}px`;
-      }
-    }
-  }, [aiMessages, isAiOpen, aiInput]);
-
-  useEffect(() => {
-    let interval: number;
-    if (isAiLoading) {
-      setAiTimer(0);
-      interval = window.setInterval(() => {
-        setAiTimer((prev) => prev + 10);
-      }, 10);
-    }
-    return () => window.clearInterval(interval);
-  }, [isAiLoading]);
-
-  // Opening Status & Holiday Logic
   const [isOpen, setIsOpen] = useState(false);
   const [isHoliday, setIsHoliday] = useState(false);
 
@@ -342,10 +142,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('martabak_cart', JSON.stringify(cart));
-  }, [cart]);
-
-  useEffect(() => {
     localStorage.setItem('martabak_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
@@ -390,19 +186,6 @@ export default function App() {
     setSelectedAddons([]);
   };
 
-  const addToCart = (item: Omit<CartItem, 'id' | 'quantity'>) => {
-    const addonsString = item.addons ? item.addons.map(a => `${a.name}(${a.quantity || 1})`).sort().join(',') : '';
-    const id = `${item.name}-${item.category || ''}-${addonsString}`;
-    setCart(prev => {
-      const existing = prev.find(i => i.id === id);
-      if (existing) {
-        return prev.map(i => i.id === id ? { ...i, quantity: i.quantity + 1 } : i);
-      }
-      return [...prev, { ...item, id, quantity: 1 }];
-    });
-    setSelectedItemForAddon(null);
-  };
-
   const toggleFavorite = (item: Omit<FavoriteItem, 'id'>) => {
     const id = `${item.name}-${item.category || ''}`;
     setFavorites(prev => {
@@ -419,121 +202,7 @@ export default function App() {
     return favorites.some(f => f.id === id);
   };
 
-  const removeFromCart = (id: string) => {
-    setCart(prev => prev.filter(i => i.id !== id));
-  };
-
-  const updateQuantity = (id: string, delta: number) => {
-    setCart(prev => prev.map(i => {
-      if (i.id === id) {
-        const newQty = Math.max(1, i.quantity + delta);
-        return { ...i, quantity: newQty };
-      }
-      return i;
-    }));
-  };
-
-  const updateNote = (id: string, note: string) => {
-    setCart(prev => prev.map(i =>
-      i.id === id ? { ...i, note } : i
-    ));
-  };
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const itemsPrice = cart.reduce((sum, item) => {
-    const itemAddonsPrice = item.addons ? item.addons.reduce((a, b) => a + (b.price * (b.quantity || 1)), 0) : 0;
-    return sum + ((item.price + itemAddonsPrice) * item.quantity);
-  }, 0);
-  const shippingCost = distance * SHIPPING_RATE_PER_KM;
-  const totalPrice = itemsPrice + shippingCost;
-
-  const sendWhatsAppOrder = () => {
-    const phoneNumber = "6281330763633";
-    let message = "*PESANAN BARU - MARTABAK GRESIK*\n\n";
-
-    cart.forEach((item, index) => {
-      message += `${index + 1}. *${item.name}*\n`;
-      if (item.category) message += `   (${item.category})\n`;
-
-      const itemAddonsPrice = item.addons ? item.addons.reduce((a, b) => a + (b.price * (b.quantity || 1)), 0) : 0;
-      if (item.addons && item.addons.length > 0) {
-        item.addons.forEach(addon => {
-          message += `   + ${addon.name} ${addon.quantity && addon.quantity > 1 ? `(${addon.quantity}x)` : ''}\n`;
-        });
-      }
-
-      if (item.note) message += `   Catatan: _${item.note}_\n`;
-      message += `   ${item.quantity}x ${formatPrice(item.price + itemAddonsPrice)} = *${formatPrice((item.price + itemAddonsPrice) * item.quantity)}*\n\n`;
-    });
-
-    message += `--------------------------\n`;
-    if (distance > 0) {
-      message += `Ongkir (${distance}km): ${formatPrice(shippingCost)}\n`;
-    }
-    message += `*TOTAL PEMBAYARAN: ${formatPrice(totalPrice)}*\n\n`;
-    message += `Mohon segera diproses ya, terima kasih! 🙏`;
-
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
-  };
-
-  const getAiResponse = async (userMessage: string) => {
-    setIsAiLoading(true);
-    const newMessages = [...aiMessages, { role: 'user' as const, content: userMessage }];
-    setAiMessages(newMessages);
-    setAiInput("");
-
-    try {
-      const systemPrompt = `Anda adalah Asisten Pintar Martabak Gresik yang ramah, gaul, dan ahli kuliner.
-      Tugas Anda adalah membantu pelanggan memilih menu. Gunakan data menu berikut:
-
-      TERANG BULAN (Manis):
-      ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${formatPrice(i.price)})`).join(', ')}`).join('\n')}
-      
-      MARTABAK TELOR (Asin):
-      ${MENU_SAVORY.map(s => `- ${s.title}: ${s.variants.map(v => `${v.type} (${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')})`).join(', ')}`).join('\n')}
-      
-      TAMBAHAN (Add-ons):
-      Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
-      Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
-
-      INFORMASI TOKO:
-      - Alamat: Jl. Usman Sadar No 10, Gresik
-      - Jam Buka: 16.00 - 23.00 WIB
-      - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km)
-      - No Tlp: 081330763633
-
-      ATURAN:
-      1. Jawab dengan gaya santai tapi sopan.
-      2. Jika ditanya menu, berikan rekomendasi dalam bentuk DAFTAR BULLET yang jelas dan rapi.
-      3. Jangan sarankan menu yang tidak ada di daftar.
-      4. Gunakan emoji agar menarik.
-      5. Jawab dalam Bahasa Indonesia atau bahasa yang di input oleh pengguna.
-      6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.`;
-
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...newMessages
-          ]
-        })
-      });
-
-      const data = await response.json();
-      const assistantMessage = data.choices[0].message.content;
-      setAiMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
-    } catch (error) {
-      console.error("AI Error:", error);
-      setAiMessages([...newMessages, { role: 'assistant', content: "Maaf ya, mungkin koneksi saya saat ini sedang bermasalah. Coba tanya bentar lagi ya! 🙏. atau bisa hubungi via whatsapp di nomor berikut: 081330763633" }]);
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
+  const totalFavorites = favorites.length;
 
   const filteredSweet = MENU_SWEET.map(section => ({
     ...section,
@@ -966,134 +635,7 @@ export default function App() {
       </div>
 
       {/* AI Assistant UI */}
-      <div className="fixed bottom-8 left-8 z-50 flex flex-col items-start gap-4">
-        <AnimatePresence>
-          {isAiOpen && (
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.8, opacity: 0, y: 20 }}
-              className="bg-white dark:bg-brand-black w-[300px] md:w-[350px] h-[450px] rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden"
-            >
-              <div className="bg-brand-black dark:bg-black p-4 text-white flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-brand-yellow rounded-full flex items-center justify-center">
-                    <Store className="w-5 h-5 text-brand-black" />
-                  </div>
-                  <span className="font-bold text-sm">Martabak Assistant</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setAiMessages([{ role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu? atau pesan skala besar?😁\n\nAtau tanya apa saja juga boleh!" }])}
-                    title="Mulai Ulang Chat"
-                    className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => setIsAiOpen(false)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors"><X className="w-5 h-5" /></button>
-                </div>
-              </div>
-              <div className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20">
-                {aiMessages.map((msg, i) => (
-                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm whitespace-pre-wrap ${msg.role === 'user'
-                      ? 'bg-brand-orange text-white rounded-tr-none'
-                      : 'bg-white dark:bg-white/10 dark:text-white rounded-tl-none'
-                      }`}>
-                      {msg.content}
-                    </div>
-                  </div>
-                ))}
-                {isAiLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-white dark:bg-white/10 p-4 rounded-2xl rounded-tl-none flex flex-col gap-2 min-w-[180px]">
-                      <div className="flex items-center gap-3 text-[10px] font-bold dark:text-brand-yellow">
-                        <div className="w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin" />
-                        <span className="animate-pulse">Mohon tunggu AI meracik jawaban...</span>
-                      </div>
-                      <div className="flex justify-end pr-1">
-                        <span className="text-[9px] font-mono opacity-40 tabular-nums">
-                          {aiTimer.toString().padStart(4, '0')} ms
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={aiMessagesEndRef} />
-              </div>
-
-              {/* Shortcuts/Suggestions */}
-              <div className="bg-brand-yellow/5 dark:bg-black/20 px-4 pb-3">
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-                  {AI_SUGGESTIONS.map((suggestion, idx) => (
-                    <motion.button
-                      key={idx}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => !isAiLoading && getAiResponse(suggestion)}
-                      disabled={isAiLoading}
-                      className="whitespace-nowrap bg-white dark:bg-white/10 border border-brand-black/10 dark:border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm transition-all hover:bg-brand-yellow dark:hover:bg-brand-yellow hover:text-brand-black hover:border-brand-yellow disabled:opacity-50"
-                    >
-                      {suggestion}
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-
-              <form
-                onSubmit={(e) => { e.preventDefault(); if (aiInput.trim()) getAiResponse(aiInput); }}
-                className="p-3 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex items-end gap-2"
-              >
-                <textarea
-                  ref={aiTextareaRef}
-                  rows={1}
-                  value={aiInput}
-                  onChange={(e) => setAiInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (aiInput.trim() && !isAiLoading) getAiResponse(aiInput);
-                    }
-                  }}
-                  placeholder="Tanya info seputar martabak Gresik..."
-                  className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
-                />
-                <button
-                  disabled={isAiLoading || !aiInput.trim()}
-                  className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                </button>
-              </form>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {!isAiOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.9 }}
-              transition={{ duration: 0.3 }}
-              className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg relative mb-2 flex items-center justify-center mx-auto"
-            >
-              Tanya Kami 👋
-              <div className="absolute -bottom-1 left-1/2 -ml-1 w-2 h-2 bg-brand-black dark:bg-brand-yellow rotate-45" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsAiOpen(!isAiOpen)}
-          className={`p-4 rounded-full shadow-2xl transition-all border-4 border-brand-black dark:border-brand-yellow ${isAiOpen ? 'bg-brand-black text-white' : 'bg-brand-yellow text-brand-black'
-            }`}
-        >
-          {isAiOpen ? <X className="w-6 h-6" /> : <Store className="w-6 h-6" />}
-        </motion.button>
-      </div>
+      <AiAssistant />
 
       {/* Cart Sidebar */}
       <AnimatePresence>
@@ -1258,13 +800,13 @@ export default function App() {
                 )}
               </div>
 
-              {activeTab === "cart" && cart.length > 0 && (
-                <div className="p-6 bg-white dark:bg-brand-black border-t-4 border-brand-black dark:border-brand-yellow space-y-4">
+               {activeTab === "cart" && cart.length > 0 && (
+                <div className="p-4 bg-white dark:bg-brand-black border-t-4 border-brand-black dark:border-brand-yellow space-y-3">
                   {/* Shipping Distance Selector */}
-                  <div className="bg-brand-black/5 dark:bg-white/10 p-4 rounded-2xl">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-xs font-bold uppercase dark:text-brand-yellow/60">Jarak Pengiriman</span>
-                      <span className={`text-sm font-black ${distance > MAX_SHIPPING_DISTANCE ? 'text-red-500' : 'dark:text-white'}`}>
+                  <div className="bg-brand-black/5 dark:bg-white/10 p-3 rounded-2xl">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-bold uppercase dark:text-brand-yellow/60">Jarak Pengiriman</span>
+                      <span className={`text-xs font-black ${distance > MAX_SHIPPING_DISTANCE ? 'text-red-500' : 'dark:text-white'}`}>
                         {distance} KM {distance > MAX_SHIPPING_DISTANCE && "(Maks 10km)"}
                       </span>
                     </div>
@@ -1291,21 +833,21 @@ export default function App() {
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="font-bold uppercase opacity-60 dark:text-brand-yellow/60">Total Pembayaran</span>
-                    <span className="text-2xl font-black text-brand-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
+                    <span className="text-xs font-bold uppercase opacity-60 dark:text-brand-yellow/60">Total Bayar</span>
+                    <span className="text-xl font-black text-brand-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
                   </div>
                   <button
                     onClick={() => setIsOrderConfirmationOpen(true)}
                     disabled={distance > MAX_SHIPPING_DISTANCE || isHoliday}
-                    className={`w-full py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 transition-all shadow-xl ${distance > MAX_SHIPPING_DISTANCE || isHoliday
+                    className={`w-full py-2.5 rounded-xl font-black uppercase italic flex items-center justify-center gap-2 transition-all shadow-lg ${distance > MAX_SHIPPING_DISTANCE || isHoliday
                       ? 'bg-gray-400 cursor-not-allowed grayscale'
                       : 'bg-[#25D366] text-white hover:scale-[1.02] active:scale-95'
                       }`}
                   >
-                    <MessageCircle className="w-6 h-6" />
-                    {isHoliday ? 'Maaf, Kami Sedang Libur' : distance > MAX_SHIPPING_DISTANCE ? 'Jarak Terlalu Jauh' : 'Pesan via WhatsApp'}
+                    <MessageCircle className="w-5 h-5" />
+                    <span className="text-sm">{isHoliday ? 'Kami Libur' : distance > MAX_SHIPPING_DISTANCE ? 'Terlalu Jauh' : 'Pesan via WhatsApp'}</span>
                   </button>
-                  <p className="text-[10px] text-center opacity-40 font-bold uppercase">
+                  <p className="text-[9px] text-center opacity-40 font-bold uppercase">
                     Klik tombol di atas untuk mengirim pesanan otomatis ke WhatsApp kami
                   </p>
                 </div>
@@ -1432,6 +974,7 @@ export default function App() {
               <button
                 onClick={() => {
                   addToCart({ ...selectedItemForAddon, addons: selectedAddons });
+                  setSelectedItemForAddon(null);
                 }}
                 className="w-full bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black py-4 px-6 rounded-xl font-black uppercase italic flex items-center justify-between hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
               >
