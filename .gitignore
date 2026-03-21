@@ -1,6 +1,6 @@
 node_modules/
-build/
 dist/
+build/
 coverage/
 .DS_Store
 *.log
@@ -8,3 +8,6 @@ coverage/
 !.env.example
 .vercel
 .env*.local
+
+# Local Assets Repository
+assets-repo/
