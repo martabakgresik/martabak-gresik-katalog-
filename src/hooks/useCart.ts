@@ -18,6 +18,7 @@ export interface CartItem {
   category?: string;
   note?: string;
   addons?: Addon[];
+  image?: string;
 }
 
 export const SHIPPING_RATE_PER_KM = 2500;

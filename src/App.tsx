@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X,
@@ -63,6 +63,7 @@ export default function App() {
   });
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [showPromo, setShowPromo] = useState(true);
+  const [zoomedImage, setZoomedImage] = useState<{src: string, alt: string} | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isHoliday, setIsHoliday] = useState(false);
@@ -223,15 +224,15 @@ export default function App() {
 
   const totalFavorites = favorites.length;
 
-  const filteredSweet = MENU_SWEET.map(section => ({
+  const filteredSweet = useMemo(() => MENU_SWEET.map(section => ({
     ...section,
     items: section.items.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       section.category.toLowerCase().includes(searchQuery.toLowerCase())
     )
-  })).filter(section => section.items.length > 0);
+  })).filter(section => section.items.length > 0), [searchQuery]);
 
-  const filteredSavory = MENU_SAVORY.map(section => ({
+  const filteredSavory = useMemo(() => MENU_SAVORY.map(section => ({
     ...section,
     variants: section.variants.map(variant => ({
       ...variant,
@@ -239,7 +240,7 @@ export default function App() {
         `${section.title} ${variant.type} ${p.desc || `${p.qty} Telor`} ${formatPrice(p.price)}`.toLowerCase().includes(searchQuery.toLowerCase())
       )
     })).filter(v => v.prices.length > 0)
-  })).filter(section => section.variants.length > 0);
+  })).filter(section => section.variants.length > 0), [searchQuery]);
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
@@ -365,17 +366,33 @@ export default function App() {
 
         {/* Search Bar */}
         <div className="mb-12 max-w-2xl mx-auto">
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-              <Search className="h-6 w-6 text-brand-black/40 dark:text-brand-yellow/60" />
+          <div className="relative group flex items-center shadow-xl rounded-full bg-white dark:bg-black/50 border-4 border-brand-black/10 dark:border-brand-yellow/20 focus-within:border-brand-orange focus-within:ring-4 focus-within:ring-brand-orange/20 transition-all">
+            <div className="pl-6 pr-3 flex items-center pointer-events-none">
+              <Search className="h-6 w-6 text-brand-orange dark:text-brand-yellow" />
             </div>
             <input
               type="text"
-              placeholder="Cari menu favoritmu (Misal: Keju, Ayam, Jumbo)..."
+              placeholder="Cari menu (Misal: Keju, Ayam, Jumbo)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-16 pr-6 py-5 rounded-full border-4 border-brand-black/10 dark:border-brand-yellow/20 bg-white dark:bg-black/50 backdrop-blur-sm text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 focus:ring-brand-orange focus:border-brand-orange outline-none transition-all shadow-xl font-medium"
+              className="block flex-grow py-5 bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-lg"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="pr-4 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
+                aria-label="Bersihkan pencarian"
+              >
+                <div className="bg-brand-black/5 p-2 rounded-full hover:bg-brand-orange/10">
+                  <X className="h-5 w-5" />
+                </div>
+              </button>
+            )}
+            <div className="pr-2">
+              <div className="bg-brand-orange hover:bg-brand-orange/90 cursor-pointer text-white px-6 py-3.5 rounded-full flex items-center gap-2 font-black uppercase tracking-wider text-sm shadow-md transition-transform active:scale-95">
+                <span className="hidden sm:inline">Cari</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -416,9 +433,19 @@ export default function App() {
                     {section.items.map((item) => (
                       <div key={item.name} className="flex flex-col gap-2 group">
                         <div className="flex justify-between items-center">
-                          <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'}`}>
-                            {item.name}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            {('image' in item) && (
+                              <div 
+                                className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all"
+                                onClick={() => setZoomedImage({src: (item as any).image, alt: item.name})}
+                              >
+                                <img src={(item as any).image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                              </div>
+                            )}
+                            <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'}`}>
+                              {item.name}
+                            </span>
+                          </div>
                           <div className="flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-4 group-hover:border-brand-orange/50 transition-colors" />
                           <span className="font-bold tabular-nums mr-4 dark:text-brand-yellow">
                             {formatPrice(item.price)}
@@ -441,7 +468,7 @@ export default function App() {
                               <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
                             </button>
                             <button
-                              onClick={() => handleOpenAddonModal({ name: item.name, price: item.price, category: section.category }, 'sweet')}
+                              onClick={() => handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image }, 'sweet')}
                               className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
                             >
                               <Plus className="w-4 h-4" />
@@ -496,9 +523,19 @@ export default function App() {
                         <div className="space-y-3">
                           {variant.prices.map((p) => (
                             <div key={p.qty} className="flex justify-between items-center bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors">
-                              <span className="text-sm opacity-80">
-                                {p.desc ? p.desc : `${p.qty} Telor`}
-                              </span>
+                              <div className="flex items-center gap-3">
+                                {('image' in p) && (
+                                  <div 
+                                    className="w-10 h-10 rounded-lg bg-black/20 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all"
+                                    onClick={() => setZoomedImage({src: (p as any).image, alt: `${section.title} ${variant.type}`})}
+                                  >
+                                    <img src={(p as any).image} alt={`${p.qty} Telor`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                  </div>
+                                )}
+                                <span className="text-sm opacity-80">
+                                  {p.desc ? p.desc : `${p.qty} Telor`}
+                                </span>
+                              </div>
                               <div className="flex items-center gap-3">
                                 <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
                                 <div className="flex items-center gap-2">
@@ -527,7 +564,8 @@ export default function App() {
                                   <button
                                     onClick={() => handleOpenAddonModal({
                                       name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
-                                      price: p.price
+                                      price: p.price,
+                                      image: (p as any).image
                                     }, 'savory')}
                                     className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
                                   >
@@ -718,19 +756,26 @@ export default function App() {
                   ) : (
                     cart.map((item) => (
                       <div key={item.id} className="bg-white dark:bg-white/5 p-4 rounded-2xl border-2 border-brand-black dark:border-brand-yellow/20 shadow-sm flex flex-col gap-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold leading-tight dark:text-white">{item.name}</h4>
-                            {item.category && <p className="text-[10px] uppercase font-bold opacity-40 dark:text-brand-yellow">{item.category}</p>}
-                            {item.addons && item.addons.length > 0 && (
-                              <div className="text-[10px] opacity-60 dark:text-brand-yellow/80 space-y-0.5 mt-1">
-                                {item.addons.map((addon, idx) => (
-                                  <p key={idx}>+ {addon.name} ({formatPrice(addon.price)})</p>
-                                ))}
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="flex items-start gap-3">
+                            {item.image && (
+                              <div className="w-12 h-12 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-brand-orange transition-all ring-transparent" onClick={() => setZoomedImage({src: item.image!, alt: item.name})}>
+                                <img src={item.image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
                               </div>
                             )}
+                            <div>
+                              <h4 className="font-bold leading-tight dark:text-white">{item.name}</h4>
+                              {item.category && <p className="text-[10px] uppercase font-bold opacity-40 dark:text-brand-yellow">{item.category}</p>}
+                              {item.addons && item.addons.length > 0 && (
+                                <div className="text-[10px] opacity-60 dark:text-brand-yellow/80 space-y-0.5 mt-1">
+                                  {item.addons.map((addon, idx) => (
+                                    <p key={idx}>+ {addon.name} ({formatPrice(addon.price)})</p>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 shrink-0">
                             <button
                               onClick={() => setShareItem({ name: item.name, price: item.price, category: item.category })}
                               className="text-brand-black/40 dark:text-white/40 hover:text-brand-orange dark:hover:text-brand-yellow p-1 rounded-lg transition-colors"
@@ -1248,6 +1293,43 @@ export default function App() {
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Image Lightbox Modal */}
+      <AnimatePresence>
+        {zoomedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => setZoomedImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setZoomedImage(null)}
+                className="absolute -top-12 right-0 p-2 bg-white/10 hover:bg-brand-orange text-white rounded-full backdrop-blur-md transition-colors z-10 shadow-xl"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <img 
+                src={zoomedImage.src} 
+                alt={zoomedImage.alt} 
+                className="w-full h-auto max-h-[75vh] object-contain rounded-2xl shadow-2xl bg-black/50"
+              />
+              <div className="mt-4 bg-black/50 backdrop-blur-md px-6 py-2 rounded-full text-white font-bold text-center border border-white/10 shadow-lg max-w-full truncate">
+                {zoomedImage.alt}
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

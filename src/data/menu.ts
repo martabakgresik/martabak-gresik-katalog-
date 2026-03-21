@@ -1,53 +1,55 @@
 import { formatPrice } from "../hooks/useCart";
 import type { Addon } from "../hooks/useCart";
 
+const ASSET_BASE_URL = "/images"; // "https://raw.githubusercontent.com/username/martabak-gresik-assets/main/images";
+
 export const MENU_SWEET = [
   {
     category: "Terang Bulan Standard",
     items: [
-      { name: "Kacang", price: 12000 },
-      { name: "Coklat", price: 12000 },
-      { name: "Kacang + Coklat", price: 14000 },
-      { name: "Kacang + Coklat + Keju", price: 19000 },
-      { name: "Keju", price: 17000, highlight: true },
-      { name: "Keju + Kacang", price: 18000, highlight: true },
-      { name: "Keju + Coklat", price: 18000, highlight: true },
+      { name: "Kacang", price: 12000, image: `${ASSET_BASE_URL}/sweet/kacang.png` },
+      { name: "Coklat", price: 12000, image: `${ASSET_BASE_URL}/sweet/coklat.png` },
+      { name: "Kacang + Coklat", price: 14000, image: `${ASSET_BASE_URL}/sweet/kacang-coklat.png` },
+      { name: "Kacang + Coklat + Keju", price: 19000, image: `${ASSET_BASE_URL}/sweet/kacang-coklat-keju.png` },
+      { name: "Keju", price: 17000, highlight: true, image: `${ASSET_BASE_URL}/sweet/keju.png` },
+      { name: "Keju + Kacang", price: 18000, highlight: true, image: `${ASSET_BASE_URL}/sweet/keju-kacang.png` },
+      { name: "Keju + Coklat", price: 18000, highlight: true, image: `${ASSET_BASE_URL}/sweet/keju-coklat.png` },
     ],
   },
   {
     category: "Terang Bulan Pandan",
     items: [
-      { name: "Pandan Kacang", price: 13000 },
-      { name: "Pandan Coklat", price: 13000 },
-      { name: "Pandan Kacang + Coklat", price: 15000 },
-      { name: "Pandan Kacang + Coklat + Keju", price: 21000 },
-      { name: "Pandan Keju", price: 20000, highlight: true },
-      { name: "Pandan Coklat Keju", price: 20000, highlight: true },
-      { name: "Pandan Kacang + Keju", price: 20000, highlight: true },
+      { name: "Pandan Kacang", price: 13000, image: `${ASSET_BASE_URL}/sweet/pandan-kacang.png` },
+      { name: "Pandan Coklat", price: 13000, image: `${ASSET_BASE_URL}/sweet/pandan-coklat.png` },
+      { name: "Pandan Kacang + Coklat", price: 15000, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat.png` },
+      { name: "Pandan Kacang + Coklat + Keju", price: 21000, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat-keju.png` },
+      { name: "Pandan Keju", price: 20000, highlight: true, image: `${ASSET_BASE_URL}/sweet/pandan-keju.png` },
+      { name: "Pandan Coklat Keju", price: 20000, highlight: true, image: `${ASSET_BASE_URL}/sweet/pandan-coklat-keju.png` },
+      { name: "Pandan Kacang + Keju", price: 20000, highlight: true, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-keju.png` },
     ],
   },
   {
     category: "Terang Bulan Red Velvet",
     items: [
-      { name: "Red Velvet Kacang", price: 14000 },
-      { name: "Red Velvet Coklat", price: 14000 },
-      { name: "Red Velvet Kacang Coklat", price: 16000 },
-      { name: "Red Velvet Kacang Coklat Keju", price: 21000 },
-      { name: "Red Velvet Keju", price: 20000, highlight: true },
-      { name: "Red Velvet Keju + Coklat", price: 21000, highlight: true },
-      { name: "Red Velvet Keju + Kacang", price: 21000, highlight: true },
+      { name: "Red Velvet Kacang", price: 14000, image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang.png` },
+      { name: "Red Velvet Coklat", price: 14000, image: `${ASSET_BASE_URL}/sweet/redvelvet-coklat.png` },
+      { name: "Red Velvet Kacang Coklat", price: 16000, image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat.png` },
+      { name: "Red Velvet Kacang Coklat Keju", price: 21000, image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat-keju.png` },
+      { name: "Red Velvet Keju", price: 20000, highlight: true, image: `${ASSET_BASE_URL}/sweet/redvelvet-keju.png` },
+      { name: "Red Velvet Keju + Coklat", price: 21000, highlight: true, image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-coklat.png` },
+      { name: "Red Velvet Keju + Kacang", price: 21000, highlight: true, image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-kacang.png` },
     ],
   },
   {
     category: "Terang Bulan Blackforest",
     items: [
-      { name: "Blackforest Kacang", price: 25000 },
-      { name: "Blackforest Coklat", price: 25000 },
-      { name: "Blackforest Kacang Coklat", price: 26000 },
-      { name: "Blackforest Kacang Coklat Keju", price: 29000 },
-      { name: "Blackforest Keju", price: 27000, highlight: true },
-      { name: "Blackforest Keju Kacang", price: 28000, highlight: true },
-      { name: "Blackforest Keju Coklat", price: 28000, highlight: true },
+      { name: "Blackforest Kacang", price: 25000, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang.png` },
+      { name: "Blackforest Coklat", price: 25000, image: `${ASSET_BASE_URL}/sweet/blackforest-coklat.png` },
+      { name: "Blackforest Kacang Coklat", price: 26000, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat.png` },
+      { name: "Blackforest Kacang Coklat Keju", price: 29000, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat-keju.png` },
+      { name: "Blackforest Keju", price: 27000, highlight: true, image: `${ASSET_BASE_URL}/sweet/blackforest-keju.png` },
+      { name: "Blackforest Keju Kacang", price: 28000, highlight: true, image: `${ASSET_BASE_URL}/sweet/blackforest-keju-kacang.png` },
+      { name: "Blackforest Keju Coklat", price: 28000, highlight: true, image: `${ASSET_BASE_URL}/sweet/blackforest-keju-coklat.png` },
     ],
   },
 ];
@@ -59,19 +61,19 @@ export const MENU_SAVORY = [
       {
         type: "Telor Ayam",
         prices: [
-          { qty: 2, price: 25000 },
-          { qty: 3, price: 34000 },
-          { qty: 4, price: 42000 },
-          { qty: 5, price: 45000 },
+          { qty: 2, price: 25000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 3, price: 34000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 4, price: 42000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 5, price: 45000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
       },
       {
         type: "Telor Bebek",
         prices: [
-          { qty: 2, price: 26000 },
-          { qty: 3, price: 35000 },
-          { qty: 4, price: 44000 },
-          { qty: 5, price: 50000 },
+          { qty: 2, price: 26000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 3, price: 35000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 4, price: 44000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 5, price: 50000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
       },
     ],
@@ -82,19 +84,19 @@ export const MENU_SAVORY = [
       {
         type: "Telor Ayam",
         prices: [
-          { qty: 2, price: 22000 },
-          { qty: 3, price: 30000 },
-          { qty: 4, price: 35000 },
-          { qty: 5, price: 40000 },
+          { qty: 2, price: 22000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 3, price: 30000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 4, price: 35000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 5, price: 40000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
       },
       {
         type: "Telor Bebek",
         prices: [
-          { qty: 2, price: 24000 },
-          { qty: 3, price: 32000 },
-          { qty: 4, price: 40000 },
-          { qty: 5, price: 45000 },
+          { qty: 2, price: 24000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 3, price: 32000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 4, price: 40000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 5, price: 45000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
       },
     ],
@@ -105,13 +107,13 @@ export const MENU_SAVORY = [
       {
         type: "Samyang Ayam Pedas",
         prices: [
-          { qty: 2, price: 30000, desc: "2 Telor Bebek + Daging Ayam" },
+          { qty: 2, price: 30000, desc: "2 Telor Bebek + Daging Ayam", image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
       },
       {
         type: "Samyang Sapi Pedas",
         prices: [
-          { qty: 2, price: 32000, desc: "2 Telor Bebek + Daging Sapi" },
+          { qty: 2, price: 32000, desc: "2 Telor Bebek + Daging Sapi", image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
       },
     ],
