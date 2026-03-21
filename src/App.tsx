@@ -5,7 +5,7 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock,
-  MessageCircleQuestionIcon
+  MessageCircleQuestionIcon, Music2
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "./data/menu";
@@ -586,7 +586,7 @@ export default function App() {
           </div>
 
           <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
-            <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p> <p> Design by <a href="https://ariftirtana.my.id">Arif Tirtana</a></p>
+            <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p> <p> Design by <a href="https://ariftirtana.my.id" className="text-brand-orange hover:opacity-80 transition-opacity font-bold">Arif Tirtana</a></p>
             <div className="flex gap-6">
               <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
                 <MessageCircleQuestionIcon className="w-3 h-3" />
@@ -1118,8 +1118,8 @@ export default function App() {
                   <button onClick={() => window.open(`https://www.instagram.com/`, "_blank")} className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white">
                     <Instagram className="w-5 h-5" />
                   </button>
-                  <button onClick={() => window.open(`https://www.tiktok.com/`, "_blank")} className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white">
-                    <MessageCircle className="w-5 h-5" />
+                  <button onClick={() => window.open(`https://www.tiktok.com/@martabakgresik_`, "_blank")} className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white">
+                    <Music2 className="w-5 h-5" />
                   </button>
                 </div>
               </div>
