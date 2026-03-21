@@ -10,8 +10,8 @@ export const MENU_SWEET = [
       { name: "Kacang", price: 12000, image: `${ASSET_BASE_URL}/sweet/kacang.png` },
       { name: "Coklat", price: 12000, image: `${ASSET_BASE_URL}/sweet/coklat.png` },
       { name: "Kacang + Coklat", price: 14000, image: `${ASSET_BASE_URL}/sweet/kacang-coklat.png` },
-      { name: "Kacang + Coklat + Keju", price: 19000, image: `${ASSET_BASE_URL}/sweet/kacang-coklat-keju.png` },
-      { name: "Keju", price: 17000, highlight: true, image: `${ASSET_BASE_URL}/sweet/keju.png` },
+      { name: "Kacang + Coklat + Keju", price: 19000, isBestSeller: true, image: `${ASSET_BASE_URL}/sweet/kacang-coklat-keju.png` },
+      { name: "Keju", price: 17000, isBestSeller: true, highlight: true, image: `${ASSET_BASE_URL}/sweet/keju.png` },
       { name: "Keju + Kacang", price: 18000, highlight: true, image: `${ASSET_BASE_URL}/sweet/keju-kacang.png` },
       { name: "Keju + Coklat", price: 18000, highlight: true, image: `${ASSET_BASE_URL}/sweet/keju-coklat.png` },
     ],
@@ -23,7 +23,7 @@ export const MENU_SWEET = [
       { name: "Pandan Coklat", price: 13000, image: `${ASSET_BASE_URL}/sweet/pandan-coklat.png` },
       { name: "Pandan Kacang + Coklat", price: 15000, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat.png` },
       { name: "Pandan Kacang + Coklat + Keju", price: 21000, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat-keju.png` },
-      { name: "Pandan Keju", price: 20000, highlight: true, image: `${ASSET_BASE_URL}/sweet/pandan-keju.png` },
+      { name: "Pandan Keju", price: 20000, highlight: true, isBestSeller: true, image: `${ASSET_BASE_URL}/sweet/pandan-keju.png` },
       { name: "Pandan Coklat Keju", price: 20000, highlight: true, image: `${ASSET_BASE_URL}/sweet/pandan-coklat-keju.png` },
       { name: "Pandan Kacang + Keju", price: 20000, highlight: true, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-keju.png` },
     ],
@@ -47,7 +47,7 @@ export const MENU_SWEET = [
       { name: "Blackforest Coklat", price: 25000, image: `${ASSET_BASE_URL}/sweet/blackforest-coklat.png` },
       { name: "Blackforest Kacang Coklat", price: 26000, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat.png` },
       { name: "Blackforest Kacang Coklat Keju", price: 29000, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat-keju.png` },
-      { name: "Blackforest Keju", price: 27000, highlight: true, image: `${ASSET_BASE_URL}/sweet/blackforest-keju.png` },
+      { name: "Blackforest Keju", price: 27000, highlight: true, isBestSeller: true, image: `${ASSET_BASE_URL}/sweet/blackforest-keju.png` },
       { name: "Blackforest Keju Kacang", price: 28000, highlight: true, image: `${ASSET_BASE_URL}/sweet/blackforest-keju-kacang.png` },
       { name: "Blackforest Keju Coklat", price: 28000, highlight: true, image: `${ASSET_BASE_URL}/sweet/blackforest-keju-coklat.png` },
     ],
@@ -61,7 +61,7 @@ export const MENU_SAVORY = [
       {
         type: "Telor Ayam",
         prices: [
-          { qty: 2, price: 25000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 2, price: 25000, isBestSeller: true, highlight: true, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 3, price: 34000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 4, price: 42000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 5, price: 45000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
@@ -70,7 +70,7 @@ export const MENU_SAVORY = [
       {
         type: "Telor Bebek",
         prices: [
-          { qty: 2, price: 26000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 2, price: 26000, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 3, price: 35000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 4, price: 44000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 5, price: 50000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
@@ -84,7 +84,7 @@ export const MENU_SAVORY = [
       {
         type: "Telor Ayam",
         prices: [
-          { qty: 2, price: 22000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 2, price: 22000, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 3, price: 30000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 4, price: 35000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 5, price: 40000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
@@ -94,7 +94,7 @@ export const MENU_SAVORY = [
         type: "Telor Bebek",
         prices: [
           { qty: 2, price: 24000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
-          { qty: 3, price: 32000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 3, price: 32000, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 4, price: 40000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 5, price: 45000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
@@ -113,7 +113,7 @@ export const MENU_SAVORY = [
       {
         type: "Samyang Sapi Pedas",
         prices: [
-          { qty: 2, price: 32000, desc: "2 Telor Bebek + Daging Sapi", image: `${ASSET_BASE_URL}/savory/martabak.png` },
+          { qty: 2, price: 32000, desc: "2 Telor Bebek + Daging Sapi", isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
       },
     ],

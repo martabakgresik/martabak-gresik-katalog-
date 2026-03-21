@@ -5,7 +5,7 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock,
-  MessageCircleQuestionIcon, Music2
+  MessageCircleQuestionIcon, Music2, Sparkles, Trophy
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "./data/menu";
@@ -142,9 +142,27 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('martabak_favorites', JSON.stringify(favorites));
-  }, [favorites]);
+  const handleSurpriseMe = () => {
+    const allSweetItems = MENU_SWEET.flatMap(section => 
+      section.items.map(item => ({ ...item, category: section.category, type: 'sweet' as const }))
+    );
+    const allSavoryItems = MENU_SAVORY.flatMap(section => 
+      section.variants.flatMap(variant => 
+        variant.prices.map(p => ({ 
+          name: `${section.title} (${variant.type} - ${p.desc || `${p.qty} Telor`})`, 
+          price: p.price, 
+          image: (p as any).image,
+          type: 'savory' as const 
+        }))
+      )
+    );
+    
+    const allItems = [...allSweetItems, ...allSavoryItems];
+    const randomItems = allItems.filter(i => !i.name.toLowerCase().includes('kosong'));
+    const randomItem = randomItems[Math.floor(Math.random() * randomItems.length)];
+    
+    handleOpenAddonModal(randomItem, randomItem.type);
+  };
 
   const APP_URL = window.location.origin;
 
@@ -333,6 +351,22 @@ export default function App() {
             </div>
           </motion.div>
 
+          {/* Prominent Shop Status Indicator */}
+          <div className="flex justify-center mt-8 mb-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border-2 ${
+                isOpen 
+                  ? 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400' 
+                  : 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400'
+              } font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-lg backdrop-blur-md`}
+            >
+              <span className={`w-2 h-2 rounded-full animate-pulse ${isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
+              {isOpen ? 'Sedang Buka - Siap Melayani!' : `Sedang Tutup - Buka Jam ${OPEN_HOUR}:00`}
+            </motion.div>
+          </div>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -380,7 +414,7 @@ export default function App() {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="pr-6 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
+                className="pr-2 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
                 aria-label="Bersihkan pencarian"
               >
                 <div className="bg-brand-black/5 p-2 rounded-full hover:bg-brand-orange/10">
@@ -388,6 +422,15 @@ export default function App() {
                 </div>
               </button>
             )}
+            <div className="pr-4 flex items-center gap-2">
+              <button
+                onClick={handleSurpriseMe}
+                className="bg-brand-orange text-white p-3 rounded-full hover:bg-brand-orange/90 transition-all shadow-md active:scale-95 group/surprise"
+                title="Bingung pilih yang mana? Klik ini!"
+              >
+                <Sparkles className="h-5 w-5 group-hover/surprise:rotate-12 transition-transform" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -437,8 +480,17 @@ export default function App() {
                                 <img src={(item as any).image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
                               </div>
                             )}
-                            <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'}`}>
+                            <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-2`}>
                               {item.name}
+                              {(item as any).isBestSeller && (
+                                <motion.span 
+                                  animate={{ scale: [1, 1.1, 1] }} 
+                                  transition={{ repeat: Infinity, duration: 2 }}
+                                  className="bg-yellow-400 text-yellow-900 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5 uppercase italic shadow-sm"
+                                >
+                                  <Trophy className="w-2 h-2" /> Terlaris
+                                </motion.span>
+                              )}
                             </span>
                           </div>
                           <div className="flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-4 group-hover:border-brand-orange/50 transition-colors" />
@@ -521,8 +573,17 @@ export default function App() {
                                     <img src={(p as any).image} alt={`${p.qty} Telor`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
                                   </div>
                                 )}
-                                <span className="text-sm opacity-80">
+                                <span className="text-sm opacity-80 flex items-center gap-2">
                                   {p.desc ? p.desc : `${p.qty} Telor`}
+                                  {(p as any).isBestSeller && (
+                                    <motion.span 
+                                      animate={{ scale: [1, 1.1, 1] }} 
+                                      transition={{ repeat: Infinity, duration: 2 }}
+                                      className="bg-yellow-400 text-yellow-900 text-[7px] font-black px-1 py-0.5 rounded flex items-center gap-0.5 uppercase italic shadow-sm"
+                                    >
+                                      <Trophy className="w-2 h-2" /> Terlaris
+                                    </motion.span>
+                                  )}
                                 </span>
                               </div>
                               <div className="flex items-center gap-3">
