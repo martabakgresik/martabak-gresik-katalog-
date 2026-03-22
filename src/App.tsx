@@ -5,7 +5,7 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock,
-  MessageCircleQuestionIcon, Music2, Sparkles, Trophy
+  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "./data/menu";
@@ -137,6 +137,8 @@ export default function App() {
   };
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Add-ons modal state
   const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);
@@ -286,6 +288,19 @@ export default function App() {
 
       {/* Hero Section */}
       <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
+        {/* Share Button (Left) */}
+        <div className="absolute top-6 left-6 z-20">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setIsGeneralShareOpen(true)}
+            className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
+            title="Bagikan"
+          >
+            <Send className="w-5 h-5" />
+          </motion.button>
+        </div>
+
         {/* Theme Toggle Button */}
         <div className="absolute top-6 right-6 z-20">
           <motion.button
@@ -384,48 +399,74 @@ export default function App() {
               <ShoppingBag className="w-5 h-5" />
               Pesan Sekarang
             </motion.a>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsGeneralShareOpen(true)}
-              className="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 transition-all border border-white/20"
+          </motion.div>
+
+          {/* Search Bar */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-8 mb-4 flex justify-center w-full max-w-2xl px-4"
+          >
+            <motion.div 
+              initial={false}
+              animate={{ 
+                width: isSearchOpen || searchQuery ? "100%" : "64px",
+                maxWidth: isSearchOpen || searchQuery ? "42rem" : "64px"
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className={`relative flex items-center shadow-xl rounded-full bg-white dark:bg-black/50 border-4 ${
+                isSearchOpen || searchQuery ? 'border-brand-black/10 dark:border-brand-yellow/20 focus-within:border-brand-orange focus-within:ring-4 focus-within:ring-brand-orange/20' : 'border-brand-orange/50 dark:border-brand-yellow/50'
+              } transition-colors overflow-hidden h-16`}
             >
-              <Share2 className="w-4 h-4" />
-              Bagikan
-            </motion.button>
+              <button 
+                onClick={() => {
+                  if (!isSearchOpen && !searchQuery) {
+                    setIsSearchOpen(true);
+                    setTimeout(() => searchInputRef.current?.focus(), 100);
+                  } else if (isSearchOpen && !searchQuery) {
+                     setIsSearchOpen(false);
+                  }
+                }}
+                className={`w-16 h-full flex items-center justify-center shrink-0 ${!isSearchOpen && !searchQuery ? 'cursor-pointer hover:bg-brand-black/5 dark:hover:bg-white/5' : ''}`}
+              >
+                <Search className={`h-6 w-6 ${!isSearchOpen && !searchQuery ? 'text-brand-orange dark:text-brand-yellow' : 'text-brand-black/40 dark:text-white/40'}`} />
+              </button>
+              
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Cari menu (Misal: Keju, Ayam, sapi, Pandan)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchOpen(true)}
+                onBlur={() => {
+                  if (!searchQuery) setIsSearchOpen(false);
+                }}
+                className="block flex-grow min-w-0 h-full bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-base md:text-lg pr-2"
+                style={{ display: isSearchOpen || searchQuery ? 'block' : 'none' }}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    searchInputRef.current?.focus();
+                  }}
+                  className="w-16 h-full flex items-center justify-center text-brand-black/40 hover:text-brand-orange transition-colors shrink-0"
+                  aria-label="Bersihkan pencarian"
+                >
+                  <div className="bg-brand-black/5 p-2 rounded-full hover:bg-brand-orange/10">
+                    <X className="h-5 w-5" />
+                  </div>
+                </button>
+              )}
+            </motion.div>
           </motion.div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main id="menu-section" className="max-w-7xl mx-auto px-4 py-12 md:py-20 scroll-mt-8">
-
-        {/* Search Bar */}
-        <div className="mb-12 max-w-2xl mx-auto">
-          <div className="relative group flex items-center shadow-xl rounded-full bg-white dark:bg-black/50 border-4 border-brand-black/10 dark:border-brand-yellow/20 focus-within:border-brand-orange focus-within:ring-4 focus-within:ring-brand-orange/20 transition-all">
-            <div className="pl-6 pr-3 flex items-center pointer-events-none">
-              <Search className="h-6 w-6 text-brand-orange dark:text-brand-yellow" />
-            </div>
-            <input
-              type="text"
-              placeholder="Cari menu (Misal: Keju, Ayam, sapi, Pandan)..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block flex-grow min-w-0 py-5 bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-base md:text-lg pl-6 pr-6"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="pr-6 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
-                aria-label="Bersihkan pencarian"
-              >
-                <div className="bg-brand-black/5 p-2 rounded-full hover:bg-brand-orange/10">
-                  <X className="h-5 w-5" />
-                </div>
-              </button>
-            )}
-          </div>
-        </div>
+      <main id="menu-section" className="max-w-7xl mx-auto px-4 py-8 md:py-12 scroll-mt-8">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
 

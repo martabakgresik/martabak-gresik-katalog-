@@ -220,8 +220,8 @@ export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) =
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
             className={`bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left ${
               isExpanded 
-                ? 'w-[95vw] h-[85vh] md:w-[95vw] md:h-[85vh] max-h-[85vh]' 
-                : 'w-[300px] sm:w-[350px] h-[450px] max-h-[80vh]'
+                ? 'w-[95vw] md:w-[90vw] max-w-5xl h-[calc(100dvh-120px)] md:h-[calc(100vh-140px)]' 
+                : 'w-[300px] sm:w-[350px] h-[450px] max-h-[calc(100dvh-120px)]'
             }`}
           >
             <div className="bg-brand-black dark:bg-black p-4 text-white flex justify-between items-center shrink-0">
