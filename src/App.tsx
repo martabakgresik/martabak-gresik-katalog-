@@ -62,7 +62,8 @@ export default function App() {
 
   const [locationStatus, setLocationStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
   const [isAiProcessing, setIsAiProcessing] = useState(false);
-
+  const [isDistanceAiVerified, setIsDistanceAiVerified] = useState(false);
+  
   const [promoCodeInput, setPromoCodeInput] = useState("");
   const [promoMessage, setPromoMessage] = useState<{ status: 'success' | 'error', text: string } | null>(null);
 
@@ -407,7 +408,7 @@ export default function App() {
             </div>
             <input
               type="text"
-              placeholder="Cari menu (Misal: Keju, Ayam)..."
+              placeholder="Cari menu (Misal: Keju, Ayam, sapi, Pandan)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="block flex-grow min-w-0 py-5 bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-base md:text-lg pl-6 pr-6"
@@ -815,79 +816,47 @@ export default function App() {
                             
                             {deliveryMethod === 'delivery' && (
                               <div className="space-y-3">
-                                <div>
-                                    <div className="flex justify-between items-center mb-1 px-1">
-                                      <div className="flex items-center gap-2">
-                                        <label className="text-[10px] font-black uppercase opacity-40 block">Alamat Lengkap</label>
-                                        {!isGoogleMapsLink(customerAddress) && customerAddress.length < 5 && (
-                                          <span className="text-[9px] font-bold text-brand-orange dark:text-brand-yellow/60 opacity-80 animate-pulse italic">
-                                            (Ketik alamat dahulu & klik ✨)
-                                          </span>
-                                        )}
-                                        {!isGoogleMapsLink(customerAddress) && customerAddress.length >= 5 && (
-                                          <button
-                                            onClick={async () => {
-                                              if (customerAddress.length < 5 || isAiProcessing) return;
-                                              setIsAiProcessing(true);
-                                              const aiLink = await processAddressWithAI(customerAddress);
-                                              setIsAiProcessing(false);
-                                              if (aiLink) {
-                                                setCustomerAddress(prev => `${prev}\n\n📍 Link Lokasi (Auto-AI):\n${aiLink}`);
-                                              }
-                                            }}
-                                            disabled={isAiProcessing}
-                                            className="group flex items-center gap-1 bg-brand-black/10 hover:bg-brand-white/20 px-2 py-0.5 rounded-full border border-brand-black/30 transition-all active:scale-95 disabled:opacity-50"
-                                            title="Proses Alamat dengan AI"
-                                          >
-                                            <Sparkles className={`w-2.5 h-2.5 text-brand-black ${isAiProcessing ? 'animate-spin' : 'group-hover:animate-pulse'}`} />
-                                            <span className="text-[8px] font-black text-brand-black uppercase">
-                                              {isAiProcessing ? 'AI Sedang Memproses...' : 'Proses AI'}
-                                            </span>
-                                          </button>
-                                        )}
-                                      </div>
-                                      {isGoogleMapsLink(customerAddress) && (
-                                        <div className="flex items-center gap-1 bg-[#25D366]/10 px-2 py-0.5 rounded-full border border-[#25D366]/30">
-                                          <MapPin className="w-2.5 h-2.5 text-[#25D366]" />
-                                          <span className="text-[8px] font-black text-[#25D366] uppercase">Link Lokasi Terdeteksi</span>
-                                        </div>
-                                      )}
-                                    </div>
-                                  <textarea
-                                    placeholder="Jl, No Rumah, RT/RW, Patokan..."
-                                    value={customerAddress}
-                                    onChange={(e) => setCustomerAddress(e.target.value)}
-                                    rows={4}
-                                    className="w-full bg-white dark:bg-black/40 border-2 border-brand-black/10 dark:border-brand-yellow/20 rounded-2xl px-5 py-3 text-sm font-bold focus:border-brand-orange outline-none dark:text-white transition-all resize-none shadow-sm"
-                                  />
+                                <div className="space-y-3">
+                                  <div className="space-y-1">
+                                    <label className="text-[10px] font-black uppercase opacity-40 block px-1">Alamat Lengkap</label>
+                                    <textarea
+                                      placeholder="Contoh: Jl. Usman Sadar No. 12, RT 01/RW 02, Dekat Masjid Al-Ikhlas..."
+                                      value={customerAddress}
+                                      onChange={(e) => setCustomerAddress(e.target.value)}
+                                      rows={4}
+                                      className="w-full bg-white dark:bg-black/40 border-2 border-brand-black/10 dark:border-brand-yellow/20 rounded-2xl px-5 py-3 text-sm font-bold focus:border-brand-orange outline-none dark:text-white transition-all resize-none shadow-sm"
+                                    />
+                                  </div>
+                                  
+                                  <button
+                                    onClick={async () => {
+                                      if (customerAddress.length < 5 || isAiProcessing) return;
+                                      setIsAiProcessing(true);
+                                      const result = await processAddressWithAI(customerAddress);
+                                      setIsAiProcessing(false);
+                                      if (result) {
+                                        if (result.success && result.googleMapsLink) {
+                                          const beautified = result.beautifiedAddress || customerAddress;
+                                          setCustomerAddress(`${beautified}\n\n📍 Link Lokasi (Auto-AI):\n${result.googleMapsLink}`);
+                                          
+                                          // Update distance slider automatically if provided by AI
+                                          if (result.distance !== undefined && result.distance !== null) {
+                                            const dist = Number(result.distance);
+                                            setDistance(dist);
+                                            setIsDistanceAiVerified(true);
+                                          }
+                                        } else if (result.error) {
+                                          alert(result.error);
+                                        }
+                                      }
+                                    }}
+                                    disabled={customerAddress.length < 5 || isAiProcessing}
+                                    className="w-full bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black py-3.5 rounded-2xl text-[11px] font-black uppercase flex items-center justify-center gap-3 transition-all hover:bg-brand-orange hover:text-white disabled:opacity-40 disabled:grayscale shadow-lg active:scale-95"
+                                  >
+                                    <Sparkles className={`w-4 h-4 ${isAiProcessing ? 'animate-spin' : 'animate-pulse'}`} />
+                                    {isAiProcessing ? '⏳ Memperbaiki Alamat dengan AI...' : 'Perbaiki Alamat dengan AI'}
+                                  </button>
                                 </div>
-                                
-                                <button
-                                  onClick={async () => {
-                                    setLocationStatus({ status: 'loading' });
-                                    const result = await detectLocation();
-                                    setLocationStatus({ 
-                                      status: result.success ? 'success' : 'error', 
-                                      message: result.message 
-                                    });
-                                    if (!result.success) {
-                                      setTimeout(() => setLocationStatus({ status: 'idle' }), 3000);
-                                    }
-                                  }}
-                                  disabled={locationStatus.status === 'loading'}
-                                  className={`w-full py-3.5 rounded-2xl text-[11px] font-black uppercase flex items-center justify-center gap-3 transition-all shadow-md ${
-                                    locationStatus.status === 'success' 
-                                      ? 'bg-green-500 text-white' 
-                                      : locationStatus.status === 'error'
-                                      ? 'bg-red-500 text-white'
-                                      : 'bg-brand-orange text-brand-black hover:bg-brand-black hover:text-white'
-                                  }`}
-                                >
-                                  <MapPin className={`w-4 h-4 ${locationStatus.status === 'loading' ? 'animate-bounce' : ''}`} />
-                                  {locationStatus.status === 'loading' ? 'Mendeteksi...' : 
-                                   locationStatus.status === 'success' ? 'Lokasi Berhasil Terpasang!' :
-                                   locationStatus.status === 'error' ? locationStatus.message : '📍 Ambil Lokasi Otomatis (GPS)'}
-                                </button>
                               </div>
                             )}
                           </div>
@@ -922,9 +891,16 @@ export default function App() {
                             <div className="bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 shadow-sm">
                               <div className="flex justify-between items-center mb-3">
                                 <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Jarak Pengiriman</span>
-                                <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > MAX_SHIPPING_DISTANCE ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black'}`}>
-                                  {distance} KM {distance > MAX_SHIPPING_DISTANCE && " (MAKS 10KM)"}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  {isDistanceAiVerified && (
+                                    <span className="text-[10px] font-black bg-brand-orange/20 text-brand-orange px-2 py-0.5 rounded-lg border border-brand-orange/30 animate-pulse">
+                                      ✨ DIVERIFIKASI AI
+                                    </span>
+                                  )}
+                                  <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > MAX_SHIPPING_DISTANCE ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg'} ${isDistanceAiVerified && ! (distance > MAX_SHIPPING_DISTANCE) ? 'ring-2 ring-brand-orange ring-offset-2 dark:ring-offset-brand-black animate-in zoom-in' : ''}`}>
+                                    {distance} KM {distance > MAX_SHIPPING_DISTANCE && " (MAKS 10KM)"}
+                                  </span>
+                                </div>
                               </div>
                               <input
                                 type="range"
@@ -932,10 +908,18 @@ export default function App() {
                                 max="15"
                                 step="1"
                                 value={distance}
-                                onChange={(e) => setDistance(parseInt(e.target.value))}
+                                disabled={!isDistanceAiVerified}
+                                onChange={(e) => {
+                                  setDistance(parseInt(e.target.value));
+                                }}
                                 style={{ backgroundSize: `${(distance / 15) * 100}% 100%` }}
-                                className="w-full h-2.5 bg-brand-black/10 dark:bg-white/20 rounded-full appearance-none cursor-pointer accent-brand-orange bg-gradient-to-r from-brand-orange to-brand-orange bg-no-repeat"
+                                className={`w-full h-2.5 bg-brand-black/10 dark:bg-white/20 rounded-full appearance-none cursor-pointer accent-brand-black dark:accent-brand-yellow bg-gradient-to-r from-brand-black to-brand-black dark:from-brand-yellow dark:to-brand-yellow bg-no-repeat transition-all ${isDistanceAiVerified ? 'shadow-[0_0_15px_rgba(0,0,0,0.1)] ring-2 ring-brand-black/20 opacity-100' : 'opacity-40 grayscale cursor-not-allowed'}`}
                               />
+                              {!isDistanceAiVerified && (
+                                <p className="text-[8px] mt-2 font-black text-brand-black/40 dark:text-brand-yellow/40 uppercase tracking-tighter text-center animate-pulse">
+                                  ⚠️ Klik "Perbaiki Alamat dengan AI" untuk mengaktifkan slider
+                                </p>
+                              )}
                               <div className="flex justify-between mt-2 opacity-30 text-[9px] font-black tracking-widest">
                                 <span>0KM</span>
                                 <span>5KM</span>
@@ -943,7 +927,7 @@ export default function App() {
                                 <span>15KM</span>
                               </div>
                               {distance > 0 && distance <= MAX_SHIPPING_DISTANCE && (
-                                <p className="text-[10px] mt-4 font-black text-brand-orange text-center uppercase tracking-widest bg-brand-orange/5 py-2 rounded-xl border border-brand-orange/20">
+                                <p className="text-[10px] mt-4 font-black text-brand-black text-center uppercase tracking-widest bg-brand-black/5 py-2 rounded-xl border border-brand-orange/20">
                                   Estimasi Ongkir: + {formatPrice(shippingCost)}
                                 </p>
                               )}

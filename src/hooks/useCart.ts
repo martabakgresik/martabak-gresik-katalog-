@@ -131,11 +131,13 @@ export const useCart = () => {
   };
 
   const processAddressWithAI = async (address: string) => {
-    if (!address || address.length < 5 || isGoogleMapsLink(address)) return null;
+    if (!address || address.length < 5) return null;
 
-    const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
+    // Use VITE_ prefix as required by Vite for client-side exposure, 
+    // but the user reminded the source is POLLINATIONS_API_KEY
+    const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY || import.meta.env.POLLINATIONS_API_KEY;
     if (!apiKey) {
-      console.error("VITE_POLLINATIONS_API_KEY not found in environment.");
+      console.error("POLLINATIONS_API_KEY not found in environment.");
       return null;
     }
 
@@ -150,23 +152,74 @@ export const useCart = () => {
           messages: [
             { 
               role: 'system', 
-              content: 'Sistem ahli geocoding. Tugas: Ubah alamat teks menjadi link Google Maps SEARCH yang akurat. Format: https://www.google.com/maps/search/[alamat]. Berikan HANYA link tersebut tanpa teks lain, tanpa markdown, tanpa penjelasan. Pastikan spasi diubah menjadi tanda plus (+) atau %20.' 
+              content: `Sistem ahli geocoding dan validasi wilayah Gresik. 
+              LOKASI TOKO: Jl. Usman Sadar No. 10, Gresik (Pusat Kota).
+              
+              TUGAS: 
+              1. Analisis apakah alamat "${address}" berada di wilayah kabupaten Gresik, Jawa Timur, Indonesia.
+              2. Estimasi secara akurat jarak (dalam angka KM) dari TOKO (Jl. Usman Sadar No. 10) ke alamat tujuan.
+                 - CATATAN GEOGRAFI: Jl. Pahlawan, Jl. Basuki Rahmat, Jl. Jaksa Agung adalah area DEKAT (< 1.5 KM).
+                 - Gunakan estimasi rute jalan raya, bukan garis lurus.
+              3. Pastikan alamat mencantumkan NOMOR RUMAH yang jelas.
+              4. Jika VALID (Gresik, <= 10KM, & Ada No Rumah): Return JSON: {"success": true, "beautifiedAddress": "Alamat yang diperbaiki", "googleMapsLink": "https://www.google.com/maps/search/...", "distance": [angka_km_presisi]}.
+              5. Jika INVALID (Luar Gresik, > 10KM, atau TANPA No Rumah): Return JSON: {"success": false, "error": "Pesan peringatan dalam Bahasa Indonesia yang spesifik (misal: 'Mohon cantumkan nomor rumah' atau 'Di luar wilayah Gresik') dan minta konfirmasi admin"}.
+              
+              ATURAN: Return HANYA JSON tersebut. Tanpa markdown backticks, tanpa penjelasan.` 
             },
-            { role: 'user', content: `Konversikan alamat ini: ${address}` }
+            { role: 'user', content: `Validasi dan proses alamat ini: ${address}` }
           ],
           model: 'openai-fast'
         })
       });
 
       const data = await response.json();
-      const aiLink = data.choices[0].message.content.trim();
+      const aiContent = data.choices[0].message.content.trim();
       
-      if (isGoogleMapsLink(aiLink)) {
-        return aiLink;
+      // Attempt to parse JSON
+      try {
+        const result = JSON.parse(aiContent.replace(/```json|```/g, ''));
+        return result;
+      } catch (parseError) {
+        console.error("AI JSON Parse Error:", parseError, aiContent);
+        // Fallback for simple link return if AI fails JSON format
+        if (isGoogleMapsLink(aiContent)) {
+          return { success: true, googleMapsLink: aiContent };
+        }
+        return null;
       }
-      return null;
     } catch (error) {
       console.error("AI Address Processing Error:", error);
+      return null;
+    }
+  };
+
+  const reverseGeocodeWithAI = async (lat: number, lng: number) => {
+    const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
+    if (!apiKey) return null;
+
+    try {
+      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          messages: [
+            { 
+              role: 'system', 
+              content: 'Sistem ahli geocoding. Tugas: Berikan alamat jalan yang lengkap, akurat, dan manusiawi berdasarkan koordinat latitude dan longitude yang diberikan. Contoh return: "Jl. Usman Sadar No. 10, Gresik, Jawa Timur". Berikan HANYA teks alamat tersebut tanpa penjelasan lain, tanpa markdown.' 
+            },
+            { role: 'user', content: `Berapa alamat untuk koordinat ini: ${lat}, ${lng}?` }
+          ],
+          model: 'openai-fast'
+        })
+      });
+
+      const data = await response.json();
+      return data.choices[0].message.content.trim();
+    } catch (error) {
+      console.error("AI Reverse Geocoding Error:", error);
       return null;
     }
   };
@@ -245,6 +298,7 @@ export const useCart = () => {
     detectLocation,
     sendWhatsAppOrder,
     isGoogleMapsLink,
-    processAddressWithAI
+    processAddressWithAI,
+    reverseGeocodeWithAI
   };
 };
