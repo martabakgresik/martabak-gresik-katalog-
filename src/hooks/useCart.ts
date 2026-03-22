@@ -40,6 +40,12 @@ export const useCart = () => {
   });
   
   const [distance, setDistance] = useState<number>(0);
+  const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>('delivery');
+  const [promoCode, setPromoCode] = useState<string>("");
+  const [discountPercent, setDiscountPercent] = useState<number>(0);
+  const [customerName, setCustomerName] = useState<string>("");
+  const [customerAddress, setCustomerAddress] = useState<string>("");
+  const [coordinates, setCoordinates] = useState<{ lat: number, lng: number } | null>(null);
 
   useEffect(() => {
     localStorage.setItem('martabak_cart', JSON.stringify(cart));
@@ -82,13 +88,106 @@ export const useCart = () => {
     const itemAddonsPrice = item.addons ? item.addons.reduce((a, b) => a + (b.price * (b.quantity || 1)), 0) : 0;
     return sum + ((item.price + itemAddonsPrice) * item.quantity);
   }, 0);
-  const shippingCost = distance * SHIPPING_RATE_PER_KM;
-  const totalPrice = itemsPrice + shippingCost;
+  const shippingCost = deliveryMethod === 'delivery' ? distance * SHIPPING_RATE_PER_KM : 0;
+  const discountAmount = Math.round(itemsPrice * (discountPercent / 100));
+  const totalPrice = itemsPrice + shippingCost - discountAmount;
+
+  const applyPromoCode = (code: string) => {
+    if (code.toUpperCase() === "MARTABAKBARU") {
+      setPromoCode(code.toUpperCase());
+      setDiscountPercent(10);
+      return { success: true, message: "Kode promo berhasil digunakan! Diskon 10% diterapkan." };
+    }
+    setPromoCode("");
+    setDiscountPercent(0);
+    return { success: false, message: "Kode promo tidak valid." };
+  };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      return { success: false, message: "Geolocation tidak didukung oleh browser ini." };
+    }
+
+    return new Promise<{ success: boolean, message: string }>((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          resolve({ success: true, message: "Lokasi berhasil dideteksi!" });
+        },
+        (error) => {
+          let msg = "Gagal mendapatkan lokasi.";
+          if (error.code === 1) msg = "Izin lokasi ditolak.";
+          resolve({ success: false, message: msg });
+        }
+      );
+    });
+  };
+
+  const isGoogleMapsLink = (text: string) => {
+    return /https?:\/\/(maps\.(app\.)?goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|maps\.google\.com)/.test(text);
+  };
+
+  const processAddressWithAI = async (address: string) => {
+    if (!address || address.length < 5 || isGoogleMapsLink(address)) return null;
+
+    const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
+    if (!apiKey) {
+      console.error("VITE_POLLINATIONS_API_KEY not found in environment.");
+      return null;
+    }
+
+    try {
+      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          messages: [
+            { 
+              role: 'system', 
+              content: 'Sistem ahli geocoding. Tugas: Ubah alamat teks menjadi link Google Maps SEARCH yang akurat. Format: https://www.google.com/maps/search/[alamat]. Berikan HANYA link tersebut tanpa teks lain, tanpa markdown, tanpa penjelasan. Pastikan spasi diubah menjadi tanda plus (+) atau %20.' 
+            },
+            { role: 'user', content: `Konversikan alamat ini: ${address}` }
+          ],
+          model: 'openai-fast'
+        })
+      });
+
+      const data = await response.json();
+      const aiLink = data.choices[0].message.content.trim();
+      
+      if (isGoogleMapsLink(aiLink)) {
+        return aiLink;
+      }
+      return null;
+    } catch (error) {
+      console.error("AI Address Processing Error:", error);
+      return null;
+    }
+  };
 
   const sendWhatsAppOrder = () => {
     const phoneNumber = "6281330763633";
     let message = "*PESANAN BARU - MARTABAK GRESIK*\n\n";
 
+    message += `*DATA PELANGGAN:*\n`;
+    message += `Nama: ${customerName || '-'}\n`;
+    if (deliveryMethod === 'delivery') {
+      const containsMapsLink = isGoogleMapsLink(customerAddress);
+      message += `Alamat: ${customerAddress || '-'}\n`;
+      
+      if (containsMapsLink) {
+        message += `📍 *Lokasi (Share Link dari Pembeli)*\n`;
+      } else if (coordinates) {
+        message += `📍 *Lokasi (GPS Terdeteksi):* https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}\n`;
+      }
+    }
+    message += `\n*PESANAN:*\n`;
     cart.forEach((item, index) => {
       message += `${index + 1}. *${item.name}*\n`;
       if (item.category) message += `   (${item.category})\n`;
@@ -105,8 +204,12 @@ export const useCart = () => {
     });
 
     message += `--------------------------\n`;
-    if (distance > 0) {
+    message += `Metode: *${deliveryMethod === 'pickup' ? 'AMBIL SENDIRI' : 'KIRIM KE ALAMAT'}*\n`;
+    if (deliveryMethod === 'delivery' && distance > 0) {
       message += `Ongkir (${distance}km): ${formatPrice(shippingCost)}\n`;
+    }
+    if (discountAmount > 0) {
+      message += `Diskon Promo (${promoCode}): -${formatPrice(discountAmount)}\n`;
     }
     message += `*TOTAL PEMBAYARAN: ${formatPrice(totalPrice)}*\n\n`;
     message += `Mohon segera diproses ya, terima kasih! 🙏`;
@@ -127,7 +230,21 @@ export const useCart = () => {
     totalItems,
     itemsPrice,
     shippingCost,
+    discountAmount,
     totalPrice,
-    sendWhatsAppOrder
+    promoCode,
+    discountPercent,
+    customerName,
+    setCustomerName,
+    customerAddress,
+    setCustomerAddress,
+    coordinates,
+    deliveryMethod,
+    setDeliveryMethod,
+    applyPromoCode,
+    detectLocation,
+    sendWhatsAppOrder,
+    isGoogleMapsLink,
+    processAddressWithAI
   };
 };

@@ -55,43 +55,46 @@ export const AiAssistant = () => {
     setAiInput("");
 
     try {
-      const systemPrompt = `Anda adalah Asisten Pintar Martabak Gresik yang ramah, gaul, dan ahli kuliner.
-      Tugas Anda adalah membantu pelanggan memilih menu. Gunakan data menu berikut:
+      const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
+      const systemPrompt = `Anda adalah Asisten Pintar Martabak Gresik yang ramah, gaul, dan ahli kuliner...`; // keeping it short for target content matching but I'll replace it fully in the actual call
 
-      TERANG BULAN (Manis):
-      ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${formatPrice(i.price)})`).join(', ')}`).join('\n')}
-      
-      MARTABAK TELOR (Asin):
-      ${MENU_SAVORY.map(s => `- ${s.title}: ${s.variants.map(v => `${v.type} (${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')})`).join(', ')}`).join('\n')}
-      
-      TAMBAHAN (Add-ons):
-      Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
-      Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
-
-      INFORMASI TOKO:
-      - Alamat: Jl. Usman Sadar No 10, Gresik
-      - Jam Buka: 16.00 - 23.00 WIB
-      - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km)
-      - No Tlp: 081330763633
-
-      ATURAN:
-      1. Jawab dengan gaya santai tapi sopan.
-      2. Jika ditanya menu, berikan rekomendasi dalam bentuk DAFTAR BULLET yang jelas dan rapi.
-      3. Jangan sarankan menu yang tidak ada di daftar.
-      4. Gunakan emoji agar menarik.
-      5. Jawab dalam Bahasa Indonesia atau bahasa yang di input oleh pengguna.
-      6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.`;
-
-      const response = await fetch('/api/chat', {
+      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
           messages: [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: `Anda adalah Asisten Pintar Martabak Gresik yang ramah, gaul, dan ahli kuliner.
+              Tugas Anda adalah membantu pelanggan memilih menu. Gunakan data menu berikut:
+        
+              TERANG BULAN (Manis):
+              ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${formatPrice(i.price)})`).join(', ')}`).join('\n')}
+              
+              MARTABAK TELOR (Asin):
+              ${MENU_SAVORY.map(s => `- ${s.title}: ${s.variants.map(v => `${v.type} (${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')})`).join(', ')}`).join('\n')}
+              
+              TAMBAHAN (Add-ons):
+              Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
+              Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
+        
+              INFORMASI TOKO:
+              - Alamat: Jl. Usman Sadar No 10, Gresik
+              - Jam Buka: 16.00 - 23.00 WIB
+              - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km)
+              - No Tlp: 081330763633
+        
+              ATURAN:
+              1. Jawab dengan gaya santai tapi sopan.
+              2. Jika ditanya menu, berikan rekomendasi dalam bentuk DAFTAR BULLET yang jelas dan rapi.
+              3. Jangan sarankan menu yang tidak ada di daftar.
+              4. Gunakan emoji agar menarik.
+              5. Jawab dalam Bahasa Indonesia atau bahasa yang di input oleh pengguna.
+              6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.` },
             ...newMessages
-          ]
+          ],
+          model: 'openai-fast'
         })
       });
 

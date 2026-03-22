@@ -43,9 +43,28 @@ export default function App() {
     updateNote,
     totalItems,
     shippingCost,
+    discountAmount,
     totalPrice,
-    sendWhatsAppOrder
+    promoCode,
+    customerName,
+    setCustomerName,
+    customerAddress,
+    setCustomerAddress,
+    coordinates,
+    deliveryMethod,
+    setDeliveryMethod,
+    applyPromoCode,
+    detectLocation,
+    sendWhatsAppOrder,
+    isGoogleMapsLink,
+    processAddressWithAI
   } = useCart();
+
+  const [locationStatus, setLocationStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
+
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [promoMessage, setPromoMessage] = useState<{ status: 'success' | 'error', text: string } | null>(null);
 
   const [favorites, setFavorites] = useState<FavoriteItem[]>(() => {
     const saved = localStorage.getItem('martabak_favorites');
@@ -67,6 +86,7 @@ export default function App() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [isHoliday, setIsHoliday] = useState(false);
+  const [isCheckoutPhase, setIsCheckoutPhase] = useState(false);
 
   useEffect(() => {
     const checkStatus = () => {
@@ -142,27 +162,6 @@ export default function App() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSurpriseMe = () => {
-    const allSweetItems = MENU_SWEET.flatMap(section => 
-      section.items.map(item => ({ ...item, category: section.category, type: 'sweet' as const }))
-    );
-    const allSavoryItems = MENU_SAVORY.flatMap(section => 
-      section.variants.flatMap(variant => 
-        variant.prices.map(p => ({ 
-          name: `${section.title} (${variant.type} - ${p.desc || `${p.qty} Telor`})`, 
-          price: p.price, 
-          image: (p as any).image,
-          type: 'savory' as const 
-        }))
-      )
-    );
-    
-    const allItems = [...allSweetItems, ...allSavoryItems];
-    const randomItems = allItems.filter(i => !i.name.toLowerCase().includes('kosong'));
-    const randomItem = randomItems[Math.floor(Math.random() * randomItems.length)];
-    
-    handleOpenAddonModal(randomItem, randomItem.type);
-  };
 
   const APP_URL = window.location.origin;
 
@@ -269,9 +268,11 @@ export default function App() {
             initial={{ y: -50 }}
             animate={{ y: 0 }}
             exit={{ y: -50 }}
-            className="bg-brand-orange text-white text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
+            className="bg-brand-orange text-brand-black text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
           >
-            <span className="flex-grow">{PROMO_TEXT}</span>
+            <span className="flex-grow font-black text-brand-black/80">
+              🔥 Diskon 10% untuk Pembelian Pertama via Katalog! (Gunakan kode: <span className="bg-brand-black text-brand-yellow px-1.5 py-0.5 rounded-md inline-block animate-pulse">MARTABAKBARU</span>)
+            </span>
             <button
               onClick={() => setShowPromo(false)}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
@@ -313,11 +314,11 @@ export default function App() {
               />
             </div>
             <div className="text-left">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest inline-block">
+              <div className="flex flex-wrap items-center justify-start gap-1.5 md:gap-2 mb-2">
+                <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest inline-block whitespace-nowrap">
                   Since 2020
                 </div>
-                <div className={`px-3 py-0.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border-2 ${isHoliday ? 'bg-orange-600 border-orange-700' : isOpen ? 'bg-green-500 border-green-600' : 'bg-red-500 border-red-600'} text-white`}>
+                <div className={`px-3 py-0.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border-2 ${isHoliday ? 'bg-orange-600 border-orange-700' : isOpen ? 'bg-green-500 border-green-600' : 'bg-red-500 border-red-600'} text-white whitespace-nowrap`}>
                   <div className={`w-2 h-2 rounded-full animate-pulse ${isHoliday || isOpen ? 'bg-white' : 'bg-white/50'}`} />
                   {isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'BUKA' : 'TUTUP (Buka 16:00)'}
                 </div>
@@ -409,12 +410,12 @@ export default function App() {
               placeholder="Cari menu (Misal: Keju, Ayam)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block flex-grow min-w-0 py-5 bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-base md:text-lg"
+              className="block flex-grow min-w-0 py-5 bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-base md:text-lg pl-6 pr-6"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="pr-2 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
+                className="pr-6 pl-2 flex items-center text-brand-black/40 hover:text-brand-orange transition-colors"
                 aria-label="Bersihkan pencarian"
               >
                 <div className="bg-brand-black/5 p-2 rounded-full hover:bg-brand-orange/10">
@@ -422,15 +423,6 @@ export default function App() {
                 </div>
               </button>
             )}
-            <div className="pr-4 flex items-center gap-2">
-              <button
-                onClick={handleSurpriseMe}
-                className="bg-brand-orange text-white p-3 rounded-full hover:bg-brand-orange/90 transition-all shadow-md active:scale-95 group/surprise"
-                title="Bingung pilih yang mana? Klik ini!"
-              >
-                <Sparkles className="h-5 w-5 group-hover/surprise:rotate-12 transition-transform" />
-              </button>
-            </div>
           </div>
         </div>
 
@@ -743,51 +735,297 @@ export default function App() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-full w-full max-w-md bg-brand-yellow dark:bg-brand-black z-[70] shadow-2xl flex flex-col"
+              layout
+              className={`fixed top-0 right-0 h-full w-full sm:w-[500px] bg-brand-yellow dark:bg-brand-black shadow-2xl z-[1000] flex flex-col border-l-4 border-brand-black dark:border-brand-yellow overflow-hidden`}
             >
-              <div className="p-6 bg-brand-black dark:bg-black text-white">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="flex items-center gap-3">
-                    <ShoppingBag className="w-6 h-6 text-brand-yellow" />
-                    <h2 className="text-xl font-black uppercase italic tracking-tight dark:text-brand-yellow">Menu Anda</h2>
+              <div className="p-6 bg-brand-black text-white flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-4">
+                  {isCheckoutPhase && activeTab === 'cart' && (
+                    <button 
+                      onClick={() => setIsCheckoutPhase(false)}
+                      className="p-2 hover:bg-white/10 rounded-full transition-colors -ml-2"
+                    >
+                      <ArrowUp className="w-5 h-5 -rotate-90" />
+                    </button>
+                  )}
+                  <div>
+                    <h3 className="text-xl font-black uppercase italic tracking-tighter">
+                      {activeTab === "cart" ? (isCheckoutPhase ? "PENGIRIMAN" : "MENU ANDA") : "MENU FAVORIT"}
+                    </h3>
+                    <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">
+                      {activeTab === "cart" ? (isCheckoutPhase ? "Lengkapi Data Pesanan" : `${totalItems} Produk Terpilih`) : `${favorites.length} Item Simpanan`}
+                    </p>
                   </div>
-                  <button
-                    onClick={() => setIsCartOpen(false)}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
                 </div>
+                <button
+                  onClick={() => setIsCartOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
 
-                <div className="flex bg-white/10 p-1 rounded-xl">
+              {/* Sidebar Tabs */}
+              {!isCheckoutPhase && (
+                <div className="flex px-4 pt-4 shrink-0">
                   <button
                     onClick={() => setActiveTab("cart")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === "cart" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
-                      }`}
+                    className={`flex-1 py-3 text-xs font-black uppercase italic tracking-wider transition-all border-b-4 ${activeTab === "cart" ? "border-brand-black dark:border-brand-yellow opacity-100" : "border-transparent opacity-30"}`}
                   >
-                    <ShoppingBag className="w-3 h-3" />
                     Keranjang ({totalItems})
                   </button>
                   <button
                     onClick={() => setActiveTab("favorites")}
-                    className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === "favorites" ? "bg-brand-yellow text-brand-black" : "text-white/60 hover:text-white"
-                      }`}
+                    className={`flex-1 py-3 text-xs font-black uppercase italic tracking-wider transition-all border-b-4 ${activeTab === "favorites" ? "border-brand-black dark:border-brand-yellow opacity-100" : "border-transparent opacity-30"}`}
                   >
-                    <Heart className="w-3 h-3" />
                     Favorit ({favorites.length})
                   </button>
                 </div>
-              </div>
+              )}
 
-              <div className="flex-grow overflow-y-auto p-6 space-y-4">
+              <div className="flex-grow overflow-y-auto p-4 space-y-4 pb-32">
                 {activeTab === "cart" ? (
                   cart.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                       <ShoppingBag className="w-16 h-16 mb-4" />
-                      <p className="font-bold uppercase italic">Keranjang masih kosong</p>
+                      <p className="font-bold uppercase italic">Keranjang Kosong</p>
+                      <p className="text-xs mt-2">Pilih menu favoritmu sekarang!</p>
                     </div>
                   ) : (
-                    cart.map((item) => (
+                    isCheckoutPhase ? (
+                      <div className="space-y-6 py-2">
+                        {/* Customer Details Form */}
+                        <div className="space-y-3 bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 dark:border-white/5 shadow-inner">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-5 bg-brand-orange rounded-full"></div>
+                            <span className="text-xs font-black uppercase tracking-wider dark:text-brand-yellow">Data Pengiriman</span>
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div>
+                              <label className="text-[10px] font-black uppercase opacity-40 mb-1 block px-1">Nama Lengkap</label>
+                              <input
+                                type="text"
+                                placeholder="..."
+                                value={customerName}
+                                onChange={(e) => setCustomerName(e.target.value)}
+                                className="w-full bg-white dark:bg-black/40 border-2 border-brand-black/10 dark:border-brand-yellow/20 rounded-2xl px-5 py-3 text-sm font-bold focus:border-brand-orange outline-none dark:text-white transition-all shadow-sm"
+                              />
+                            </div>
+                            
+                            {deliveryMethod === 'delivery' && (
+                              <div className="space-y-3">
+                                <div>
+                                    <div className="flex justify-between items-center mb-1 px-1">
+                                      <div className="flex items-center gap-2">
+                                        <label className="text-[10px] font-black uppercase opacity-40 block">Alamat Lengkap</label>
+                                        {!isGoogleMapsLink(customerAddress) && customerAddress.length < 5 && (
+                                          <span className="text-[9px] font-bold text-brand-orange dark:text-brand-yellow/60 opacity-80 animate-pulse italic">
+                                            (Ketik alamat dahulu & klik ✨)
+                                          </span>
+                                        )}
+                                        {!isGoogleMapsLink(customerAddress) && customerAddress.length >= 5 && (
+                                          <button
+                                            onClick={async () => {
+                                              if (customerAddress.length < 5 || isAiProcessing) return;
+                                              setIsAiProcessing(true);
+                                              const aiLink = await processAddressWithAI(customerAddress);
+                                              setIsAiProcessing(false);
+                                              if (aiLink) {
+                                                setCustomerAddress(prev => `${prev}\n\n📍 Link Lokasi (Auto-AI):\n${aiLink}`);
+                                              }
+                                            }}
+                                            disabled={isAiProcessing}
+                                            className="group flex items-center gap-1 bg-brand-black/10 hover:bg-brand-white/20 px-2 py-0.5 rounded-full border border-brand-black/30 transition-all active:scale-95 disabled:opacity-50"
+                                            title="Proses Alamat dengan AI"
+                                          >
+                                            <Sparkles className={`w-2.5 h-2.5 text-brand-black ${isAiProcessing ? 'animate-spin' : 'group-hover:animate-pulse'}`} />
+                                            <span className="text-[8px] font-black text-brand-black uppercase">
+                                              {isAiProcessing ? 'AI Sedang Memproses...' : 'Proses AI'}
+                                            </span>
+                                          </button>
+                                        )}
+                                      </div>
+                                      {isGoogleMapsLink(customerAddress) && (
+                                        <div className="flex items-center gap-1 bg-[#25D366]/10 px-2 py-0.5 rounded-full border border-[#25D366]/30">
+                                          <MapPin className="w-2.5 h-2.5 text-[#25D366]" />
+                                          <span className="text-[8px] font-black text-[#25D366] uppercase">Link Lokasi Terdeteksi</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  <textarea
+                                    placeholder="Jl, No Rumah, RT/RW, Patokan..."
+                                    value={customerAddress}
+                                    onChange={(e) => setCustomerAddress(e.target.value)}
+                                    rows={4}
+                                    className="w-full bg-white dark:bg-black/40 border-2 border-brand-black/10 dark:border-brand-yellow/20 rounded-2xl px-5 py-3 text-sm font-bold focus:border-brand-orange outline-none dark:text-white transition-all resize-none shadow-sm"
+                                  />
+                                </div>
+                                
+                                <button
+                                  onClick={async () => {
+                                    setLocationStatus({ status: 'loading' });
+                                    const result = await detectLocation();
+                                    setLocationStatus({ 
+                                      status: result.success ? 'success' : 'error', 
+                                      message: result.message 
+                                    });
+                                    if (!result.success) {
+                                      setTimeout(() => setLocationStatus({ status: 'idle' }), 3000);
+                                    }
+                                  }}
+                                  disabled={locationStatus.status === 'loading'}
+                                  className={`w-full py-3.5 rounded-2xl text-[11px] font-black uppercase flex items-center justify-center gap-3 transition-all shadow-md ${
+                                    locationStatus.status === 'success' 
+                                      ? 'bg-green-500 text-white' 
+                                      : locationStatus.status === 'error'
+                                      ? 'bg-red-500 text-white'
+                                      : 'bg-brand-orange text-brand-black hover:bg-brand-black hover:text-white'
+                                  }`}
+                                >
+                                  <MapPin className={`w-4 h-4 ${locationStatus.status === 'loading' ? 'animate-bounce' : ''}`} />
+                                  {locationStatus.status === 'loading' ? 'Mendeteksi...' : 
+                                   locationStatus.status === 'success' ? 'Lokasi Berhasil Terpasang!' :
+                                   locationStatus.status === 'error' ? locationStatus.message : '📍 Ambil Lokasi Otomatis (GPS)'}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Delivery Options */}
+                        <div className="space-y-4">
+                          <div className="flex gap-2 p-1.5 bg-brand-black/5 dark:bg-white/10 rounded-2xl border-2 border-brand-black/5 shadow-inner">
+                            <button
+                              onClick={() => setDeliveryMethod('delivery')}
+                              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${deliveryMethod === 'delivery'
+                                ? 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg scale-[1.02]'
+                                : 'opacity-40 hover:opacity-100 dark:text-white'
+                                }`}
+                            >
+                              <MapPin className="w-3.5 h-3.5" />
+                              Kirim ke Alamat
+                            </button>
+                            <button
+                              onClick={() => setDeliveryMethod('pickup')}
+                              className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${deliveryMethod === 'pickup'
+                                ? 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg scale-[1.02]'
+                                : 'opacity-40 hover:opacity-100 dark:text-white'
+                                }`}
+                            >
+                              <ShoppingBag className="w-3.5 h-3.5" />
+                              Ambil Sendiri
+                            </button>
+                          </div>
+
+                          {deliveryMethod === 'delivery' && (
+                            <div className="bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 shadow-sm">
+                              <div className="flex justify-between items-center mb-3">
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Jarak Pengiriman</span>
+                                <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > MAX_SHIPPING_DISTANCE ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black'}`}>
+                                  {distance} KM {distance > MAX_SHIPPING_DISTANCE && " (MAKS 10KM)"}
+                                </span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="15"
+                                step="1"
+                                value={distance}
+                                onChange={(e) => setDistance(parseInt(e.target.value))}
+                                style={{ backgroundSize: `${(distance / 15) * 100}% 100%` }}
+                                className="w-full h-2.5 bg-brand-black/10 dark:bg-white/20 rounded-full appearance-none cursor-pointer accent-brand-orange bg-gradient-to-r from-brand-orange to-brand-orange bg-no-repeat"
+                              />
+                              <div className="flex justify-between mt-2 opacity-30 text-[9px] font-black tracking-widest">
+                                <span>0KM</span>
+                                <span>5KM</span>
+                                <span>10KM</span>
+                                <span>15KM</span>
+                              </div>
+                              {distance > 0 && distance <= MAX_SHIPPING_DISTANCE && (
+                                <p className="text-[10px] mt-4 font-black text-brand-orange text-center uppercase tracking-widest bg-brand-orange/5 py-2 rounded-xl border border-brand-orange/20">
+                                  Estimasi Ongkir: + {formatPrice(shippingCost)}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {deliveryMethod === 'pickup' && (
+                            <div className="bg-green-500/10 border-2 border-green-500/20 p-5 rounded-3xl flex items-center gap-4 shadow-sm animate-in fade-in zoom-in duration-300">
+                              <div className="bg-green-500 p-3 rounded-2xl shadow-lg ring-4 ring-green-500/20">
+                                <MapPin className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-black text-green-600 dark:text-green-500 uppercase tracking-wider">Metode: Ambil Sendiri</p>
+                                <p className="text-[10px] font-bold opacity-60 dark:text-white/60 mt-0.5">Silakan ambil pesanan Anda di outlet kami. Gratis ongkir!</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Promo Code Input */}
+                          <div className="bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 shadow-sm space-y-3">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Punya Kode Promo?</span>
+                              {promoCode && (
+                                <span className="text-[10px] font-black text-brand-orange uppercase animate-bounce">Terpasang!</span>
+                              )}
+                            </div>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="..."
+                                value={promoCodeInput}
+                                onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase())}
+                                className="flex-grow bg-white dark:bg-black/40 border-2 border-brand-black/10 dark:border-brand-yellow/20 rounded-2xl px-5 py-3 text-xs font-bold focus:border-brand-orange outline-none dark:text-white shadow-sm"
+                              />
+                              <button
+                                onClick={() => {
+                                  const result = applyPromoCode(promoCodeInput);
+                                  setPromoMessage({ status: result.success ? 'success' : 'error', text: result.message });
+                                  if (!result.success) setTimeout(() => setPromoMessage(null), 3000);
+                                }}
+                                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-6 py-3 rounded-2xl text-[11px] font-black uppercase hover:bg-brand-orange transition-all active:scale-95 shadow-md"
+                              >
+                                Pakai
+                              </button>
+                            </div>
+                            {promoMessage && (
+                              <p className={`text-[10px] font-black text-center uppercase tracking-wider ${promoMessage.status === 'success' ? 'text-green-500' : 'text-red-500'}`}>
+                                {promoMessage.text}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                         {/* Detailed Summary */}
+                         <div className="bg-white/50 dark:bg-white/5 p-6 rounded-3xl border-t-4 border-brand-black dark:border-brand-yellow space-y-2.5">
+                          <div className="flex justify-between items-center opacity-60">
+                            <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">Subtotal {totalItems} Item</span>
+                            <span className="text-sm font-black dark:text-white">{formatPrice(totalPrice + discountAmount - shippingCost)}</span>
+                          </div>
+                          {deliveryMethod === 'delivery' && distance > 0 && (
+                            <div className="flex justify-between items-center opacity-60">
+                              <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">Estimasi Ongkir</span>
+                              <span className="text-sm font-black dark:text-white">+{formatPrice(shippingCost)}</span>
+                            </div>
+                          )}
+                          {discountAmount > 0 && (
+                            <div className="flex justify-between items-center text-brand-orange">
+                              <span className="text-[11px] font-black uppercase tracking-widest italic animate-pulse">
+                                Diskon (<span className="text-brand-black dark:text-brand-yellow">{promoCode}</span>)
+                              </span>
+                              <span className="text-sm font-black">-{formatPrice(discountAmount)}</span>
+                            </div>
+                          )}
+                          <div className="h-0.5 bg-brand-black/10 dark:bg-white/10 my-1"></div>
+                          <div className="flex justify-between items-center pt-2">
+                            <span className="text-sm font-black uppercase italic tracking-wider dark:text-white">Total Akhir</span>
+                            <span className="text-2xl font-black text-brand-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      cart.map((item) => (
                       <div key={item.id} className="bg-white dark:bg-white/5 p-4 rounded-2xl border-2 border-brand-black dark:border-brand-yellow/20 shadow-sm flex flex-col gap-3">
                         <div className="flex justify-between items-start gap-2">
                           <div className="flex items-start gap-3">
@@ -846,6 +1084,7 @@ export default function App() {
                       </div>
                     ))
                   )
+                  )
                 ) : (
                   favorites.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
@@ -887,57 +1126,57 @@ export default function App() {
                 )}
               </div>
 
-               {activeTab === "cart" && cart.length > 0 && (
-                <div className="p-4 bg-white dark:bg-brand-black border-t-4 border-brand-black dark:border-brand-yellow space-y-3">
-                  {/* Shipping Distance Selector */}
-                  <div className="bg-brand-black/5 dark:bg-white/10 p-3 rounded-2xl">
+              {/* Sticky Bottom Actions */}
+              {activeTab === "cart" && cart.length > 0 && (
+                <div className="p-6 bg-white dark:bg-brand-black border-t-4 border-brand-black dark:border-brand-yellow shadow-[0_-10px_30px_rgba(0,0,0,0.1)] shrink-0 z-20">
+                  <div className="mb-4">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold uppercase dark:text-brand-yellow/60">Jarak Pengiriman</span>
-                      <span className={`text-xs font-black ${distance > MAX_SHIPPING_DISTANCE ? 'text-red-500' : 'dark:text-white'}`}>
-                        {distance} KM {distance > MAX_SHIPPING_DISTANCE && "(Maks 10km)"}
-                      </span>
+                      <span className="text-[10px] font-black uppercase opacity-40 dark:text-white">Estimasi Total</span>
+                      <span className="text-xl font-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
                     </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="15"
-                      step="1"
-                      value={distance}
-                      onChange={(e) => setDistance(parseInt(e.target.value))}
-                      style={{ backgroundSize: `${(distance / 15) * 100}% 100%` }}
-                      className="w-full h-2 bg-brand-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-brand-orange bg-gradient-to-r from-brand-orange to-brand-orange bg-no-repeat"
-                    />
-                    <div className="flex justify-between mt-1 opacity-40 text-[10px] font-bold">
-                      <span>0km</span>
-                      <span>5km</span>
-                      <span>10km</span>
-                      <span>15km</span>
-                    </div>
-                    {distance > 0 && distance <= MAX_SHIPPING_DISTANCE && (
-                      <p className="text-[10px] mt-2 font-bold text-brand-orange animate-pulse">
-                        Estimasi Ongkir: + {formatPrice(shippingCost)}
+                    {isCheckoutPhase && (
+                      <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest text-center">
+                        Sudah termasuk ongkir & diskon promo
                       </p>
                     )}
                   </div>
 
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold uppercase opacity-60 dark:text-brand-yellow/60">Total Bayar</span>
-                    <span className="text-xl font-black text-brand-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
-                  </div>
-                  <button
-                    onClick={() => setIsOrderConfirmationOpen(true)}
-                    disabled={distance > MAX_SHIPPING_DISTANCE || isHoliday}
-                    className={`w-full py-2.5 rounded-xl font-black uppercase italic flex items-center justify-center gap-2 transition-all shadow-lg ${distance > MAX_SHIPPING_DISTANCE || isHoliday
-                      ? 'bg-gray-400 cursor-not-allowed grayscale'
-                      : 'bg-[#25D366] text-white hover:scale-[1.02] active:scale-95'
-                      }`}
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                    <span className="text-sm">{isHoliday ? 'Kami Libur' : distance > MAX_SHIPPING_DISTANCE ? 'Terlalu Jauh' : 'Pesan via WhatsApp'}</span>
-                  </button>
-                  <p className="text-[9px] text-center opacity-40 font-bold uppercase">
-                    Klik tombol di atas untuk mengirim pesanan otomatis ke WhatsApp kami
-                  </p>
+                  {!isCheckoutPhase ? (
+                    <button
+                      onClick={() => setIsCheckoutPhase(true)}
+                      className="w-full py-4 rounded-2xl bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black font-black uppercase italic flex items-center justify-center gap-3 transition-all shadow-xl hover:scale-[1.02] active:scale-95 group"
+                    >
+                      <span className="text-sm">Lanjut ke Pembayaran</span>
+                      <ArrowUp className="w-5 h-5 rotate-90 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => {
+                          if (!customerName.trim()) {
+                            alert("Mohon masukkan nama Anda.");
+                            return;
+                          }
+                          if (deliveryMethod === 'delivery' && !customerAddress.trim()) {
+                            alert("Mohon masukkan alamat lengkap pengiriman.");
+                            return;
+                          }
+                          setIsOrderConfirmationOpen(true);
+                        }}
+                        disabled={distance > MAX_SHIPPING_DISTANCE || isHoliday}
+                        className={`w-full py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 transition-all shadow-xl ${distance > MAX_SHIPPING_DISTANCE || isHoliday
+                          ? 'bg-gray-400 cursor-not-allowed grayscale'
+                          : 'bg-[#25D366] text-white hover:scale-[1.02] active:scale-95'
+                          }`}
+                      >
+                        <MessageCircle className="w-6 h-6" />
+                        <span className="text-sm">{isHoliday ? 'Kami Sedang Libur' : distance > MAX_SHIPPING_DISTANCE ? 'Lokasi Terlalu Jauh' : 'Konfirmasi via WhatsApp'}</span>
+                      </button>
+                      <p className="text-[9px] text-center opacity-40 font-bold uppercase tracking-widest">
+                        Klik tombol di atas untuk mengirim pesanan secara otomatis
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </motion.div>
@@ -1088,13 +1327,13 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShareItem(null)}
-              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[80]"
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[1010]"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow z-[90] p-8 shadow-2xl"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow z-[1020] p-8 shadow-2xl"
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -1148,13 +1387,13 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsGeneralShareOpen(false)}
-              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[80]"
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[1010]"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-brand-yellow dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow z-[90] p-8 shadow-2xl"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-brand-yellow dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow z-[1020] p-8 shadow-2xl"
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -1232,13 +1471,13 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOrderConfirmationOpen(false)}
-              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[100]"
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[1100]"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-lg bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow z-[110] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-lg bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow z-[1110] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
             >
               <div className="p-6 bg-brand-black dark:bg-black text-white flex justify-between items-center shrink-0">
                 <div>
@@ -1327,7 +1566,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
             onClick={() => setZoomedImage(null)}
           >
             <motion.div
