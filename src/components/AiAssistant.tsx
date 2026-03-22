@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Store, RotateCcw, X, MessageCircle } from "lucide-react";
+import { Store, RotateCcw, X, MessageCircle, Plus } from "lucide-react";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "../data/menu";
-import { formatPrice } from "../hooks/useCart";
+import { formatPrice, type CartItem } from "../hooks/useCart";
 
 const AI_SUGGESTIONS = [
+  "Cara Order & Bayar 💳",
   "Rekomendasi Menu 🍕",
   "Promo Hari Ini 🎁",
   "Cek Ongkir 🛵",
@@ -12,7 +13,11 @@ const AI_SUGGESTIONS = [
   "Jam Buka ⏰"
 ];
 
-export const AiAssistant = () => {
+interface AiAssistantProps {
+  onAddToCart?: (item: Omit<CartItem, 'id' | 'quantity'>) => void;
+}
+
+export const AiAssistant = ({ onAddToCart }: AiAssistantProps) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
@@ -91,10 +96,25 @@ export const AiAssistant = () => {
               3. Jangan sarankan menu yang tidak ada di daftar.
               4. Gunakan emoji agar menarik.
               5. Jawab dalam Bahasa Indonesia atau bahasa yang di input oleh pengguna.
-              6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.` },
+              6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.
+              
+              PROTOKOL CHECKOUT / PEMESANAN:
+              Jika pelanggan ingin checkout / memesan, sampaikan total harga dengan kalimat yang ramah dan sopan agar pelanggan tidak merasa tersinggung, lalu:
+              1. Minta kelengkapan data pengiriman: Nama, Alamat lengkap (beserta Nomor Rumah / Share Lokasi), dan Nomor HP aktif.
+              2. Untuk pengiriman > 10km, mohon maaf & informasikan pengiriman ditolak, lalu sarankan aplikasi online (GrabFood / ShopeeFood / GoFood).
+              3. TAMPILKAN GAMBAR QRIS dengan mengetikkan Murni Markdown Kode gambar seperti ini (SANGAT PENTING: Wajib pakai tanda seru '!' di awal): ![QRIS](/qris.png)
+                 DILARANG KERAS mengarang kode/nomor fiktif. PASTIKAN TIDAK ADA SPASI antara kurung siku dan kurung biasa.
+              4. TEGASKAN pelanggan harus membayar terlebih dahulu dan melampirkan bukti yang sah. Berikan peringatan yang tegas namun tetap menjaga kesopanan: "Mohon pastikan melampirkan bukti transfer yang sah ya Kak. Mohon maaf, tindakan memalsukan/mengedit bukti transfer adalah tindak pidana penipuan dan akan kami proses secara hukum."
+              5. Jika pelanggan SUDAH melengkapi data dan menyatakan sudah siap transfer / mengonfirmasi transfer, berikan RANGKUMAN PESANAN dan tombol Link WhatsApp persis format ini:
+                 [KIRIM BUKTI BAYAR & PESANAN KE WHATSAPP](https://wa.me/6281330763633?text=Halo%20Admin,%20saya%20sudah%20bayar%20via%20QRIS.%20Berikut%20pesanan%20saya:...)
+                 (PENTING: Ganti ... dengan detail pesanan secara URL-encoded. JANGAN MENULISKAN ISI PESAN TEKS WHATSAPP ("Halo Admin...") DI LUAR TOMBOL. Teks PESANAN HANYA Boleh ditulis di dalam link URL "?text=". ATURAN KETAT: DILARANG MENGGUNAKAN SIMBOL KURUNG "()" DI DALAM URL/LINK KARENA BISA MERUSAK TOMBOL! Selalu gunakan %20 untuk spasi dan %0A untuk enter).
+              6. REKOMENDASI MENU & KLIK PESAN: Jika kamu merekomendasikan menu apa pun, kamu WAJIB menyertakan link pesan di bawah nama menu dengan format:
+                 #add-to-cart|Kategori_Sesuai_Daftar|Nama_Sesuai_Daftar|Harga_Hanya_Angka
+                 Contoh Sempurna (WAJIB DITIRU): #add-to-cart|Terang Bulan Standard|Keju|17000
+                 SANGAT PENTING: JANGAN PERNAH BUNGKUS KODE ADD-TO-CART DENGAN MARKDOWN LINK [](). Tulis Polos Saja! Jangan gunakan backtick \` atau apapun.` },
             ...newMessages
           ],
-          model: 'openai-fast'
+          model: 'gemini-fast'
         })
       });
 
@@ -107,6 +127,83 @@ export const AiAssistant = () => {
     } finally {
       setIsAiLoading(false);
     }
+  };
+
+  const renderMessage = (content: string) => {
+    // 1. Bersihkan string dari format aneh AI
+    let cleanContent = content.replace(/[\x60*]/g, ''); // Hapus backtick dan asterisk bold
+    cleanContent = cleanContent.replace(/\\\\/g, ''); // Hapus escape slash
+    
+    // 2. Buka paksa markdown add-to-cart (jika AI kebandel masih membungkus pakai format link)
+    cleanContent = cleanContent.replace(/\[[^\]]*\]\s*\(\s*(#add-to-cart\|[^)]+)\s*\)/g, ' $1 ');
+
+    // PENTING: Regex ini menargetkan: 
+    // 1. Gambar ![alt](url)
+    // 2. Link text [text](url)
+    // 3. Payload add-to-cart mentah #add-to-cart|Ktg|Nama|Harga
+    const combinedRegex = /!\[([^\]]*)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|\[([^\]]+)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|(#add-to-cart\|([^|]+)\|([^|]+)\|(\d+))/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = combinedRegex.exec(cleanContent)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(cleanContent.substring(lastIndex, match.index));
+      }
+      
+      if (match[1] !== undefined) { // Gambar QRIS
+        parts.push(
+          <div key={match.index} className="flex flex-col gap-2 my-2 w-full max-w-[200px]">
+            <img 
+              src={match[2].trim()} 
+              alt={match[1]} 
+              className="w-full h-auto rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-brand-black/10 dark:border-white/10" 
+            />
+            <a 
+              href={match[2].trim()} 
+              download="QRIS-Martabak-Gresik.png"
+              className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 hover:opacity-80 transition-all w-full shadow-md no-underline"
+            >
+               UNDUH QRIS
+            </a>
+          </div>
+        );
+      } else if (match[3] !== undefined) { // WA Link standard
+        parts.push(
+          <a
+            key={match.index}
+            href={match[4].trim()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-2 mb-1 px-4 py-2 bg-[#25D366] text-white rounded-xl shadow-md border-b-[3px] border-[#1DA851] font-bold text-[11px] active:scale-95 hover:brightness-110 transition-all no-underline"
+          >
+            {match[3]}
+          </a>
+        );
+      } else if (match[5] !== undefined) { // Payload ADD TO CART
+        const safeDecode = (str: string) => { try { return decodeURIComponent(str.trim()) } catch { return str.trim() } };
+        const category = safeDecode(match[6]);
+        const name = safeDecode(match[7]);
+        const price = parseInt(match[8], 10) || 0;
+        
+        parts.push(
+          <button
+            key={match.index}
+            onClick={() => onAddToCart && onAddToCart({ category, name, price })}
+            className="inline-flex items-center gap-1.5 mt-2 mb-1 px-4 py-2 bg-brand-orange text-white rounded-xl shadow-md border-b-[3px] border-orange-700 font-bold text-[11px] active:scale-95 hover:brightness-110 transition-all uppercase tracking-wider"
+          >
+            <Plus className="w-3.5 h-3.5" /> PESAN {name}
+          </button>
+        );
+      }
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < cleanContent.length) {
+      parts.push(cleanContent.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : cleanContent;
   };
 
   return (
@@ -144,7 +241,7 @@ export const AiAssistant = () => {
                     ? 'bg-brand-orange text-white rounded-tr-none'
                     : 'bg-white dark:bg-white/10 dark:text-white rounded-tl-none'
                     }`}>
-                    {msg.content}
+                    {renderMessage(msg.content)}
                   </div>
                 </div>
               ))}
@@ -153,7 +250,7 @@ export const AiAssistant = () => {
                   <div className="bg-white dark:bg-white/10 p-4 rounded-2xl rounded-tl-none flex flex-col gap-2 min-w-[180px]">
                     <div className="flex items-center gap-3 text-[10px] font-bold dark:text-brand-yellow">
                       <div className="w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin" />
-                      <span className="animate-pulse">Mohon tunggu AI meracik jawaban...</span>
+                      <span className="animate-pulse">Mohon tunggu.. AI sedang menjawab...</span>
                     </div>
                     <div className="flex justify-end pr-1">
                       <span className="text-[9px] font-mono opacity-40 tabular-nums">

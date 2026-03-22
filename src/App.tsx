@@ -718,7 +718,7 @@ export default function App() {
       </div>
 
       {/* AI Assistant UI */}
-      <AiAssistant />
+      <AiAssistant onAddToCart={addToCart} />
 
       {/* Cart Sidebar */}
       <AnimatePresence>
