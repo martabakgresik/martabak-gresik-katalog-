@@ -990,9 +990,20 @@ export default function App() {
                               </button>
                             </div>
                             {promoMessage && (
-                              <p className={`text-[10px] font-black text-center uppercase tracking-wider ${promoMessage.status === 'success' ? 'text-green-500' : 'text-red-500'}`}>
-                                {promoMessage.text}
-                              </p>
+                              <motion.div 
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={`mt-2 p-3 rounded-2xl text-center border-2 transition-all ${
+                                  promoMessage.status === 'success' 
+                                    ? 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400' 
+                                    : 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400'
+                                }`}
+                              >
+                                <p className="text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                                  {promoMessage.status === 'success' ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                                  {promoMessage.text}
+                                </p>
+                              </motion.div>
                             )}
                           </div>
                         </div>
