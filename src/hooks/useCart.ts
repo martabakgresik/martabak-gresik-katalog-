@@ -254,7 +254,12 @@ export const useCart = () => {
         });
       }
 
-      if (item.note) message += `   Catatan: _${item.note}_\n`;
+      if (item.note) {
+        const lines = item.note.split('\n').filter(l => l.trim());
+        lines.forEach(line => {
+          message += `   _(${line.trim()})_\n`;
+        });
+      }
       message += `   ${item.quantity}x ${formatPrice(item.price + itemAddonsPrice)} = *${formatPrice((item.price + itemAddonsPrice) * item.quantity)}*\n\n`;
     });
 

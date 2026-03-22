@@ -854,7 +854,7 @@ export default function App() {
                                     className="w-full bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black py-3.5 rounded-2xl text-[11px] font-black uppercase flex items-center justify-center gap-3 transition-all hover:bg-brand-orange hover:text-white disabled:opacity-40 disabled:grayscale shadow-lg active:scale-95"
                                   >
                                     <Sparkles className={`w-4 h-4 ${isAiProcessing ? 'animate-spin' : 'animate-pulse'}`} />
-                                    {isAiProcessing ? '⏳ Memperbaiki Alamat dengan AI...' : 'Perbaiki Alamat dengan AI'}
+                                    {isAiProcessing ? '⏳ mohon tunggu...' : 'Perbaiki Alamat dengan AI'}
                                   </button>
                                 </div>
                               </div>
@@ -893,8 +893,8 @@ export default function App() {
                                 <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Jarak Pengiriman</span>
                                 <div className="flex items-center gap-2">
                                   {isDistanceAiVerified && (
-                                    <span className="text-[10px] font-black bg-brand-orange/20 text-brand-orange px-2 py-0.5 rounded-lg border border-brand-orange/30 animate-pulse">
-                                      ✨ DIVERIFIKASI AI
+                                    <span className="text-[10px] font-black bg-brand-white/80 text-brand-black px-2 py-0.5 rounded-lg border border-brand-black/60 animate-pulse">
+                                    DIVERIFIKASI AI ✔️
                                     </span>
                                   )}
                                   <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > MAX_SHIPPING_DISTANCE ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg'} ${isDistanceAiVerified && ! (distance > MAX_SHIPPING_DISTANCE) ? 'ring-2 ring-brand-orange ring-offset-2 dark:ring-offset-brand-black animate-in zoom-in' : ''}`}>
@@ -916,11 +916,11 @@ export default function App() {
                                 className={`w-full h-2.5 bg-brand-black/10 dark:bg-white/20 rounded-full appearance-none cursor-pointer accent-brand-black dark:accent-brand-yellow bg-gradient-to-r from-brand-black to-brand-black dark:from-brand-yellow dark:to-brand-yellow bg-no-repeat transition-all ${isDistanceAiVerified ? 'shadow-[0_0_15px_rgba(0,0,0,0.1)] ring-2 ring-brand-black/20 opacity-100' : 'opacity-40 grayscale cursor-not-allowed'}`}
                               />
                               {!isDistanceAiVerified && (
-                                <p className="text-[8px] mt-2 font-black text-brand-black/40 dark:text-brand-yellow/40 uppercase tracking-tighter text-center animate-pulse">
+                                <p className="text-[10px] mt-2 font-black text-brand-black/40 dark:text-brand-yellow/40 uppercase tracking-tighter text-center">
                                   ⚠️ Klik "Perbaiki Alamat dengan AI" untuk mengaktifkan slider
                                 </p>
                               )}
-                              <div className="flex justify-between mt-2 opacity-30 text-[9px] font-black tracking-widest">
+                              <div className="flex justify-between mt-2 opacity-50 text-[9px] font-black tracking-widest">
                                 <span>0KM</span>
                                 <span>5KM</span>
                                 <span>10KM</span>
@@ -1069,12 +1069,13 @@ export default function App() {
                           </div>
                           <span className="font-black text-lg dark:text-brand-yellow">{formatPrice(item.price * item.quantity)}</span>
                         </div>
-                        <input
-                          type="text"
-                          placeholder="Catatan (opsional)..."
+                        <textarea
+                          placeholder={item.category?.toLowerCase().includes('terang bulan') 
+                            ? "Catatan (opsional)... Misal: gulanya dikit aja ya kak" 
+                            : "Catatan (opsional)... Misal: jangan dikasih acar"}
                           value={item.note || ""}
                           onChange={(e) => updateNote(item.id, e.target.value)}
-                          className="mt-1 w-full text-xs p-2 bg-brand-black/5 dark:bg-white/10 rounded-lg outline-none focus:ring-2 focus:ring-brand-orange transition-shadow dark:text-white dark:placeholder:text-white/20"
+                          className="mt-2 w-full text-[10px] p-3 bg-brand-black/5 dark:bg-white/10 rounded-xl outline-none focus:ring-2 focus:ring-brand-orange transition-all dark:text-white dark:placeholder:text-white/20 resize-none min-h-[60px]"
                         />
                       </div>
                     ))
