@@ -137,7 +137,9 @@ export const useCart = () => {
     // but the user reminded the source is POLLINATIONS_API_KEY
     const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY || import.meta.env.POLLINATIONS_API_KEY;
     if (!apiKey) {
-      console.error("POLLINATIONS_API_KEY not found in environment.");
+      const errorMsg = "⚠️ POLLINATIONS_API_KEY tidak ditemukan (VITE_ prefix diperlukan untuk browser). Mohon cek konfigurasi .env Anda.";
+      console.error(errorMsg);
+      alert(errorMsg);
       return null;
     }
 
