@@ -140,8 +140,8 @@ export const AiAssistant = ({ onAddToCart }: AiAssistantProps) => {
     // PENTING: Regex ini menargetkan: 
     // 1. Gambar ![alt](url)
     // 2. Link text [text](url)
-    // 3. Payload add-to-cart mentah #add-to-cart|Ktg|Nama|Harga
-    const combinedRegex = /!\[([^\]]*)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|\[([^\]]+)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|(#add-to-cart\|([^|]+)\|([^|]+)\|(\d+))/g;
+    // 3. Payload add-to-cart mentah #add-to-cart|Ktg|Nama|...|Harga
+    const combinedRegex = /!\[([^\]]*)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|\[([^\]]+)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|(#add-to-cart\|(?:[^\n|]+\|)+\d+)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
@@ -182,9 +182,11 @@ export const AiAssistant = ({ onAddToCart }: AiAssistantProps) => {
         );
       } else if (match[5] !== undefined) { // Payload ADD TO CART
         const safeDecode = (str: string) => { try { return decodeURIComponent(str.trim()) } catch { return str.trim() } };
-        const category = safeDecode(match[6]);
-        const name = safeDecode(match[7]);
-        const price = parseInt(match[8], 10) || 0;
+        const payloadParts = match[5].split('|').map(safeDecode);
+        const price = parseInt(payloadParts[payloadParts.length - 1], 10) || 0;
+        const category = payloadParts[1];
+        // Jika AI menambahkan ekstra pipe untuk varian produk, gabungkan seluruhnya menjadi nama lengkap
+        const name = payloadParts.slice(2, payloadParts.length - 1).join(' - ');
         
         parts.push(
           <button
@@ -192,7 +194,7 @@ export const AiAssistant = ({ onAddToCart }: AiAssistantProps) => {
             onClick={() => onAddToCart && onAddToCart({ category, name, price })}
             className="inline-flex items-center gap-1.5 mt-2 mb-1 px-4 py-2 bg-brand-orange text-white rounded-xl shadow-md border-b-[3px] border-orange-700 font-bold text-[11px] active:scale-95 hover:brightness-110 transition-all uppercase tracking-wider"
           >
-            <Plus className="w-3.5 h-3.5" /> PESAN {name}
+            <Plus className="w-3.5 h-3.5" /> PESAN {name.substring(0, 20)}{name.length > 20 ? '...' : ''}
           </button>
         );
       }
