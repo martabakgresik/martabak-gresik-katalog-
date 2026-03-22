@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Store, RotateCcw, X, MessageCircle, Plus } from "lucide-react";
+import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2 } from "lucide-react";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "../data/menu";
 import { formatPrice, type CartItem } from "../hooks/useCart";
 
@@ -15,13 +15,15 @@ const AI_SUGGESTIONS = [
 
 interface AiAssistantProps {
   onAddToCart?: (item: Omit<CartItem, 'id' | 'quantity'>) => void;
+  isOpen?: boolean;
 }
 
-export const AiAssistant = ({ onAddToCart }: AiAssistantProps) => {
+export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu? atau pesan skala besar?😁\n\nAtau tanya apa saja juga boleh!" }
+    { role: 'assistant', content: "Selamat datang di Martabak Gresik! 🌙✨ Saya adalah Asisten Virtual yang siap membantu Kakak 24 jam nonstop. Butuh rekomendasi menu *best seller*, panduan cara order, atau info pesanan partai besar untuk acara? Tinggal ketik saja di bawah ya! 😁" }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiTimer, setAiTimer] = useState(0);
@@ -209,25 +211,53 @@ export const AiAssistant = ({ onAddToCart }: AiAssistantProps) => {
   };
 
   return (
-    <div className="fixed bottom-8 left-8 z-50 flex flex-col items-start gap-4">
+    <div className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50 flex flex-col items-start gap-4">
       <AnimatePresence>
         {isAiOpen && (
           <motion.div
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
-            className="bg-white dark:bg-brand-black w-[300px] md:w-[350px] h-[450px] rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden"
+            className={`bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left ${
+              isExpanded 
+                ? 'w-[95vw] h-[85vh] md:w-[95vw] md:h-[85vh] max-h-[85vh]' 
+                : 'w-[300px] sm:w-[350px] h-[450px] max-h-[80vh]'
+            }`}
           >
-            <div className="bg-brand-black dark:bg-black p-4 text-white flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-brand-yellow rounded-full flex items-center justify-center">
-                  <Store className="w-5 h-5 text-brand-black" />
+            <div className="bg-brand-black dark:bg-black p-4 text-white flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-9 h-9 bg-brand-yellow rounded-full overflow-hidden flex items-center justify-center shadow-inner">
+                    <img src="/logo.webp" alt="Martabak Gresik Logo" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-brand-black shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-[pulse_2s_ease-in-out_infinite]" title="AI Online" />
                 </div>
-                <span className="font-bold text-sm">Martabak Assistant</span>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm tracking-wide whitespace-nowrap">Martabak Assistant</span>
+                    <span className="text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider border border-green-500/30">Online</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="flex h-2 w-2 relative">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                    </span>
+                    <span className={`text-[10px] font-bold tracking-wider ${isOpen ? 'text-green-400' : 'text-red-400'}`}>
+                      {isOpen ? 'Toko Buka' : 'Toko Tutup (Buka 16:00)'}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setAiMessages([{ role: 'assistant', content: "Halo! Saya Asisten Pintar Martabak Gresik. Ada yang bisa saya bantu? Mau rekomendasi menu? atau pesan skala besar?😁\n\nAtau tanya apa saja juga boleh!" }])}
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  title={isExpanded ? "Perkecil Modal" : "Perbesar Modal"}
+                  className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
+                >
+                  {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={() => setAiMessages([{ role: 'assistant', content: "Selamat datang di Martabak Gresik! 🌙✨ Saya adalah Asisten Virtual yang siap membantu Kakak 24 jam nonstop. Butuh rekomendasi menu *best seller*, panduan cara order, atau info pesanan partai besar untuk acara? Tinggal ketik saja di bawah ya! 😁" }])}
                   title="Mulai Ulang Chat"
                   className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
                 >
