@@ -39,6 +39,14 @@ export const SCROLL_SPACING = "mt-4";
 // 🖼️ ASSETS
 const ASSET_BASE_URL = "/images";
 
+/**
+ * 💡 PANDUAN EDIT MENU:
+ * - isBestSeller: true  => Memunculkan badge "Best Seller" (Piala Kuning)
+ * - highlight: true     => Tulisan nama menu menjadi Kuning & Border menyala
+ * - price: 15000        => Ubah angka untuk ganti harga
+ * - description: "..."  => Ubah teks untuk ganti penjelasan menu
+ */
+
 // 🍕 DATA MENU MANIS (Terang Bulan)
 export const MENU_SWEET = [
   {
