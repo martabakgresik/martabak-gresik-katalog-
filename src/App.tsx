@@ -734,12 +734,21 @@ export default function App() {
             </a>
           </div>
 
-          <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-40">
-            <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p> <p> Design by <a href="https://ariftirtana.my.id" className="text-brand-orange hover:opacity-80 transition-opacity font-bold">Arif Tirtana</a></p>
+          <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] md:text-xs opacity-40">
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
+              <p className="italic font-medium">catatan: *Harga dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.</p>
+            </div>
+            
+            <p className="font-bold">
+              Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity">Arif Tirtana</a>
+            </p>
+            
             <div className="flex gap-6">
-              <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5">
-                <MessageCircleQuestionIcon className="w-3 h-3" />
-                WhatsApp</a>
+              <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5 font-bold">
+                <MessageCircleQuestionIcon className="w-3.5 h-3.5" />
+                Kritik & Saran? Chat Kami
+              </a>
             </div>
           </div>
         </div>
