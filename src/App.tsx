@@ -32,6 +32,9 @@ const HOLIDAYS = [
   "2026-03-24"
 ];
 
+// Spasi antara Pencarian dan Scroll Indicator (Gunakan class Tailwind: mt-2, mt-4, mt-8, dsb.)
+const SCROLL_SPACING = "mt-4"; 
+
 export default function App() {
   const {
     cart,
@@ -468,7 +471,7 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
-            className="mt-4 flex flex-col items-center gap-1 text-brand-orange dark:text-brand-yellow w-full"
+            className={`${SCROLL_SPACING} flex flex-col items-center gap-1 text-brand-orange dark:text-brand-yellow w-full`}
           >
             <motion.div
               animate={{ y: [0, 5, 0] }}
