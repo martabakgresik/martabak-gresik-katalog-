@@ -16,9 +16,10 @@ const AI_SUGGESTIONS = [
 interface AiAssistantProps {
   onAddToCart?: (item: Omit<CartItem, 'id' | 'quantity'>) => void;
   isOpen?: boolean;
+  promoCode?: string;
 }
 
-export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) => {
+export const AiAssistant = ({ onAddToCart, isOpen = false, promoCode = "MARTABAKBARU" }: AiAssistantProps) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
@@ -97,7 +98,7 @@ export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) =
               - FAVORIT: Beritahu mereka untuk klik ikon ❤️ (hati) di menu agar tersimpan di tab "Favorit" samping keranjang.
               - PENCARIAN: Jika mereka bingung, arahkan pakai Bar Pencarian di atas untuk cari rasa tertentu (misal: "Ayam", "Keju", "Pandan").
               - CHECKOUT PINTAR: Saat checkout, arahkan mereka pakai tombol "Perbaiki Alamat dengan AI" agar alamat akurat dan ongkir otomatis terhitung.
-              - PROMO: Ada diskon 10% untuk pembeli pertama via Katalog ini! Kodenya: MARTABAKBARU.
+              - PROMO: Ada diskon 10% untuk pembeli pertama via Katalog ini! Kodenya: ${promoCode}.
         
               GAYA KOMUNIKASI "SI PENJUAL":
               1. Gunakan panggilan "Kak" atau "Kakak" agar akrab.
