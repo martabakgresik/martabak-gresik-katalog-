@@ -8,7 +8,18 @@ import {
   MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
-import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "./data/menu";
+import { 
+  MENU_SWEET, 
+  MENU_SAVORY, 
+  ADDONS_SWEET, 
+  ADDONS_SAVORY,
+  OPEN_HOUR, 
+  CLOSE_HOUR, 
+  PROMO_CODE, 
+  PROMO_PERCENT, 
+  HOLIDAYS, 
+  SCROLL_SPACING 
+} from "./data/config";
 import { AiAssistant } from "./components/AiAssistant";
 
 interface FavoriteItem {
@@ -18,23 +29,7 @@ interface FavoriteItem {
   category?: string;
 }
 
-// --- CONSTANTS ---
-const OPEN_HOUR = 16; // 16:00
-const CLOSE_HOUR = 23; // 23:00
-const PROMO_CODE = "MARTABAKBARU";
-const PROMO_TEXT = `🔥 Diskon 10% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${PROMO_CODE})`;
-
-// Daftar Tanggal Libur (Format: YYYY-MM-DD)
-const HOLIDAYS = [
-  "2026-03-19", // Contoh: Libur Idul Fitri
-  "2026-03-20",
-  "2026-03-21",
-  "2026-03-23",
-  "2026-03-24"
-];
-
-// Spasi antara Pencarian dan Scroll Indicator (Gunakan class Tailwind: mt-2, mt-4, mt-8, dsb.)
-const SCROLL_SPACING = "mt-4"; 
+const PROMO_TEXT = `🔥 Diskon ${PROMO_PERCENT}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${PROMO_CODE})`;
 
 export default function App() {
   const {
@@ -277,9 +272,7 @@ export default function App() {
             exit={{ y: -50 }}
             className="bg-brand-orange text-brand-black text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
           >
-            <span className="flex-grow font-black text-brand-black/80">
-              🔥 Diskon 10% untuk Pembelian Pertama via Katalog! (Gunakan kode: <span className="bg-brand-black text-brand-yellow px-1.5 py-0.5 rounded-md inline-block animate-pulse">{PROMO_CODE}</span>)
-            </span>
+              🔥 Diskon {PROMO_PERCENT}% untuk Pembelian Pertama via Katalog! (Gunakan kode: <span className="bg-brand-black text-brand-yellow px-1.5 py-0.5 rounded-md inline-block animate-pulse">{PROMO_CODE}</span>)
             <button
               onClick={() => setShowPromo(false)}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
@@ -819,7 +812,7 @@ export default function App() {
       </div>
 
       {/* AI Assistant UI */}
-      <AiAssistant onAddToCart={addToCart} isOpen={isOpen} promoCode={PROMO_CODE} />
+      <AiAssistant onAddToCart={addToCart} isOpen={isOpen} promoCode={PROMO_CODE} promoPercent={PROMO_PERCENT} />
 
       {/* Cart Sidebar */}
       <AnimatePresence>

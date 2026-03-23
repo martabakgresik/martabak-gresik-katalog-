@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE } from "../data/config";
 
 export interface Addon {
   name: string;
@@ -22,8 +23,7 @@ export interface CartItem {
   image?: string;
 }
 
-export const SHIPPING_RATE_PER_KM = 2500;
-export const MAX_SHIPPING_DISTANCE = 10;
+
 
 export const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID", {

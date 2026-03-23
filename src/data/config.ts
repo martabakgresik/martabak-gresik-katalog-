@@ -1,8 +1,45 @@
-import { formatPrice } from "../hooks/useCart";
 import type { Addon } from "../hooks/useCart";
 
-const ASSET_BASE_URL = "/images"; // "https://raw.githubusercontent.com/username/martabak-gresik-assets/main/images";
+/**
+ * PUSAT KONTROL MARTABAK GRESIK ⚙️
+ * Edit file ini untuk merubah pengaturan toko tanpa menyentuh kode aplikasi.
+ */
 
+// ⏰ JAM OPERASIONAL
+export const OPEN_HOUR = 16;  // Jam Buka (16:00)
+export const CLOSE_HOUR = 23; // Jam Tutup (23:00)
+
+// 🎟️ PROMO & DISKON
+export const PROMO_CODE = "MARTABAKBARU"; // Kode yang harus dimasukkan pelanggan
+export const PROMO_PERCENT = 10;          // Persentase diskon (Misal: 10 untuk 10%)
+
+// 🗓️ DAFTAR HARI LIBUR / TUTUP (Format: YYYY-MM-DD)
+export const HOLIDAYS = [
+  "2026-03-19", 
+  "2026-03-20",
+  "2026-03-21",
+  "2026-03-23",
+  "2026-03-24"
+];
+
+// 📱 INFORMASI TOKO (Untuk AI Assistant)
+export const STORE_NAME = "Martabak Gresik";
+export const STORE_ADDRESS = "Jl. Usman Sadar No 10, Gresik";
+export const STORE_PHONE = "081330763633";
+export const SINCE_YEAR = "2020";
+
+// 🛵 PENGIRIMAN (Shipping)
+export const SHIPPING_RATE_PER_KM = 2500;
+export const MAX_SHIPPING_DISTANCE = 10;
+
+// ⬇️ UI SPACING
+// Jarak antara Pencarian dan Scroll Indicator (Gunakan class Tailwind: mt-2, mt-4, mt-8, dsb.)
+export const SCROLL_SPACING = "mt-4"; 
+
+// 🖼️ ASSETS
+const ASSET_BASE_URL = "/images";
+
+// 🍕 DATA MENU MANIS (Terang Bulan)
 export const MENU_SWEET = [
   {
     category: "Terang Bulan Standard",
@@ -13,7 +50,7 @@ export const MENU_SWEET = [
       { name: "Kacang + Coklat + Keju", price: 19000, isBestSeller: true, description: "Trio maut! Kacang, coklat, dan keju dalam satu balutan adonan lembut.", image: `${ASSET_BASE_URL}/sweet/kacang-coklat-keju.jpg` },
       { name: "Keju", price: 17000, isBestSeller: true, highlight: true, description: "Keju cheddar pilihan yang melimpah, lumer, dan super gurih.", image: `${ASSET_BASE_URL}/sweet/keju.jpg` },
       { name: "Keju + Kacang", price: 18000, highlight: true, description: "Gurihnya keju berpadu dengan renyahnya kacang tanah pilihan.", image: `${ASSET_BASE_URL}/sweet/keju-kacang.jpg` },
-      { name: "Keju + Coklat", price: 18000, highlight: true, description: "Harmoni sempurna antara manisnya coklat dan gurihnya keju premium.", image: `${ASSET_BASE_URL}/sweet/keju-coklat.jpg` },
+      { name: "Keju + Coklat", price: 18000, highlight: true, description: "Harmoni sempurna antara manisnya coklat and gurihnya keju premium.", image: `${ASSET_BASE_URL}/sweet/keju-coklat.jpg` },
     ],
   },
   {
@@ -36,8 +73,8 @@ export const MENU_SWEET = [
       { name: "Red Velvet Kacang Coklat", price: 16000, description: "Klasik kacang coklat kini hadir dengan gaya Red Velvet yang elegan.", image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat.jpg` },
       { name: "Red Velvet Kacang Coklat Keju", price: 21000, description: "Kombinasi topping paling lengkap khusus untuk pecinta Red Velvet.", image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat-keju.jpg` },
       { name: "Red Velvet Keju", price: 20000, highlight: true, description: "Kontras warna merah yang cantik dengan gurihnya keju melimpah.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju.jpg` },
-      { name: "Red Velvet Keju + Coklat", price: 21000, highlight: true, description: "Adonan mewah Red Velvet dengan topping favorit keju dan coklat.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-coklat.png` },
-      { name: "Red Velvet Keju + Kacang", price: 21000, highlight: true, description: "Perpaduan tekstur kacang renyah dan lembutnya keju Red Velvet.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-kacang.png` },
+      { name: "Red Velvet Keju + Coklat", price: 21000, highlight: true, description: "Adonan mewah Red Velvet dengan topping favorit keju and coklat.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-coklat.png` },
+      { name: "Red Velvet Keju + Kacang", price: 21000, highlight: true, description: "Perpaduan tekstur kacang renyah and lembutnya keju Red Velvet.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-kacang.png` },
     ],
   },
   {
@@ -45,22 +82,23 @@ export const MENU_SWEET = [
     items: [
       { name: "Blackforest Kacang", price: 25000, description: "Adonan coklat pekat yang rich dengan taburan kacang renyah.", image: `${ASSET_BASE_URL}/sweet/blackforest-kacang.jpg` },
       { name: "Blackforest Coklat", price: 25000, description: "Double chocolate! Adonan coklat dengan limpahan coklat butiran.", image: `${ASSET_BASE_URL}/sweet/blackforest-coklat.jpg` },
-      { name: "Blackforest Kacang Coklat", price: 26000, description: "Sensasi coklat hitam yang mewah dengan duo kacang dan coklat.", image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat.jpg` },
+      { name: "Blackforest Kacang Coklat", price: 26000, description: "Sensasi coklat hitam yang mewah dengan duo kacang and coklat.", image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat.jpg` },
       { name: "Blackforest Kacang Coklat Keju", price: 29000, description: "Varian premium terlengkap dengan adonan coklat Blackforest.", image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat-keju.jpg` },
       { name: "Blackforest Keju", price: 27000, highlight: true, isBestSeller: true, description: "Hitam manis berpadu dengan putih gurihnya keju cheddar pilihan.", image: `${ASSET_BASE_URL}/sweet/blackforest-keju.jpg` },
-      { name: "Blackforest Keju Kacang", price: 28000, highlight: true, description: "Coklat rich, keju gurih, dan kacang renyah dalam satu perpaduan.", image: `${ASSET_BASE_URL}/sweet/blackforest-keju-kacang.jpg` },
+      { name: "Blackforest Keju Kacang", price: 28000, highlight: true, description: "Coklat rich, keju gurih, and kacang renyah dalam satu perpaduan.", image: `${ASSET_BASE_URL}/sweet/blackforest-keju-kacang.jpg` },
       { name: "Blackforest Keju Coklat", price: 28000, highlight: true, description: "Kenikmatan maksimal bagi pecinta coklat tingkat tinggi.", image: `${ASSET_BASE_URL}/sweet/blackforest-keju-coklat.jpg` },
     ],
   },
 ];
 
+// 🍗 DATA MENU ASIN (Martabak Telor)
 export const MENU_SAVORY = [
   {
     title: "Daging Sapi",
     variants: [
       {
         type: "Telor Ayam",
-        description: "Martabak telor klasik dengan isian daging sapi bumbu rempah dan telor ayam segar.",
+        description: "Martabak telor klasik dengan isian daging sapi bumbu rempah and telor ayam segar.",
         prices: [
           { qty: 2, price: 25000, isBestSeller: true, highlight: true, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 3, price: 34000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
@@ -70,7 +108,7 @@ export const MENU_SAVORY = [
       },
       {
         type: "Telor Bebek",
-        description: "Rasa lebih gurih dan mantap dengan isian daging sapi dan telor bebek pilihan.",
+        description: "Rasa lebih gurih and mantap dengan isian daging sapi and telor bebek pilihan.",
         prices: [
           { qty: 2, price: 26000, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.png` },
           { qty: 3, price: 35000, image: `${ASSET_BASE_URL}/savory/martabak.png` },
@@ -110,7 +148,7 @@ export const MENU_SAVORY = [
     variants: [
       {
         type: "Samyang Ayam Pedas",
-        description: "Paduan unik Martabak Telor dengan Mie Samyang pedas dan daging ayam pilihan.",
+        description: "Paduan unik Martabak Telor dengan Mie Samyang pedas and daging ayam pilihan.",
         prices: [
           { qty: 2, price: 30000, desc: "2 Telor Bebek + Daging Ayam", image: `${ASSET_BASE_URL}/savory/martabak.png` },
         ],
@@ -126,6 +164,7 @@ export const MENU_SAVORY = [
   },
 ];
 
+// ➕ ADD-ONS (Tambahan)
 export const ADDONS_SWEET: Addon[] = [
   { name: 'Tambah Coklat', price: 3000 },
   { name: 'Tambah Kacang', price: 2000 },
