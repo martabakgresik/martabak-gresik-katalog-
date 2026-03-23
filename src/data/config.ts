@@ -24,7 +24,7 @@ export const HOLIDAYS = [
 
 // 📱 INFORMASI TOKO (Untuk AI Assistant)
 export const STORE_NAME = "Martabak Gresik";
-export const STORE_ADDRESS = "Jl. Usman Sadar No 10, Gresik";
+export const STORE_ADDRESS = "Jl. Usman Sadar No 10, Gresik, Jawa Timur, Indonesia";
 export const STORE_PHONE = "081330763633";
 export const SINCE_YEAR = "2020";
 
@@ -34,7 +34,7 @@ export const MAX_SHIPPING_DISTANCE = 10;
 
 // ⬇️ UI SPACING
 // Jarak antara Pencarian dan Scroll Indicator (Gunakan class Tailwind: mt-2, mt-4, mt-8, dsb.)
-export const SCROLL_SPACING = "mt-4"; 
+export const SCROLL_SPACING = "mt-2"; 
 
 // 🖼️ ASSETS
 const ASSET_BASE_URL = "/images";
