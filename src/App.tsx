@@ -4,7 +4,7 @@ import {
   Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X,
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
-  Sun, Moon, ArrowUp, Clock,
+  Sun, Moon, ArrowUp, Clock, ChevronDown,
   MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
@@ -460,6 +460,27 @@ export default function App() {
                   </div>
                 </button>
               )}
+            </motion.div>
+          </motion.div>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+            className="mt-4 flex flex-col items-center gap-1 text-brand-orange dark:text-brand-yellow w-full"
+          >
+            <motion.div
+              animate={{ y: [0, 5, 0] }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity, 
+                ease: "easeInOut" 
+              }}
+              className="flex flex-col items-center"
+            >
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] mb-1">Scroll Menu Below</span>
+              <ChevronDown className="w-5 h-5 animate-pulse" />
             </motion.div>
           </motion.div>
         </div>
