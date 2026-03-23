@@ -18,6 +18,7 @@ export interface CartItem {
   category?: string;
   note?: string;
   addons?: Addon[];
+  description?: string;
   image?: string;
 }
 

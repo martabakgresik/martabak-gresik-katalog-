@@ -5,7 +5,7 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock,
-  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send
+  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "./data/menu";
@@ -519,8 +519,18 @@ export default function App() {
                                 )}
                               </div>
                             )}
-                             <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'}`}>
+                              <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5`}>
                                {item.name}
+                               <button 
+                                 onClick={(e) => {
+                                   e.stopPropagation();
+                                   handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet');
+                                 }}
+                                 className="opacity-40 hover:opacity-100 hover:text-brand-orange transition-all p-0.5"
+                                 title="Detail Produk"
+                               >
+                                 <Info className="w-3.5 h-3.5" />
+                               </button>
                              </span>
                           </div>
                           <div className="flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-4 group-hover:border-brand-orange/50 transition-colors" />
@@ -528,7 +538,6 @@ export default function App() {
                             {formatPrice(item.price)}
                           </span>
                           <div className="flex items-center gap-2">
-
                             <button
                               onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
                               className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(item.name, section.category)
@@ -539,7 +548,7 @@ export default function App() {
                               <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
                             </button>
                             <button
-                              onClick={() => handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image }, 'sweet')}
+                              onClick={() => handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
                               className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
                             >
                               <Plus className="w-4 h-4" />
@@ -608,8 +617,23 @@ export default function App() {
                                     )}
                                   </div>
                                 )}
-                                <span className="text-sm opacity-80">
+                                <span className="text-sm opacity-80 flex items-center gap-1.5">
                                   {p.desc ? p.desc : `${p.qty} Telor`}
+                                  <button 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenAddonModal({
+                                        name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
+                                        price: p.price,
+                                        image: (p as any).image,
+                                        description: (variant as any).description
+                                      }, 'savory');
+                                    }}
+                                    className="opacity-40 hover:opacity-100 hover:text-brand-orange transition-all p-0.5"
+                                    title="Detail Produk"
+                                  >
+                                    <Info className="w-3 h-3" />
+                                  </button>
                                 </span>
                               </div>
                               <div className="flex items-center gap-3">
@@ -632,7 +656,8 @@ export default function App() {
                                     onClick={() => handleOpenAddonModal({
                                       name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
                                       price: p.price,
-                                      image: (p as any).image
+                                      image: (p as any).image,
+                                      description: (variant as any).description
                                     }, 'savory')}
                                     className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
                                   >
@@ -1242,7 +1267,19 @@ export default function App() {
                 <div>
                   <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Opsi Tambahan <span className="text-sm font-bold text-brand-orange lowercase not-italic">(Opsional)</span></h3>
                   <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-2">Pilih topping ekstra jika mau, atau langsung tambah keranjang.</p>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">{selectedItemForAddon.name}</p>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40 mb-3">{selectedItemForAddon.name}</p>
+                  
+                  {selectedItemForAddon.description && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-brand-black/5 dark:bg-white/5 p-4 rounded-2xl border border-brand-black/5 dark:border-white/5 mb-4"
+                    >
+                      <p className="text-xs font-medium leading-relaxed dark:text-white/80">
+                        {selectedItemForAddon.description}
+                      </p>
+                    </motion.div>
+                  )}
                 </div>
                 <button
                   onClick={() => setSelectedItemForAddon(null)}
