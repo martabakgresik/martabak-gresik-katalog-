@@ -520,7 +520,7 @@ export default function App() {
                               </div>
                             )}
                               <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5 min-w-0`}>
-                               <span className="truncate">{item.name}</span>
+                               <span className="whitespace-normal leading-tight">{item.name}</span>
                                <button 
                                  onClick={(e) => {
                                    e.stopPropagation();
@@ -534,7 +534,7 @@ export default function App() {
                              </span>
                           </div>
                           <div className="hidden sm:block flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-2 group-hover:border-brand-orange/50 transition-colors" />
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto mr-1">
                             <span className="font-bold tabular-nums dark:text-brand-yellow text-sm md:text-base">
                               {formatPrice(item.price)}
                             </span>
@@ -620,7 +620,7 @@ export default function App() {
                                   </div>
                                 )}
                                 <span className="text-sm font-medium opacity-90 flex items-center gap-1.5 min-w-0">
-                                  <span className="truncate">{p.desc ? p.desc : `${p.qty} Telor`}</span>
+                                  <span className="whitespace-normal leading-tight">{p.desc ? p.desc : `${p.qty} Telor`}</span>
                                   <button 
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -638,7 +638,7 @@ export default function App() {
                                   </button>
                                 </span>
                               </div>
-                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
                                 <span className="font-bold text-brand-yellow text-sm">{formatPrice(p.price)}</span>
                                 <div className="flex items-center gap-1.5 ml-1">
                                   <button
@@ -1672,7 +1672,7 @@ export default function App() {
                 alt={zoomedImage.alt} 
                 className="w-full h-auto max-h-[75vh] object-contain rounded-2xl shadow-2xl bg-black/50"
               />
-              <div className="mt-4 bg-black/50 backdrop-blur-md px-6 py-2 rounded-full text-white font-bold text-center border border-white/10 shadow-lg max-w-full truncate">
+              <div className="mt-4 bg-black/50 backdrop-blur-md px-6 py-2 rounded-full text-white font-bold text-center border border-white/10 shadow-lg max-w-full whitespace-normal">
                 {zoomedImage.alt}
               </div>
             </motion.div>

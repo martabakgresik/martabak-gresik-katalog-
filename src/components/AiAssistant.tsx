@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2 } from "lucide-react";
+import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send } from "lucide-react";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "../data/menu";
 import { formatPrice, type CartItem } from "../hooks/useCart";
 
@@ -73,47 +73,48 @@ export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) =
         },
         body: JSON.stringify({
           messages: [
-            { role: 'system', content: `Anda adalah Asisten Pintar Martabak Gresik yang ramah, gaul, dan ahli kuliner.
-              Tugas Anda adalah membantu pelanggan memilih menu. Gunakan data menu berikut:
+            { role: 'system', content: `Anda adalah "Si Penjual Martabak" dari Martabak Gresik (Sejak 2020) yang sangat proaktif, ramah, gaul, dan ahli dalam meyakinkan pelanggan. 
+              Tugas Anda bukan cuma menjawab, tapi berjualan dengan hati! Gunakan data menu berikut:
         
-              TERANG BULAN (Manis):
+              TERANG BULAN (Manis) - Paling Lembut di Gresik:
               ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${formatPrice(i.price)})`).join(', ')}`).join('\n')}
               
-              MARTABAK TELOR (Asin):
+              MARTABAK TELOR (Asin) - Gurihnya Nagih:
               ${MENU_SAVORY.map(s => `- ${s.title}: ${s.variants.map(v => `${v.type} (${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')})`).join(', ')}`).join('\n')}
               
-              TAMBAHAN (Add-ons):
+              TOPPING EXTRA (Add-ons) - Biar Makin Lumer & Kenyang:
               Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
               Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
         
-              INFORMASI TOKO:
-              - Alamat: Jl. Usman Sadar No 10, Gresik
-              - Jam Buka: 16.00 - 23.00 WIB
-              - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km)
-              - No Tlp: 081330763633
+              KNOWLEDGE BASE TOKO (Hafalkan!):
+              - Alamat: Jl. Usman Sadar No 10, Gresik (Outlet pusat).
+              - Jam Buka: 16.00 - 23.00 WIB (Buka setiap hari!).
+              - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km). Di atas 10km, arahkan ke GrabFood/GoFood/ShopeeFood.
+              - No Tlp/WA: 081330763633.
+              - Sejarah: Sudah jualan sejak 2020, terkenal dengan Terang Bulan Blackforest-nya.
         
-              ATURAN:
-              1. Jawab dengan gaya santai tapi sopan.
-              2. Jika ditanya menu, berikan rekomendasi dalam bentuk DAFTAR BULLET yang jelas dan rapi.
-              3. Jangan sarankan menu yang tidak ada di daftar.
-              4. Gunakan emoji agar menarik.
-              5. Jawab dalam Bahasa Indonesia atau bahasa yang di input oleh pengguna.
-              6. Gunakan UNGKAPAN YANG JELAS dan BARIS BARU (ENTER) untuk memisahkan poin-poin agar mudah dibaca.
+              FITUR WEBSITE (Arahkan Pelanggan):
+              - FAVORIT: Beritahu mereka untuk klik ikon ❤️ (hati) di menu agar tersimpan di tab "Favorit" samping keranjang.
+              - PENCARIAN: Jika mereka bingung, arahkan pakai Bar Pencarian di atas untuk cari rasa tertentu (misal: "Ayam", "Keju", "Pandan").
+              - CHECKOUT PINTAR: Saat checkout, arahkan mereka pakai tombol "Perbaiki Alamat dengan AI" agar alamat akurat dan ongkir otomatis terhitung.
+              - PROMO: Ada diskon 10% untuk pembeli pertama via Katalog ini! Kodenya: MARTABAKBARU.
+        
+              GAYA KOMUNIKASI "SI PENJUAL":
+              1. Gunakan panggilan "Kak" atau "Kakak" agar akrab.
+              2. Proaktif menawarkan: "Mau tambah Keju ekstra Kak biar makin lumer?" atau "Pilihan mantap! Menu ini favorit banget di sini."
+              3. Berikan rekomendasi dalam bentuk DAFTAR BULLET yang rapi.
+              4. Gunakan emoji yang relevan (🍕, 🌙, ✨, 🛵).
+              5. Jika stok ada yang habis, beritahukan dengan sopan.
               
               PROTOKOL CHECKOUT / PEMESANAN:
-              Jika pelanggan ingin checkout / memesan, sampaikan total harga dengan kalimat yang ramah dan sopan agar pelanggan tidak merasa tersinggung, lalu:
-              1. Minta kelengkapan data pengiriman: Nama, Alamat lengkap (beserta Nomor Rumah / Share Lokasi), dan Nomor HP aktif.
-              2. Untuk pengiriman > 10km, mohon maaf & informasikan pengiriman ditolak, lalu sarankan aplikasi online (GrabFood / ShopeeFood / GoFood).
-              3. TAMPILKAN GAMBAR QRIS dengan mengetikkan Murni Markdown Kode gambar seperti ini (SANGAT PENTING: Wajib pakai tanda seru '!' di awal): ![QRIS](/qris.png)
-                 DILARANG KERAS mengarang kode/nomor fiktif. PASTIKAN TIDAK ADA SPASI antara kurung siku dan kurung biasa.
-              4. TEGASKAN pelanggan harus membayar terlebih dahulu dan melampirkan bukti yang sah. Berikan peringatan yang tegas namun tetap menjaga kesopanan: "Mohon pastikan melampirkan bukti transfer yang sah ya Kak. Mohon maaf, tindakan memalsukan/mengedit bukti transfer adalah tindak pidana penipuan dan akan kami proses secara hukum."
-              5. Jika pelanggan SUDAH melengkapi data dan menyatakan sudah siap transfer / mengonfirmasi transfer, berikan RANGKUMAN PESANAN dan tombol Link WhatsApp persis format ini:
-                 [KIRIM BUKTI BAYAR & PESANAN KE WHATSAPP](https://wa.me/6281330763633?text=Halo%20Admin,%20saya%20sudah%20bayar%20via%20QRIS.%20Berikut%20pesanan%20saya:...)
-                 (PENTING: Ganti ... dengan detail pesanan secara URL-encoded. JANGAN MENULISKAN ISI PESAN TEKS WHATSAPP ("Halo Admin...") DI LUAR TOMBOL. Teks PESANAN HANYA Boleh ditulis di dalam link URL "?text=". ATURAN KETAT: DILARANG MENGGUNAKAN SIMBOL KURUNG "()" DI DALAM URL/LINK KARENA BISA MERUSAK TOMBOL! Selalu gunakan %20 untuk spasi dan %0A untuk enter).
-              6. REKOMENDASI MENU & KLIK PESAN: Jika kamu merekomendasikan menu apa pun, kamu WAJIB menyertakan link pesan di bawah nama menu dengan format:
-                 #add-to-cart|Kategori_Sesuai_Daftar|Nama_Sesuai_Daftar|Harga_Hanya_Angka
-                 Contoh Sempurna (WAJIB DITIRU): #add-to-cart|Terang Bulan Standard|Keju|17000
-                 SANGAT PENTING: JANGAN PERNAH BUNGKUS KODE ADD-TO-CART DENGAN MARKDOWN LINK [](). Tulis Polos Saja! Jangan gunakan backtick \` atau apapun.` },
+              Jika pelanggan ingin pesan, sampaikan rinciannya dengan semangat, lalu:
+              1. Minta Data: Nama, Alamat lengkap, dan No HP.
+              2. Ingatkan: Pakai fitur "Perbaiki Alamat dengan AI" di menu checkout ya Kak biar ongkirnya pas!
+              3. Pembayaran: TAMPILKAN GAMBAR QRIS: ![QRIS](/qris.png). Tegaskan harus transfer dulu dan kirim bukti bayar ke WA.
+              4. Warning: "Mohon melampirkan bukti transfer yang sah ya Kak. Edit bukti transfer itu dilarang hukum lho! 😊"
+              5. HUBUNGI WHATSAPP: Jangan tulis link manual. Gunakan format: #whatsapp|Pesan Anda.
+              6. RINGKASAN PESANAN: Jika data (Nama, Alamat, HP) sudah lengkap, wajib gunakan format: #checkout|Nama|Alamat|NoHP|TotalHarga|RingkasanMenu.
+              7. KLIK PESAN OTOMATIS: Setiap merekomendasikan menu, wajib sertakan: #add-to-cart|Kategori|Nama|Harga. PENTING: Jangan tulis kode ini di dalam backtick atau markdown apa pun.` },
             ...newMessages
           ],
           model: 'gemini-fast'
@@ -132,25 +133,23 @@ export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) =
   };
 
   const renderMessage = (content: string) => {
-    // 1. Bersihkan string dari format aneh AI
-    let cleanContent = content.replace(/[\x60*]/g, ''); // Hapus backtick dan asterisk bold
-    cleanContent = cleanContent.replace(/\\\\/g, ''); // Hapus escape slash
+    // 1. Bersihkan string dari format marakdown yang sering bocor (Backticks, Asterisks, Bold)
+    let cleanContent = content.replace(/[\x60*_*]/g, ''); 
     
     // 2. Buka paksa markdown add-to-cart (jika AI kebandel masih membungkus pakai format link)
     cleanContent = cleanContent.replace(/\[[^\]]*\]\s*\(\s*(#add-to-cart\|[^)]+)\s*\)/g, ' $1 ');
 
-    // PENTING: Regex ini menargetkan: 
-    // 1. Gambar ![alt](url)
-    // 2. Link text [text](url)
-    // 3. Payload add-to-cart mentah #add-to-cart|Ktg|Nama|...|Harga
-    const combinedRegex = /!\[([^\]]*)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|\[([^\]]+)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|(#add-to-cart\|(?:[^\n|]+\|)+\d+)/g;
+    // 3. Regex gabungan untuk Gambar, Link, Payload Add to Cart, WhatsApp, dan Checkout
+    const combinedRegex = /!\[([^\]]*)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|\[([^\]]+)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|(#add-to-cart\|(?:[^\n|]+\|)+[^\n\s]+)|(#whatsapp\|[^\n|]+)|(#checkout\|(?:[^\n|]+\|)+[^\n\s]+)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
 
     while ((match = combinedRegex.exec(cleanContent)) !== null) {
       if (match.index > lastIndex) {
-        parts.push(cleanContent.substring(lastIndex, match.index));
+        const textPart = cleanContent.substring(lastIndex, match.index);
+        const sanitizedText = textPart.replace(/#(add-to-cart|whatsapp|checkout)\|[^\s\n]*/g, '');
+        if (sanitizedText) parts.push(sanitizedText);
       }
       
       if (match[1] !== undefined) { // Gambar QRIS
@@ -159,52 +158,116 @@ export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) =
             <img 
               src={match[2].trim()} 
               alt={match[1]} 
-              className="w-full h-auto rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-brand-black/10 dark:border-white/10" 
+              className="w-full h-auto rounded-xl shadow-lg border border-brand-black/10 dark:border-white/10" 
             />
             <a 
               href={match[2].trim()} 
-              download="QRIS-Martabak-Gresik.png"
-              className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 hover:opacity-80 transition-all w-full shadow-md no-underline"
+              download="QRIS.png"
+              className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 no-underline"
             >
                UNDUH QRIS
             </a>
           </div>
         );
-      } else if (match[3] !== undefined) { // WA Link standard
+      } else if (match[3] !== undefined) { // Link standard
         parts.push(
           <a
             key={match.index}
             href={match[4].trim()}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block mt-2 mb-1 px-4 py-2 bg-[#25D366] text-white rounded-xl shadow-md border-b-[3px] border-[#1DA851] font-bold text-[11px] active:scale-95 hover:brightness-110 transition-all no-underline"
+            className="inline-block mt-2 mb-1 px-4 py-2 bg-brand-black text-white rounded-xl shadow-md font-bold text-[11px] no-underline"
           >
             {match[3]}
           </a>
         );
       } else if (match[5] !== undefined) { // Payload ADD TO CART
-        const safeDecode = (str: string) => { try { return decodeURIComponent(str.trim()) } catch { return str.trim() } };
-        const payloadParts = match[5].split('|').map(safeDecode);
-        const price = parseInt(payloadParts[payloadParts.length - 1], 10) || 0;
+        const payloadParts = match[5].split('|');
+        const priceStr = payloadParts[payloadParts.length - 1].replace(/[^\d]/g, '');
+        const price = parseInt(priceStr, 10) || 0;
         const category = payloadParts[1];
-        // Jika AI menambahkan ekstra pipe untuk varian produk, gabungkan seluruhnya menjadi nama lengkap
         const name = payloadParts.slice(2, payloadParts.length - 1).join(' - ');
         
         parts.push(
           <button
             key={match.index}
             onClick={() => onAddToCart && onAddToCart({ category, name, price })}
-            className="inline-flex items-center gap-1.5 mt-2 mb-1 px-4 py-2 bg-brand-orange text-white rounded-xl shadow-md border-b-[3px] border-orange-700 font-bold text-[11px] active:scale-95 hover:brightness-110 transition-all uppercase tracking-wider"
+            className="inline-flex items-center gap-1.5 mt-2 mb-1 px-4 py-2 bg-brand-orange text-white rounded-xl shadow-md border-b-[3px] border-orange-700 font-bold text-[11px] active:scale-95 hover:brightness-110 uppercase tracking-wider transition-all"
           >
-            <Plus className="w-3.5 h-3.5" /> PESAN {name.substring(0, 20)}{name.length > 20 ? '...' : ''}
+            <Plus className="w-3.5 h-3.5" /> PESAN {name.substring(0, 15)}
           </button>
+        );
+      } else if (match[6] !== undefined) { // Payload WHATSAPP
+        const message = match[6].split('|')[1];
+        const waUrl = `https://wa.me/6281330763633?text=${encodeURIComponent(message.trim())}`;
+        parts.push(
+          <a
+            key={match.index}
+            href={waUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 mt-3 mb-2 px-5 py-3 bg-[#25D366] text-white rounded-2xl shadow-xl border-b-[4px] border-[#1DA851] font-black text-[12px] active:scale-95 hover:brightness-110 transition-all no-underline uppercase italic tracking-wider"
+          >
+            <MessageCircle className="w-5 h-5" /> Hubungi Admin via WhatsApp
+          </a>
+        );
+      } else if (match[7] !== undefined) { // Payload CHECKOUT
+        const p = match[7].split('|');
+        const [_, nama, alamat, hp, total, menu] = p;
+        const waMsg = `Halo Admin Martabak Gresik!\n\nSaya ingin memesan:\n${menu}\n\n*Data Pengiriman:*\nNama: ${nama}\nAlamat: ${alamat}\nHP: ${hp}\n\n*Total:* ${total}\n\nMohon diproses ya Kak! 🙏✨`;
+        const waUrl = `https://wa.me/6281330763633?text=${encodeURIComponent(waMsg)}`;
+
+        parts.push(
+          <div key={match.index} className="bg-brand-black/5 dark:bg-white/5 border-2 border-brand-black dark:border-brand-yellow/30 p-5 rounded-[2rem] my-4 space-y-4 shadow-inner">
+            <div className="flex items-center gap-3 border-b-2 border-brand-black/10 dark:border-white/10 pb-3">
+              <div className="bg-brand-orange p-2 rounded-xl shadow-lg">
+                <Store className="w-4 h-4 text-white" />
+              </div>
+              <h4 className="font-black text-xs uppercase italic tracking-tighter dark:text-brand-yellow">Ringkasan Pesanan</h4>
+            </div>
+            
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase opacity-40 dark:text-white">Penerima:</p>
+              <p className="text-xs font-bold dark:text-white">{nama} - {hp}</p>
+              <p className="text-[10px] font-medium opacity-60 dark:text-white/60 leading-tight">{alamat}</p>
+            </div>
+
+            <div className="bg-white/40 dark:bg-black/40 p-3 rounded-xl border border-brand-black/5">
+              <p className="text-[10px] font-black uppercase opacity-40 mb-1">Menu:</p>
+              <p className="text-[11px] font-bold dark:text-white whitespace-pre-line">{menu}</p>
+            </div>
+
+            <div className="flex justify-between items-center bg-brand-black text-white dark:bg-brand-yellow dark:text-brand-black p-3 rounded-xl">
+              <span className="text-[10px] font-black uppercase italic">Total Bayar:</span>
+              <span className="text-sm font-black tracking-wider">{total}</span>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-[9px] font-black uppercase opacity-40 text-center">Scan QRIS untuk Bayar:</p>
+                <img src="/qris.png" alt="QRIS" className="w-32 h-32 rounded-xl border-2 border-brand-black shadow-lg bg-white p-1" />
+              </div>
+
+              <a
+                href={waUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 bg-[#25D366] text-white rounded-2xl shadow-xl border-b-[4px] border-[#1DA851] font-black text-xs uppercase italic flex items-center justify-center gap-3 active:scale-95 hover:brightness-110 transition-all no-underline tracking-widest"
+              >
+                <MessageCircle className="w-6 h-6" />
+                Kirim Pesanan ke WhatsApp
+              </a>
+            </div>
+          </div>
         );
       }
       lastIndex = match.index + match[0].length;
     }
 
     if (lastIndex < cleanContent.length) {
-      parts.push(cleanContent.substring(lastIndex));
+      const leftover = cleanContent.substring(lastIndex);
+      const sanitizedLeftover = leftover.replace(/#add-to-cart\|[^\s\n]*/g, '');
+      if (sanitizedLeftover) parts.push(sanitizedLeftover);
     }
 
     return parts.length > 0 ? parts : cleanContent;
@@ -333,9 +396,10 @@ export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) =
               />
               <button
                 disabled={isAiLoading || !aiInput.trim()}
-                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5"
+                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5 group"
+                title="Kirim Pesan"
               >
-                <MessageCircle className="w-4 h-4" />
+                <Send className="w-4 h-4 group-hover:translate-x-0.5 group-active:translate-x-1 transition-transform" />
               </button>
             </form>
           </motion.div>
