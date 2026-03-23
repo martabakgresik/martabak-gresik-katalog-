@@ -287,31 +287,31 @@ export const AiAssistant = ({ onAddToCart, isOpen = false }: AiAssistantProps) =
                 : 'w-[300px] sm:w-[350px] h-[450px] max-h-[calc(100dvh-120px)]'
             }`}
           >
-            <div className="bg-brand-black dark:bg-black p-4 text-white flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-3">
+            <div className="bg-brand-black dark:bg-black p-3 sm:p-4 text-white flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className="relative">
-                  <div className="w-9 h-9 bg-brand-yellow rounded-full overflow-hidden flex items-center justify-center shadow-inner">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-brand-yellow rounded-full overflow-hidden flex items-center justify-center shadow-inner">
                     <img src="/logo.webp" alt="Martabak Gresik Logo" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-brand-black shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-[pulse_2s_ease-in-out_infinite]" title="AI Online" />
                 </div>
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm tracking-wide whitespace-nowrap">Martabak Assistant</span>
-                    <span className="text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider border border-green-500/30">Online</span>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="font-bold text-[11px] sm:text-sm tracking-wide whitespace-nowrap truncate">Martabak Assistant</span>
+                    <span className="text-[8px] sm:text-[9px] bg-green-500/20 text-green-400 px-1 sm:px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider border border-green-500/30 hidden min-[400px]:block">Online</span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="flex h-2 w-2 relative">
                       <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
                       <span className={`relative inline-flex rounded-full h-2 w-2 ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
                     </span>
-                    <span className={`text-[10px] font-bold tracking-wider ${isOpen ? 'text-green-400' : 'text-red-400'}`}>
-                      {isOpen ? 'Toko Buka' : 'Toko Tutup (Buka 16:00)'}
+                    <span className={`text-[9px] sm:text-[10px] font-bold tracking-wider ${isOpen ? 'text-green-400' : 'text-red-400'} whitespace-nowrap`}>
+                      {isOpen ? 'Toko Buka' : 'Toko Tutup'}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
                   title={isExpanded ? "Perkecil Modal" : "Perbesar Modal"}
