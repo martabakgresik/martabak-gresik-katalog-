@@ -7,7 +7,7 @@ import {
   Sun, Moon, ArrowUp, Clock, ChevronDown,
   MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info
 } from "lucide-react";
-import { useCart, type CartItem, type Addon, SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, formatPrice } from "./hooks/useCart";
+import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
 import { 
   MENU_SWEET, 
   MENU_SAVORY, 
@@ -18,7 +18,9 @@ import {
   PROMO_CODE, 
   PROMO_PERCENT, 
   HOLIDAYS, 
-  SCROLL_SPACING 
+  SCROLL_SPACING,
+  SHIPPING_RATE_PER_KM,
+  MAX_SHIPPING_DISTANCE 
 } from "./data/config";
 import { AiAssistant } from "./components/AiAssistant";
 
