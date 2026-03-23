@@ -504,8 +504,8 @@ export default function App() {
                   <div className="space-y-3">
                     {section.items.map((item) => (
                       <div key={item.name} className="flex flex-col gap-2 group">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-3">
+                         <div className="flex justify-between items-center gap-2">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
                             {('image' in item) && (
                               <div 
                                 className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all relative"
@@ -519,40 +519,42 @@ export default function App() {
                                 )}
                               </div>
                             )}
-                              <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5`}>
-                               {item.name}
+                              <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5 min-w-0`}>
+                               <span className="truncate">{item.name}</span>
                                <button 
                                  onClick={(e) => {
                                    e.stopPropagation();
                                    handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet');
                                  }}
-                                 className="opacity-40 hover:opacity-100 hover:text-brand-orange transition-all p-0.5"
+                                 className="opacity-40 hover:opacity-100 hover:text-brand-orange transition-all p-0.5 flex-shrink-0"
                                  title="Detail Produk"
                                >
                                  <Info className="w-3.5 h-3.5" />
                                </button>
                              </span>
                           </div>
-                          <div className="flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-4 group-hover:border-brand-orange/50 transition-colors" />
-                          <span className="font-bold tabular-nums mr-4 dark:text-brand-yellow">
-                            {formatPrice(item.price)}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
-                              className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(item.name, section.category)
-                                ? 'bg-brand-orange text-white'
-                                : 'bg-brand-black/5 dark:bg-white/10 text-brand-black dark:text-white hover:bg-brand-orange/20'
-                                }`}
-                            >
-                              <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
-                            </button>
-                            <button
-                              onClick={() => handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
-                              className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
+                          <div className="hidden sm:block flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-2 group-hover:border-brand-orange/50 transition-colors" />
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span className="font-bold tabular-nums dark:text-brand-yellow text-sm md:text-base">
+                              {formatPrice(item.price)}
+                            </span>
+                            <div className="flex items-center gap-1.5 ml-2">
+                              <button
+                                onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
+                                className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(item.name, section.category)
+                                  ? 'bg-brand-orange text-white'
+                                  : 'bg-brand-black/5 dark:bg-white/10 text-brand-black dark:text-white hover:bg-brand-orange/20'
+                                  }`}
+                              >
+                                <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
+                              </button>
+                              <button
+                                onClick={() => handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
+                                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -602,8 +604,8 @@ export default function App() {
                         </h4>
                         <div className="space-y-3">
                           {variant.prices.map((p) => (
-                            <div key={p.qty} className="flex justify-between items-center bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors">
-                              <div className="flex items-center gap-3">
+                             <div key={p.qty} className="flex justify-between items-center gap-2 bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors shadow-sm">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
                                 {('image' in p) && (
                                   <div 
                                     className="w-10 h-10 rounded-lg bg-black/20 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all relative"
@@ -617,8 +619,8 @@ export default function App() {
                                     )}
                                   </div>
                                 )}
-                                <span className="text-sm opacity-80 flex items-center gap-1.5">
-                                  {p.desc ? p.desc : `${p.qty} Telor`}
+                                <span className="text-sm font-medium opacity-90 flex items-center gap-1.5 min-w-0">
+                                  <span className="truncate">{p.desc ? p.desc : `${p.qty} Telor`}</span>
                                   <button 
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -629,17 +631,16 @@ export default function App() {
                                         description: (variant as any).description
                                       }, 'savory');
                                     }}
-                                    className="opacity-40 hover:opacity-100 hover:text-brand-orange transition-all p-0.5"
+                                    className="opacity-40 hover:opacity-100 hover:text-brand-orange transition-all p-0.5 flex-shrink-0"
                                     title="Detail Produk"
                                   >
                                     <Info className="w-3 h-3" />
                                   </button>
                                 </span>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <span className="font-bold text-brand-yellow">{formatPrice(p.price)}</span>
-                                <div className="flex items-center gap-2">
-
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <span className="font-bold text-brand-yellow text-sm">{formatPrice(p.price)}</span>
+                                <div className="flex items-center gap-1.5 ml-1">
                                   <button
                                     onClick={() => toggleFavorite({
                                       name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
