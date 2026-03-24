@@ -327,10 +327,10 @@ export const AiAssistant = ({
             <a
               href="/katalog.png"
               download="Katalog_Martabak_Gresik.png"
-              className="flex items-center justify-center gap-2.5 w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest active:scale-95 transition-all no-underline shadow-lg group/dl"
+              className="flex flex-col items-center justify-center gap-1 w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-[0.1em] active:scale-95 transition-all no-underline shadow-lg group/dl"
             >
               <Download className="w-4 h-4 group-hover/dl:translate-y-0.5 transition-transform" />
-              <span>Unduh Katalog Lengkap</span>
+              <span className="leading-none">Download Katalog</span>
             </a>
           </div>
         );
