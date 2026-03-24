@@ -290,7 +290,7 @@ export const AiAssistant = ({
   };
 
   return (
-    <div className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50 flex flex-col items-start gap-4">
+    <div className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50 flex flex-col items-center gap-2">
       <AnimatePresence>
         {isAiOpen && (
           <motion.div
@@ -422,21 +422,6 @@ export const AiAssistant = ({
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {!isAiOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.9 }}
-            transition={{ duration: 0.3 }}
-            className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest shadow-lg relative mb-2 flex items-center justify-center mx-auto"
-          >
-            Tanya Kami 👋
-            <div className="absolute -bottom-1 left-1/2 -ml-1 w-2 h-2 bg-brand-black dark:bg-brand-yellow rotate-45" />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
@@ -446,6 +431,21 @@ export const AiAssistant = ({
       >
         {isAiOpen ? <X className="w-6 h-6" /> : <Store className="w-6 h-6" />}
       </motion.button>
+
+      <AnimatePresence>
+        {!isAiOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.9 }}
+            transition={{ duration: 0.3 }}
+            className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg relative flex items-center justify-center mx-auto"
+          >
+            Tanya Kami 👋
+            <div className="absolute -top-1 left-1/2 -ml-1 w-2 h-2 bg-brand-black dark:bg-brand-yellow rotate-45" />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
