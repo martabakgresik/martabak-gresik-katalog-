@@ -94,7 +94,7 @@ export const AiAssistant = ({
               TERANG BULAN (Manis) - Paling Lembut di Gresik:
               ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${formatPrice(i.price)})`).join(', ')}`).join('\n')}
               
-              MARTABAK TELOR (Asin) - Gurihnya Nagih:
+              MARTABAK TELOR (Asin) - Gurihnya Nagih dan Mantul:
               ${MENU_SAVORY.map(s => `- ${s.title}: ${s.variants.map(v => `${v.type} (${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')})`).join(', ')}`).join('\n')}
               
               TOPPING EXTRA (Add-ons) - Biar Makin Lumer & Kenyang:
@@ -104,9 +104,10 @@ export const AiAssistant = ({
               KNOWLEDGE BASE TOKO (Hafalkan!):
               - Alamat: Jl. Usman Sadar No 10, Gresik (Outlet pusat).
               - Jam Buka: 16.00 - 23.00 WIB (Buka setiap hari!).
-              - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km). Di atas 10km, arahkan ke GrabFood/GoFood/ShopeeFood.
+              - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km). Di atas 10km, WAJIB arahkan ke GrabFood/GoFood/ShopeeFood.
+              - NAMA TOKO DI APLIKASI: Instruksikan pelanggan untuk mengetik "Martabak Gresik Usman Sadar" atau "Martabak Gresik Drojogan" di kolom pencarian aplikasi tersebut (Gofood/Grabfood/Shopeefood).
               - No Tlp/WA: 081330763633.
-              - Sejarah: Sudah jualan sejak 2020, terkenal dengan Terang Bulan Blackforest-nya.
+              - Sejarah: Sudah jualan sejak 2020, terkenal dengan Terang Bulan Blackforest dan kacang coklat keju-nya.
         
               FITUR WEBSITE (Arahkan Pelanggan):
               - FAVORIT: Beritahu mereka untuk klik ikon ❤️ (hati) di menu agar tersimpan di tab "Favorit" samping keranjang.
