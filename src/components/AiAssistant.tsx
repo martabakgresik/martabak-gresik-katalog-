@@ -36,6 +36,7 @@ export const AiAssistant = ({
   const [aiTimer, setAiTimer] = useState(0);
   const aiMessagesEndRef = useRef<HTMLDivElement>(null);
   const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollAiToBottom = () => {
     aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -43,7 +44,14 @@ export const AiAssistant = ({
 
   useEffect(() => {
     if (isAiOpen) {
-      scrollAiToBottom();
+      const container = scrollContainerRef.current;
+      if (container) {
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
+        if (isNearBottom) {
+          scrollAiToBottom();
+        }
+      }
+      
       if (aiTextareaRef.current) {
         aiTextareaRef.current.style.height = 'auto';
         aiTextareaRef.current.style.height = `${Math.min(aiTextareaRef.current.scrollHeight, 120)}px`;
@@ -336,7 +344,7 @@ export const AiAssistant = ({
                 <button onClick={() => setIsAiOpen(false)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors"><X className="w-5 h-5" /></button>
               </div>
             </div>
-            <div className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20">
+            <div ref={scrollContainerRef} className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20 custom-scrollbar">
               {aiMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm whitespace-pre-wrap ${msg.role === 'user'
