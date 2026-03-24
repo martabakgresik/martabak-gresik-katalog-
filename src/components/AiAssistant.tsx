@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send } from "lucide-react";
+import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, User, Heart, Sparkles, AlertCircle, Box, CookingPot, Download } from "lucide-react";
 import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "../data/config";
 import { formatPrice, type CartItem } from "../hooks/useCart";
 
@@ -78,7 +78,32 @@ export const AiAssistant = ({
 
     try {
       const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
-      const systemPrompt = `Anda adalah Asisten Pintar Martabak Gresik yang ramah, gaul, dan ahli kuliner...`; // keeping it short for target content matching but I'll replace it fully in the actual call
+      const systemPrompt = `Anda adalah "Si Penjual Martabak" (Chef Mascot) dari Martabak Gresik (Sejak 2020) yang proaktif, ramah, dan jago jualan. 
+        Tugas Anda: Berjualan dengan hati! Jika pelanggan tanya menu, REKOMENDASIKAN dengan format #product-card.
+  
+        DATA MENU DENGAN GAMBAR (Penting!):
+        - TERANG BULAN (Manis):
+        ${MENU_SWEET.map(c => c.items.map(i => `- ${i.name} (${formatPrice(i.price)}) | Kategori: ${c.category} | Gambar: ${i.image}`).join('\n')).join('\n')}
+        
+        - MARTABAK TELOR (Asin):
+        ${MENU_SAVORY.map(s => s.variants.map(v => `- ${v.type} (${s.title}) | Gambar: ${v.prices[0].image} | Harga: ${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')}`).join('\n')).join('\n')}
+
+        ADD-ONS (Upselling):
+        - Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
+        - Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
+
+        PROTOKOL "SI PENJUAL":
+        1. UPSELLING: Tiap pelanggan pilih menu, wajib tawarkan Add-on yang relevan. Misal: "Pesan Martabak Sapi? Mau tambah Sosis Kak biar makin rame isinya?"
+        2. VISUAL CARD: Saat merekomendasikan menu spesifik, wajib gunakan format: #product-card|Kategori|Nama|Harga|ImageURL. (Maksimal 2 card per jawaban agar tidak penuh).
+        3. KATALOG GAMBAR: Jika pelanggan minta lihat buku menu, daftar harga lengkap, atau katalog fisik, gunakan format: #download-catalog.
+        4. SENTIMEN & HANDOVER: Jika pelanggan pakai kata "lambat", "error", "bingung", "kecewa", atau marah, segera minta maaf dan tampilkan format: #handover|Pesan Singkat Bantuan.
+        5. ADD TO CART: Tetap gunakan #add-to-cart|Kategori|Nama|Harga untuk tombol pesan cepat.
+        6. CHECKOUT: Jika data lengkap, gunakan #checkout|Nama|Alamat|NoHP|TotalHarga|RingkasanMenu.
+        7. WHATSAPP: Gunakan #whatsapp|Pesan untuk chat admin.
+        
+        PENTING: JANGAN PERNAH menuliskan kode-kode di atas (#product-card, #add-to-cart, dll) di dalam backticks (\x60). Tuliskan saja secara polos di dalam kalimat.
+        
+        GAYA BAHASA: Gaul, ramah, gunakan emoji (🍕, ✨, 🌙). Panggil pelanggan "Kak" atau "Kakak".`;
 
       const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
         method: 'POST',
@@ -88,49 +113,7 @@ export const AiAssistant = ({
         },
         body: JSON.stringify({
           messages: [
-            { role: 'system', content: `Anda adalah "Si Penjual Martabak" dari Martabak Gresik (Sejak 2020) yang sangat proaktif, ramah, gaul, kekinian dan ahli dalam meyakinkan pelanggan. 
-              Tugas Anda bukan cuma menjawab, tapi berjualan dengan hati! Gunakan data menu berikut:
-        
-              TERANG BULAN (Manis) - Paling Lembut di Gresik:
-              ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${formatPrice(i.price)})`).join(', ')}`).join('\n')}
-              
-              MARTABAK TELOR (Asin) - Gurihnya Nagih dan Mantul:
-              ${MENU_SAVORY.map(s => `- ${s.title}: ${s.variants.map(v => `${v.type} (${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')})`).join(', ')}`).join('\n')}
-              
-              TOPPING EXTRA (Add-ons) - Biar Makin Lumer & Kenyang:
-              Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
-              Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
-        
-              KNOWLEDGE BASE TOKO (Hafalkan!):
-              - Alamat: Jl. Usman Sadar No 10, Gresik (Outlet pusat).
-              - Jam Buka: 16.00 - 23.00 WIB (Buka setiap hari!).
-              - Jarak Kirim: Maksimal 10km (Ongkir Rp 2.500/km). Di atas 10km, WAJIB arahkan ke GrabFood/GoFood/ShopeeFood.
-              - NAMA TOKO DI APLIKASI: Instruksikan pelanggan untuk mengetik "Martabak Gresik Usman Sadar" atau "Martabak Gresik Drojogan" di kolom pencarian aplikasi tersebut (Gofood/Grabfood/Shopeefood).
-              - No Tlp/WA: 081330763633.
-              - Sejarah: Sudah jualan sejak 2020, terkenal dengan Terang Bulan Blackforest dan kacang coklat keju-nya.
-        
-              FITUR WEBSITE (Arahkan Pelanggan):
-              - FAVORIT: Beritahu mereka untuk klik ikon ❤️ (hati) di menu agar tersimpan di tab "Favorit" samping keranjang.
-              - PENCARIAN: Jika mereka bingung, arahkan pakai Bar Pencarian di atas untuk cari rasa tertentu (misal: "Ayam", "Keju", "Pandan").
-              - CHECKOUT PINTAR: Saat checkout, arahkan mereka pakai tombol "Perbaiki Alamat dengan AI" agar alamat akurat dan ongkir otomatis terhitung.
-              - PROMO: Ada diskon ${promoPercent}% untuk pembeli pertama via Katalog ini! Kodenya: ${promoCode}.
-        
-              GAYA KOMUNIKASI "SI PENJUAL":
-              1. Gunakan panggilan "Kak" atau "Kakak" agar akrab.
-              2. Proaktif menawarkan: "Mau tambah Keju ekstra Kak biar makin lumer?" atau "Pilihan mantap! Menu ini favorit banget di sini."
-              3. Berikan rekomendasi dalam bentuk DAFTAR BULLET yang rapi.
-              4. Gunakan emoji yang relevan (🍕, 🌙, ✨, 🛵).
-              5. Jika stok ada yang habis, beritahukan dengan sopan.
-              
-              PROTOKOL CHECKOUT / PEMESANAN:
-              Jika pelanggan ingin pesan, sampaikan rinciannya dengan semangat, lalu:
-              1. Minta Data: Nama, Alamat lengkap, dan No HP.
-              2. Ingatkan: Pakai fitur "Perbaiki Alamat dengan AI" di menu checkout ya Kak biar ongkirnya pas!
-              3. Pembayaran: TAMPILKAN GAMBAR QRIS: ![QRIS](/qris.png). Tegaskan harus transfer dulu dan kirim bukti bayar ke WA.
-              4. Warning: "Mohon melampirkan bukti transfer yang sah ya Kak. Edit bukti transfer itu dilarang hukum lho! 😊"
-              5. HUBUNGI WHATSAPP: Jangan tulis link manual. Gunakan format: #whatsapp|Pesan Anda.
-              6. RINGKASAN PESANAN: Jika data (Nama, Alamat, HP) sudah lengkap, wajib gunakan format: #checkout|Nama|Alamat|NoHP|TotalHarga|RingkasanMenu.
-              7. KLIK PESAN OTOMATIS: Setiap merekomendasikan menu, wajib sertakan: #add-to-cart|Kategori|Nama|Harga. PENTING: Jangan tulis kode ini di dalam backtick atau markdown apa pun.` },
+            { role: 'system', content: systemPrompt },
             ...newMessages
           ],
           model: 'gemini-fast'
@@ -155,8 +138,8 @@ export const AiAssistant = ({
     // 2. Buka paksa markdown add-to-cart (jika AI kebandel masih membungkus pakai format link)
     cleanContent = cleanContent.replace(/\[[^\]]*\]\s*\(\s*(#add-to-cart\|[^)]+)\s*\)/g, ' $1 ');
 
-    // 3. Regex gabungan untuk Gambar, Link, Payload Add to Cart, WhatsApp, dan Checkout
-    const combinedRegex = /!\[([^\]]*)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|\[([^\]]+)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|(#add-to-cart\|(?:[^\n|]+\|)+[^\n\s]+)|(#whatsapp\|[^\n|]+)|(#checkout\|(?:[^\n|]+\|)+[^\n\s]+)/g;
+    // 3. Regex gabungan untuk Gambar, Link, Payload Add to Cart, WhatsApp, Checkout, Product Card, Handover, dan Download Catalog
+    const combinedRegex = /!\[([^\]]*)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|\[([^\]]+)\]\s*\(((?:[^()]+|\([^()]*\))+)\)|(#add-to-cart\|(?:[^\n|]+\|)+[^\n\s]+)|(#whatsapp\|[^\n|]+)|(#checkout\|(?:[^\n|]+\|)+[^\n\s]+)|(#product-card\|(?:[^\n|]+\|)+[^\n\s]+)|(#handover\|[^\n|]+)|(#download-catalog)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
@@ -164,11 +147,12 @@ export const AiAssistant = ({
     while ((match = combinedRegex.exec(cleanContent)) !== null) {
       if (match.index > lastIndex) {
         const textPart = cleanContent.substring(lastIndex, match.index);
-        const sanitizedText = textPart.replace(/#(add-to-cart|whatsapp|checkout)\|[^\s\n]*/g, '');
+        // Hapus semua sisa kode mentah jika ada yang bocor ke teks
+        const sanitizedText = textPart.replace(/#(add-to-cart|whatsapp|checkout|product-card|handover|download-catalog)\|[^\s\n]*/g, '').replace(/#download-catalog/g, '');
         if (sanitizedText) parts.push(sanitizedText);
       }
       
-      if (match[1] !== undefined) { // Gambar QRIS
+      if (match[1] !== undefined) { // Gambar QRIS atau Gambar lain
         parts.push(
           <div key={match.index} className="flex flex-col gap-2 my-2 w-full max-w-[200px]">
             <img 
@@ -178,10 +162,10 @@ export const AiAssistant = ({
             />
             <a 
               href={match[2].trim()} 
-              download="QRIS.png"
-              className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 no-underline"
+              download={`${match[1] || 'image'}.png`}
+              className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 no-underline uppercase"
             >
-               UNDUH QRIS
+               UNDUH {match[1] || 'GAMBAR'}
             </a>
           </div>
         );
@@ -276,18 +260,119 @@ export const AiAssistant = ({
             </div>
           </div>
         );
+      } else if (match[8] !== undefined) { // Payload PRODUCT-CARD
+        const p = match[8].split('|');
+        const [_, category, name, price, img] = p;
+        parts.push(
+          <motion.div 
+            key={match.index}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-white/5 border border-brand-black/10 dark:border-white/10 rounded-3xl overflow-hidden my-4 shadow-xl max-w-[240px] group"
+          >
+            <div className="relative h-32 overflow-hidden">
+              <img src={img} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              <div className="absolute top-2 right-2 bg-brand-yellow text-brand-black text-[9px] font-black px-2 py-1 rounded-lg shadow-lg uppercase tracking-tighter">
+                {price}
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              <div>
+                <p className="text-[10px] font-black uppercase text-brand-orange leading-none mb-1">{category}</p>
+                <h4 className="text-xs font-black dark:text-white leading-tight line-clamp-1">{name}</h4>
+              </div>
+              <button
+                onClick={() => onAddToCart && onAddToCart({ category, name, price: parseInt(price.replace(/\D/g, '')) })}
+                className="w-full py-2.5 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-3 h-3" /> Pesan Sekarang
+              </button>
+            </div>
+          </motion.div>
+        );
+      } else if (match[9] !== undefined) { // Payload HANDOVER
+        const reason = match[9].split('|')[1];
+        parts.push(
+          <div key={match.index} className="bg-red-500/10 border-2 border-red-500/30 p-4 rounded-2xl my-4 space-y-3">
+            <div className="flex items-center gap-2 text-red-500">
+               <AlertCircle className="w-4 h-4" />
+               <span className="text-[10px] font-black uppercase tracking-wider">Butuh Bantuan Manusia?</span>
+            </div>
+            <p className="text-[11px] font-medium dark:text-white/80 leading-relaxed italic">
+              "{reason}"
+            </p>
+            <a
+              href={`https://wa.me/6281330763633?text=Halo%20Admin%20Martabak%20Gresik%2C%20saya%20mengalami%20kendala%3A%20${encodeURIComponent(reason)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3 bg-brand-black text-white rounded-xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all no-underline"
+            >
+              <MessageCircle className="w-4 h-4" /> Hubungi Admin (WhatsApp)
+            </a>
+          </div>
+        );
+      } else if (match[10] !== undefined) { // Payload DOWNLOAD-CATALOG
+        parts.push(
+          <div key={match.index} className="bg-white dark:bg-brand-black border-2 border-brand-black dark:border-brand-yellow p-4 rounded-[2rem] my-4 space-y-4 shadow-xl text-center overflow-hidden">
+            <div className="relative group rounded-2xl overflow-hidden shadow-inner border border-brand-black/5">
+               <img src="/katalog.png" alt="Katalog Martabak Gresik" className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500" />
+               <div className="absolute inset-0 bg-brand-black/20 group-hover:bg-brand-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <Maximize2 className="w-6 h-6 text-white" />
+               </div>
+            </div>
+            <div className="flex flex-col items-center gap-1.5">
+               <h4 className="font-black text-xs uppercase italic tracking-tighter dark:text-brand-yellow">Katalog Harga & Menu</h4>
+               <p className="text-[10px] opacity-60 dark:text-white/60">Satu gambar untuk semua harga, praktis disimpan!</p>
+            </div>
+            <a
+              href="/katalog.png"
+              download="Katalog_Martabak_Gresik.png"
+              className="flex items-center justify-center gap-2.5 w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl font-black text-[10px] sm:text-[11px] uppercase tracking-widest active:scale-95 transition-all no-underline shadow-lg group/dl"
+            >
+              <Download className="w-4 h-4 group-hover/dl:translate-y-0.5 transition-transform" />
+              <span>Unduh Katalog Lengkap</span>
+            </a>
+          </div>
+        );
       }
       lastIndex = match.index + match[0].length;
     }
 
     if (lastIndex < cleanContent.length) {
       const leftover = cleanContent.substring(lastIndex);
-      const sanitizedLeftover = leftover.replace(/#add-to-cart\|[^\s\n]*/g, '');
+      const sanitizedLeftover = leftover.replace(/#(add-to-cart|whatsapp|checkout|product-card|handover|download-catalog)\|[^\s\n]*/g, '').replace(/#download-catalog/g, '');
       if (sanitizedLeftover) parts.push(sanitizedLeftover);
     }
 
     return parts.length > 0 ? parts : cleanContent;
   };
+
+  const ChatMascot = ({ isBusy }: { isBusy: boolean }) => (
+    <motion.div
+      animate={isBusy ? { 
+        y: [0, -6, 0],
+        scale: [1, 1.05, 1]
+      } : { 
+        y: [0, -2, 0] 
+      }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      className="shrink-0 self-end mb-1"
+    >
+      <div className="w-7 h-7 sm:w-8 sm:h-8 bg-brand-yellow rounded-xl flex items-center justify-center shadow-md border-2 border-brand-black dark:border-brand-yellow relative overflow-hidden group">
+        <CookingPot className="w-4 h-4 sm:w-5 sm:h-5 text-brand-black group-hover:scale-110 transition-transform" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
+      </div>
+      {isBusy && (
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="absolute -top-1 -right-1 bg-brand-orange text-white p-0.5 rounded-full shadow-md"
+        >
+          <Sparkles className="w-2 h-2 sm:w-2.5 sm:h-2.5 animate-pulse" />
+        </motion.div>
+      )}
+    </motion.div>
+  );
 
   return (
     <div className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50 flex flex-col items-center gap-2">
@@ -345,10 +430,11 @@ export const AiAssistant = ({
                 <button onClick={() => setIsAiOpen(false)} className="hover:bg-white/10 p-1.5 rounded-full transition-colors"><X className="w-5 h-5" /></button>
               </div>
             </div>
-            <div ref={scrollContainerRef} className="flex-grow overflow-y-auto p-4 space-y-3 bg-brand-yellow/5 dark:bg-black/20 custom-scrollbar">
+            <div ref={scrollContainerRef} className="flex-grow overflow-y-auto p-4 space-y-4 bg-brand-yellow/5 dark:bg-black/20 custom-scrollbar">
               {aiMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-xs font-medium shadow-sm whitespace-pre-wrap ${msg.role === 'user'
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start items-end gap-2'}`}>
+                  {msg.role === 'assistant' && <ChatMascot isBusy={false} />}
+                  <div className={`max-w-[80%] p-3 rounded-2xl text-[11px] sm:text-xs font-medium shadow-sm whitespace-pre-wrap ${msg.role === 'user'
                     ? 'bg-brand-orange text-white rounded-tr-none'
                     : 'bg-white dark:bg-white/10 dark:text-white rounded-tl-none'
                     }`}>
@@ -357,11 +443,12 @@ export const AiAssistant = ({
                 </div>
               ))}
               {isAiLoading && (
-                <div className="flex justify-start">
+                <div className="flex justify-start items-end gap-2">
+                  <ChatMascot isBusy={true} />
                   <div className="bg-white dark:bg-white/10 p-4 rounded-2xl rounded-tl-none flex flex-col gap-2 min-w-[180px]">
                     <div className="flex items-center gap-3 text-[10px] font-bold dark:text-brand-yellow">
                       <div className="w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin" />
-                      <span className="animate-pulse">Mohon tunggu.. AI sedang menjawab...</span>
+                      <span className="animate-pulse italic">Sedang meracik jawaban lezat...</span>
                     </div>
                     <div className="flex justify-end pr-1">
                       <span className="text-[9px] font-mono opacity-40 tabular-nums">
