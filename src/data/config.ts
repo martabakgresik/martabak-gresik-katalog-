@@ -7,7 +7,7 @@ import type { Addon } from "../hooks/useCart";
 
 // ⏰ JAM OPERASIONAL
 export const OPEN_HOUR = 16;  // Jam Buka (16:00)
-export const CLOSE_HOUR = 21; // Jam Tutup (23:00)
+export const CLOSE_HOUR = 23; // Jam Tutup (23:00)
 
 // 🎟️ PROMO & DISKON
 export const PROMO_CODE = "MARTABAKBARU"; // Kode yang harus dimasukkan pelanggan

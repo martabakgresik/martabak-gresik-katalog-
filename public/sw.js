@@ -1,10 +1,15 @@
-const CACHE_NAME = 'martabak-gresik-v2'; // Increment version
+const CACHE_NAME = 'martabak-gresik-v3'; // Increment version
 const ASSETS = [
   '/',
   '/index.html',
   '/logo.webp',
+  '/icon.webp',
+  '/chef.ico',
+  '/logo.ico',
   '/martabak.webp',
-  '/terang-bulan.webp'
+  '/terang-bulan.webp',
+  '/manifest.json',
+  '/ariftitana.jpg'
 ];
 
 self.addEventListener('install', (event) => {
@@ -27,17 +32,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Strategy: Network-First falling back to Cache
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+
+  // Stale-While-Revalidate strategy for a balance of speed and freshness
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        return caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, networkResponse.clone());
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        // Don't cache if not a success or if it's a cross-origin request we don't want to cache
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
           return networkResponse;
+        }
+
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
         });
-      })
-      .catch(() => {
-        return caches.match(event.request);
-      })
+        return networkResponse;
+      }).catch(() => {
+        // Fallback or just return undefined if network fails and no cache
+      });
+
+      return cachedResponse || fetchPromise;
+    })
   );
 });

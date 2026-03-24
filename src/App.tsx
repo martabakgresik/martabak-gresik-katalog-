@@ -23,6 +23,9 @@ import {
   MAX_SHIPPING_DISTANCE 
 } from "./data/config";
 import { AiAssistant } from "./components/AiAssistant";
+import { LegalPages } from "./components/LegalPages";
+import { AboutMe } from "./components/AboutMe";
+import { CookieConsent } from "./components/CookieConsent";
 
 interface FavoriteItem {
   id: string;
@@ -89,6 +92,23 @@ export default function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHoliday, setIsHoliday] = useState(false);
   const [isCheckoutPhase, setIsCheckoutPhase] = useState(false);
+
+  // Legal & Privacy State
+  const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | null>(null);
+  const [showCookieConsent, setShowCookieConsent] = useState(false);
+
+  useEffect(() => {
+    const consent = localStorage.getItem('martabak_cookie_consent');
+    if (!consent) {
+      const timer = setTimeout(() => setShowCookieConsent(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleAcceptCookies = () => {
+    localStorage.setItem('martabak_cookie_consent', 'accepted');
+    setShowCookieConsent(false);
+  };
 
   useEffect(() => {
     const checkStatus = () => {
@@ -764,6 +784,37 @@ export default function App() {
             <p className="font-bold">
               Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity">Arif Tirtana</a>
             </p>
+            
+            <div className="flex flex-wrap justify-center gap-6 mt-4 md:mt-0 font-bold uppercase tracking-widest text-[9px] md:text-[10px]">
+              <button 
+                onClick={() => setActiveLegalPage('tos')}
+                className="hover:text-brand-orange transition-colors"
+                type="button"
+              >
+                Ketentuan Layanan
+              </button>
+              <button 
+                onClick={() => setActiveLegalPage('privacy')}
+                className="hover:text-brand-orange transition-colors"
+                type="button"
+              >
+                Kebijakan Privasi
+              </button>
+              <button 
+                onClick={() => setActiveLegalPage('deletion')}
+                className="hover:text-brand-orange transition-colors"
+                type="button"
+              >
+                Penghapusan Data
+              </button>
+              <button 
+                onClick={() => setActiveLegalPage('about')}
+                className="hover:text-brand-orange transition-colors"
+                type="button"
+              >
+                About Me
+              </button>
+            </div>
             
             <div className="flex gap-6">
               <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5 font-bold">
@@ -1699,6 +1750,31 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Legal Pages Overlay */}
+      <AnimatePresence>
+        {activeLegalPage && activeLegalPage !== 'about' && (
+          <LegalPages 
+            type={activeLegalPage as any} 
+            onClose={() => setActiveLegalPage(null)} 
+          />
+        )}
+        {activeLegalPage === 'about' && (
+          <AboutMe 
+            onClose={() => setActiveLegalPage(null)} 
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Cookie Consent Banner */}
+      <CookieConsent 
+        isVisible={showCookieConsent}
+        onAccept={handleAcceptCookies}
+        onViewPrivacy={() => {
+          setActiveLegalPage('privacy');
+          handleAcceptCookies();
+        }}
+      />
     </div>
   );
 }

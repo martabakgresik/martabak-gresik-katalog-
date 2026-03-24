@@ -3,19 +3,33 @@
   "short_name": "MartabakGresik",
   "description": "Katalog Menu Terang Bulan dan Martabak Telor Martabak Gresik",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#FFC107",
   "theme_color": "#000000",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/logo.webp",
       "sizes": "192x192",
-      "type": "image/webp"
+      "type": "image/webp",
+      "purpose": "any maskable"
     },
     {
       "src": "/logo.webp",
       "sizes": "512x512",
-      "type": "image/webp"
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "shopping"],
+  "screenshots": [
+    {
+      "src": "/logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Tampilan Katalog Martabak Gresik"
     }
   ]
 }
