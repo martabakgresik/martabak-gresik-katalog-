@@ -106,67 +106,6 @@ export function BlogView({ onClose }: BlogViewProps) {
     return () => window.removeEventListener('popstate', handleUrlChange);
   }, [posts]);
 
-  // --- SEO & Meta Tags ---
-  useEffect(() => {
-    // Helper to update meta tags by ID
-    const updateMeta = (id: string, content: string) => {
-      const el = document.getElementById(id);
-      if (el) el.setAttribute('content', content);
-    };
-
-    // Default Values
-    const defaults = {
-      title: "Martabak Gresik - Terang Bulan & Martabak Telor Autentik",
-      description: "Nikmati kelezatan Martabak Gresik. Menu lengkap Terang Bulan (Manis) dan Martabak Telor (Asin) dengan bahan berkualitas. Pesan sekarang via WhatsApp atau Food Apps!",
-      image: "https://martabakgresik.my.id/logo.webp",
-      url: "https://martabakgresik.my.id/blog"
-    };
-
-    if (selectedPost) {
-      const fullTitle = `${selectedPost.title} | Blog Martabak Gresik`;
-      const fullUrl = `https://martabakgresik.my.id/blog/${selectedPost.slug}`;
-      const imageUrl = selectedPost.thumbnail.startsWith('http') 
-        ? selectedPost.thumbnail 
-        : `https://martabakgresik.my.id${selectedPost.thumbnail}`;
-
-      document.title = fullTitle;
-      updateMeta('meta-description', selectedPost.excerpt);
-      updateMeta('og-title', fullTitle);
-      updateMeta('og-description', selectedPost.excerpt);
-      updateMeta('og-image', imageUrl);
-      updateMeta('og-url', fullUrl);
-      updateMeta('twitter-title', fullTitle);
-      updateMeta('twitter-description', selectedPost.excerpt);
-      updateMeta('twitter-image', imageUrl);
-    } else if (isNotFound) {
-      const nfTitle = "Artikel Tidak Ditemukan | Blog Martabak Gresik";
-      document.title = nfTitle;
-      updateMeta('meta-description', "Maaf, artikel yang Kakak cari tidak ditemukan.");
-      updateMeta('og-title', nfTitle);
-      updateMeta('og-url', window.location.href);
-    } else {
-      // Blog List View
-      const listTitle = "Blog Martabak Gresik - Tips, Promo & Info Kuliner";
-      document.title = listTitle;
-      updateMeta('meta-description', "Baca tips seru seputar kuliner, info promo martabak gresik, dan strategi bisnis UMKM di blog resmi kami.");
-      updateMeta('og-title', listTitle);
-      updateMeta('og-url', "https://martabakgresik.my.id/blog");
-    }
-
-    // Reset meta tags when component unmounts
-    return () => {
-      document.title = defaults.title;
-      updateMeta('meta-description', defaults.description);
-      updateMeta('og-title', defaults.title);
-      updateMeta('og-description', "Katalog menu digital Martabak Gresik. Terang Bulan Manis & Martabak Telor Asin Spesial.");
-      updateMeta('og-image', defaults.image);
-      updateMeta('og-url', "https://martabakgresik.my.id/");
-      updateMeta('twitter-title', defaults.title);
-      updateMeta('twitter-description', "Katalog menu digital Martabak Gresik. Terang Bulan Manis & Martabak Telor Asin Spesial.");
-      updateMeta('twitter-image', defaults.image);
-    };
-  }, [selectedPost, isNotFound]);
-
   const updateUrl = (slug: string | null) => {
     const path = slug ? `/blog/${slug}` : '/blog';
     window.history.pushState({}, '', path);
@@ -195,7 +134,32 @@ export function BlogView({ onClose }: BlogViewProps) {
   };
 
   return (
-    <div className="min-h-screen bg-brand-yellow dark:bg-brand-black transition-colors duration-300">
+    <div className="min-h-screen bg-brand-yellow dark:bg-brand-black transition-colors duration-300 font-sans">
+      {/* React 19 Dynamic Metadata Hoisting */}
+      {selectedPost ? (
+        <>
+          <title>{`${selectedPost.title} | Blog Martabak Gresik`}</title>
+          <meta name="description" content={selectedPost.excerpt} />
+          <meta property="og:title" content={selectedPost.title} />
+          <meta property="og:description" content={selectedPost.excerpt} />
+          <meta property="og:image" content={`https://martabakgresik.my.id${selectedPost.thumbnail}`} />
+          <meta property="og:url" content={`https://martabakgresik.my.id/blog/${selectedPost.slug}`} />
+          <meta name="twitter:title" content={selectedPost.title} />
+          <meta name="twitter:description" content={selectedPost.excerpt} />
+          <meta name="twitter:image" content={`https://martabakgresik.my.id${selectedPost.thumbnail}`} />
+        </>
+      ) : isNotFound ? (
+        <>
+          <title>Artikel Tidak Ditemukan | Martabak Gresik</title>
+          <meta name="description" content="Maaf, artikel yang Kakak cari tidak ditemukan di blog kami." />
+        </>
+      ) : (
+        <>
+          <title>Blog Martabak Gresik - Tips, Promo & Info Kuliner</title>
+          <meta name="description" content="Kumpulan tips kuliner, promo menarik, dan cerita di balik lezatnya Martabak Gresik." />
+        </>
+      )}
+
       <div ref={blogContainerRef} className="max-w-4xl mx-auto px-4 py-12 focus:outline-none">
         <AnimatePresence mode="wait">
           {isNotFound ? (
