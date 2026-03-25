@@ -10,6 +10,7 @@ import {
 import { formatPrice, type CartItem } from "../hooks/useCart";
 
 const AI_SUGGESTIONS = [
+  "Katalog Menu 📑",
   "Cara Order & Bayar 💳",
   "Rekomendasi Menu 🍕",
   "Promo Hari Ini 🎁",
@@ -103,7 +104,8 @@ PROTOKOL RESPONS:
 1. **AKRAB & GAUL**: Panggil "Kak", "Bestie", "Juragan". Pakai emoji kuliner 🥞🍖😋.
 2. **VISUALISASI**: WAJIB sisipkan kartu produk jika merekomendasikan menu! 
    Format: #product-card|Kategori|Nama Menu|Harga|URL_GAMBAR_ASLI
-   Contoh: #product-card|Terang Bulan Standard|Keju|17000|/images/sweet/keju.jpg
+   Jika user minta katalog/daftar menu/harga keseluruhan, gunakan: #download-catalog
+   Jika user bertanya cara bayar/pembayaran/QRIS/transfer, wajib gunakan: #show-qris
 3. **DILARANG REPETISI**: JANGAN PERNAH tulis ulang teks "PENGGUNA KLIK SHORTCUT" di jawaban Kakak.
 4. **CLEAN OUTPUT**: Jangan gunakan backticks (\`) atau simbol komputer lainnya di respon teks. Letakkan tag # di baris paling bawah.`;
 
@@ -145,7 +147,7 @@ PROTOKOL RESPONS:
     const cleanContent = content.replace(/[\x60]/g, '');
 
     // 2. Regex untuk menangkap semua pola tag internal (Mendukung spasi dalam payload)
-    const tagRegex = /(#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog)[^#\n]*|!\[[^\]]*\]\s*\([^)]+\)|\[[^\]]+\]\s*\([^)]+\))/g;
+    const tagRegex = /(#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog|show-qris)[^#\n]*|!\[[^\]]*\]\s*\([^)]+\)|\[[^\]]+\]\s*\([^)]+\))/g;
 
     // 3. Pecah konten berdasarkan tag
     const parts = cleanContent.split(tagRegex);
@@ -235,17 +237,57 @@ PROTOKOL RESPONS:
 
         if (tag === '#download-catalog') {
           return (
-            <div key={index} className="bg-white dark:bg-black p-4 rounded-[2rem] border-2 border-brand-black my-4 shadow-xl text-center">
-              <img src="/katalog.png" className="w-full rounded-2xl mb-3" />
-              <a href="/katalog.png" download className="block py-4 bg-brand-black text-white rounded-2xl font-black text-[10px] no-underline">Download Katalog</a>
-            </div>
+            <motion.div key={index} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-white/5 border-2 border-brand-black dark:border-brand-yellow/50 rounded-[2.5rem] overflow-hidden my-6 shadow-2xl max-w-[280px] mx-auto group">
+              <div className="relative aspect-[3/4] overflow-hidden bg-brand-yellow/10">
+                <img src="/katalog.png" alt="Katalog Martabak Gresik" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent opacity-60" />
+                <div className="absolute bottom-4 left-0 right-0 text-center">
+                  <span className="bg-brand-yellow text-brand-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">Digital Catalog v2024</span>
+                </div>
+              </div>
+              <div className="p-5 bg-white dark:bg-black/40 backdrop-blur-sm space-y-4">
+                <div className="text-center">
+                  <h4 className="text-sm font-black dark:text-white uppercase tracking-tighter mb-1">Katalog Produk Lengkap</h4>
+                  <p className="text-[10px] text-brand-black/60 dark:text-white/60 font-medium">Download untuk simpan di galeri HP Kakak</p>
+                </div>
+                <a href="/katalog.png" download="Katalog-Martabak-Gresik.png" className="flex items-center justify-center gap-3 w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl no-underline group/btn">
+                  <Download className="w-4 h-4 group-hover/btn:bounce" /> 
+                  Simpan Katalog
+                </a>
+              </div>
+            </motion.div>
+          );
+        }
+
+        if (tag === '#show-qris') {
+          return (
+            <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-white/10 p-6 rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow shadow-[0_20px_50px_rgba(0,0,0,0.1)] my-6 text-center max-w-[280px] mx-auto relative overflow-hidden group">
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-yellow via-brand-orange to-brand-yellow animate-gradient-x" />
+              <div className="mb-4">
+                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-orange mb-1">Metode Pembayaran</h4>
+                <div className="h-0.5 w-12 bg-brand-black dark:bg-brand-yellow mx-auto" />
+              </div>
+              <div className="bg-white p-3 rounded-3xl shadow-inner mb-5 relative group-hover:scale-105 transition-transform duration-500">
+                <img src="/qris.png" alt="QRIS Martabak Gresik" className="w-full aspect-square object-contain rounded-xl" />
+                <div className="absolute inset-0 border-2 border-brand-black/5 rounded-3xl pointer-events-none" />
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">QRIS Real-time</span>
+                </div>
+                <p className="text-[9px] text-brand-black/60 dark:text-white/70 font-bold leading-relaxed">Scan kode di atas menggunakan m-banking atau e-wallet favorit Kakak</p>
+              </div>
+              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-brand-yellow/10 rounded-full blur-2xl" />
+              <div className="absolute -top-6 -left-6 w-24 h-24 bg-brand-orange/10 rounded-full blur-2xl" />
+            </motion.div>
           );
         }
       }
 
       // CASE: Text Biasa (Pastikan sisa-sisa tag and prefix teknis dibersihkan)
       const sanitizedPart = part
-        .replace(/#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog)[^#\n]*/g, '')
+        .replace(/#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog|show-qris)[^#\n]*/g, '')
         .replace(/PENGGUNA KLIK SHORTCUT:\s*/gi, '')
         .replace(/[\x60#|]/g, '') // Hapus sisa backticks, pagar, atau separator yang bocor
         .trim();
