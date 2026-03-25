@@ -14,6 +14,15 @@ export function BlogView({ onClose }: BlogViewProps) {
   const [copied, setCopied] = useState(false);
   const posts = getBlogPosts();
 
+  const blogContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Auto-scroll when post changes or blog mounts
+  React.useEffect(() => {
+    if (blogContainerRef.current) {
+      blogContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [selectedPost]);
+
   // SEO Metadata Update
   React.useEffect(() => {
     const defaultTitle = "Martabak Gresik - Terang Bulan & Martabak Telor Autentik";
@@ -107,7 +116,7 @@ export function BlogView({ onClose }: BlogViewProps) {
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black transition-colors duration-300">
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div ref={blogContainerRef} className="max-w-4xl mx-auto px-4 py-12 focus:outline-none">
         <AnimatePresence mode="wait">
           {!selectedPost ? (
             <motion.div
