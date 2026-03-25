@@ -5,7 +5,7 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock, ChevronDown,
-  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info
+  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
 import { 
@@ -26,6 +26,7 @@ import { AiAssistant } from "./components/AiAssistant";
 import { LegalPages } from "./components/LegalPages";
 import { AboutMe } from "./components/AboutMe";
 import { CookieConsent } from "./components/CookieConsent";
+import { BlogView } from "./components/BlogView";
 
 interface FavoriteItem {
   id: string;
@@ -96,6 +97,7 @@ export default function App() {
   // Legal & Privacy State
   const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
+  const [currentView, setCurrentView] = useState<'catalog' | 'blog'>('catalog');
 
   useEffect(() => {
     const consent = localStorage.getItem('martabak_cookie_consent');
@@ -133,7 +135,13 @@ export default function App() {
   // Deep Linking Effect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const pathname = window.location.pathname;
     const itemName = params.get('item');
+
+    if (pathname.startsWith('/blog')) {
+      setCurrentView('blog');
+    }
+
     if (itemName) {
       setTimeout(() => {
         const elements = document.getElementsByTagName('*');
@@ -338,7 +346,16 @@ export default function App() {
 
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center">
           <div className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full">
-            <div className="relative">
+            <motion.div 
+              className="relative cursor-pointer group"
+              whileHover={{ scale: 1.05, rotate: 5 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                setCurrentView('catalog');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.history.pushState({}, '', '/');
+              }}
+            >
               {!imagesLoaded['/logo.webp'] && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />}
               <img
                 src="/logo.webp"
@@ -347,7 +364,7 @@ export default function App() {
                 onLoad={() => handleImageLoad('/logo.webp')}
                 referrerPolicy="no-referrer"
               />
-            </div>
+            </motion.div>
             <div className="text-left">
               <div className="flex flex-wrap items-center justify-start gap-1.5 md:gap-2 mb-2">
                 <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest inline-block whitespace-nowrap">
@@ -358,9 +375,18 @@ export default function App() {
                   {isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'BUKA' : 'TUTUP (Buka 16:00)'}
                 </div>
               </div>
-              <h1 className="text-3xl md:text-7xl font-display font-black tracking-tighter text-brand-yellow uppercase leading-none">
-                Martabak <br className="md:hidden" /> Gresik
-              </h1>
+              <motion.h1
+                className="text-3xl md:text-6xl font-display font-black tracking-tighter uppercase leading-[0.85] cursor-pointer hover:text-brand-yellow transition-colors"
+                whileHover={{ scale: 1.02 }}
+                onClick={() => {
+                  setCurrentView('catalog');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  window.history.pushState({}, '', '/');
+                }}
+              >
+                Martabak<br />
+                <span className="text-brand-yellow font-display">Gresik</span>
+              </motion.h1>
               <p className="text-xs md:text-2xl font-medium text-brand-orange italic mt-1 md:mt-2">
                 Terang Bulan dan Martabak Telor
               </p>
@@ -409,15 +435,20 @@ export default function App() {
             transition={{ delay: 0.4 }}
             className="mt-8 flex flex-wrap items-center justify-center gap-4"
           >
-            <motion.a
-              href="#menu-section"
+            <motion.button
+              onClick={() => {
+                setCurrentView('catalog');
+                setTimeout(() => {
+                  document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50"
             >
               <ShoppingBag className="w-5 h-5" />
               Pesan Sekarang
-            </motion.a>
+            </motion.button>
           </motion.div>
 
           {/* Search Bar */}
@@ -457,7 +488,15 @@ export default function App() {
                 type="text"
                 placeholder="Cari menu (Misal: Keju, Ayam, sapi, Pandan)..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  if (currentView !== 'catalog') {
+                    setCurrentView('catalog');
+                    setTimeout(() => {
+                      document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }
+                }}
                 onFocus={() => setIsSearchOpen(true)}
                 onBlur={() => {
                   if (!searchQuery) setIsSearchOpen(false);
@@ -506,7 +545,16 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main id="menu-section" className="max-w-7xl mx-auto px-4 py-8 md:py-12 scroll-mt-8">
+      <AnimatePresence mode="wait">
+        {currentView === 'catalog' ? (
+          <motion.main 
+            key="catalog"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            id="menu-section" 
+            className="max-w-7xl mx-auto px-4 py-8 md:py-12 scroll-mt-8"
+          >
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
 
@@ -750,7 +798,18 @@ export default function App() {
             </motion.div>
           </section>
         </div>
-      </main>
+      </motion.main>
+      ) : (
+        <motion.div
+          key="blog"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+        >
+          <BlogView onClose={() => setCurrentView('catalog')} />
+        </motion.div>
+      )}
+      </AnimatePresence>
 
       {/* Footer */}
       <footer className="bg-brand-black text-white py-12 px-6 mt-20 relative overflow-hidden">
@@ -787,7 +846,19 @@ export default function App() {
             
             <div className="flex flex-wrap justify-center gap-6 mt-4 md:mt-0 font-bold uppercase tracking-widest text-[9px] md:text-[10px]">
               <button 
-                onClick={() => setActiveLegalPage('tos')}
+                onClick={() => { 
+                  setCurrentView('blog'); 
+                  setTimeout(() => {
+                    document.getElementById('blog-top-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }}
+                className="text-brand-orange hover:underline transition-all flex items-center gap-1"
+                type="button"
+              >
+                <BookOpen className="w-3 h-3" /> Blog Martabak
+              </button>
+              <button 
+                onClick={() => { setCurrentView('catalog'); setActiveLegalPage('tos'); }}
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
@@ -835,7 +906,7 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90"
+            className="p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90"
               title="Kembali ke Atas"
             >
               <ArrowUp className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
