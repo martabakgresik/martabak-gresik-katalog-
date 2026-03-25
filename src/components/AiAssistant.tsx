@@ -253,7 +253,7 @@ PRINSIP KOMUNIKASI & JUALAN:
                 <img src="/katalog.png" alt="Katalog Martabak Gresik" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent opacity-60" />
                 <div className="absolute bottom-4 left-0 right-0 text-center">
-                  <span className="bg-brand-yellow text-brand-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">Digital Catalog v2024</span>
+                  <span className="bg-brand-yellow text-brand-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">Digital Catalog v2026</span>
                 </div>
               </div>
               <div className="p-5 bg-white dark:bg-black/40 backdrop-blur-sm space-y-4">
