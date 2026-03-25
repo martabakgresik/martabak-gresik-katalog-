@@ -5,7 +5,7 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock, ChevronDown,
-  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen
+  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
 import { 
@@ -1250,8 +1250,8 @@ export default function App() {
                         <div className="flex justify-between items-start gap-2">
                           <div className="flex items-start gap-3">
                             {item.image && (
-                              <div className="w-12 h-12 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-brand-orange transition-all ring-transparent" onClick={() => setZoomedImage({src: item.image!, alt: item.name})}>
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                              <div className="w-16 h-16 rounded-2xl bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 cursor-pointer hover:ring-4 hover:ring-brand-orange/30 transition-all ring-transparent shadow-md" onClick={() => setZoomedImage({src: item.image!, alt: item.name})}>
+                                <img src={item.image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
                               </div>
                             )}
                             <div>
@@ -1422,30 +1422,40 @@ export default function App() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-sm bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow z-[90] p-8 shadow-2xl overflow-y-auto max-h-[90vh]"
             >
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Opsi Tambahan <span className="text-sm font-bold text-brand-orange lowercase not-italic">(Opsional)</span></h3>
-                  <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-2">Pilih topping ekstra jika mau, atau langsung tambah keranjang.</p>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40 mb-3">{selectedItemForAddon.name}</p>
-                  
-                  {selectedItemForAddon.description && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-brand-black/5 dark:bg-white/5 p-4 rounded-2xl border border-brand-black/5 dark:border-white/5 mb-4"
-                    >
-                      <p className="text-xs font-medium leading-relaxed dark:text-white/80">
-                        {selectedItemForAddon.description}
-                      </p>
-                    </motion.div>
-                  )}
+              <div className="flex flex-col gap-4 mb-6">
+                {selectedItemForAddon.image && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="w-full aspect-[4/3] rounded-3xl overflow-hidden bg-brand-black/5 dark:bg-white/5 border-2 border-brand-black/10 dark:border-white/10 shadow-lg relative cursor-pointer"
+                    onClick={() => setZoomedImage({src: selectedItemForAddon.image!, alt: selectedItemForAddon.name})}
+                  >
+                    <img 
+                      src={selectedItemForAddon.image} 
+                      alt={selectedItemForAddon.name} 
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 right-3 bg-brand-black/20 backdrop-blur-md p-2 rounded-full text-white">
+                      <Maximize2 className="w-4 h-4" />
+                    </div>
+                  </motion.div>
+                )}
+                
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow leading-tight">
+                      Opsi Tambahan <span className="text-sm font-bold text-brand-orange lowercase not-italic">(Opsional)</span>
+                    </h3>
+                    <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-1">Pilih topping ekstra supaya makin mantap Kak!</p>
+                    <p className="text-xs font-bold text-brand-orange uppercase tracking-wider mb-2">{selectedItemForAddon.name}</p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedItemForAddon(null)}
+                    className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white shrink-0"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setSelectedItemForAddon(null)}
-                  className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
 
               <div className="space-y-3 mb-6">
