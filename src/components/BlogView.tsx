@@ -11,17 +11,19 @@ interface BlogViewProps {
 
 export function BlogView({ onClose }: BlogViewProps) {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
-  const posts = getBlogPosts();
+  
+  const posts = useMemo(() => getBlogPosts(), []);
 
   const blogContainerRef = React.useRef<HTMLDivElement>(null);
 
-  // Auto-scroll when post changes or blog mounts
+  // Initial scroll to blog header when mounting the view
   React.useEffect(() => {
-    if (blogContainerRef.current) {
+    if (blogContainerRef.current && !window.location.pathname.includes('/blog/')) {
       blogContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [selectedPost]);
+  }, []);
 
   // SEO Metadata Update
   React.useEffect(() => {
@@ -47,6 +49,16 @@ export function BlogView({ onClose }: BlogViewProps) {
       updateTag('twitter-title', 'content', fullTitle);
       updateTag('twitter-description', 'content', selectedPost.excerpt);
       updateTag('twitter-image', 'content', baseUrl + selectedPost.thumbnail);
+    } else if (isNotFound) {
+      const fullTitle = `Artikel Tidak Ditemukan | Blog Martabak Gresik`;
+      document.title = fullTitle;
+      const updateTag = (id: string, attr: string, value: string) => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute(attr, value);
+      };
+      updateTag('meta-description', 'content', "Maaf, artikel yang Anda cari tidak dapat ditemukan.");
+      updateTag('og-title', 'content', fullTitle);
+      updateTag('og-url', 'content', window.location.href);
     } else {
       document.title = defaultTitle;
       const resetTag = (id: string, attr: string, value: string) => {
@@ -62,7 +74,7 @@ export function BlogView({ onClose }: BlogViewProps) {
       resetTag('twitter-description', 'content', "Katalog menu digital Martabak Gresik. Terang Bulan Manis & Martabak Telor Asin Spesial.");
       resetTag('twitter-image', 'content', defaultImage);
     }
-  }, [selectedPost]);
+  }, [selectedPost, isNotFound]);
 
   // Sync with URL slug on mount and popstate
   React.useEffect(() => {
@@ -70,16 +82,22 @@ export function BlogView({ onClose }: BlogViewProps) {
       const pathname = window.location.pathname;
       if (pathname.startsWith('/blog/')) {
         const slug = pathname.split('/blog/')[1];
+        if (!slug) {
+          setSelectedPost(null);
+          setIsNotFound(false);
+          return;
+        }
         const post = posts.find(p => p.slug === slug);
         if (post) {
           setSelectedPost(post);
+          setIsNotFound(false);
         } else {
-          // If the post is no longer in the list, go back to list view
           setSelectedPost(null);
-          window.history.replaceState({}, '', '/blog');
+          setIsNotFound(true);
         }
       } else {
         setSelectedPost(null);
+        setIsNotFound(false);
       }
     };
 
@@ -118,7 +136,29 @@ export function BlogView({ onClose }: BlogViewProps) {
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black transition-colors duration-300">
       <div ref={blogContainerRef} className="max-w-4xl mx-auto px-4 py-12 focus:outline-none">
         <AnimatePresence mode="wait">
-          {!selectedPost ? (
+          {isNotFound ? (
+            <motion.div
+              key="404"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="py-20 text-center space-y-8 bg-white/10 rounded-[3rem] border-2 border-dashed border-brand-black/10 dark:border-white/10 backdrop-blur-sm"
+            >
+              <div className="space-y-4">
+                <div className="text-8xl md:text-9xl font-black text-brand-black/10 dark:text-brand-yellow/10">404</div>
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">Opps! Artikel Hilang</h2>
+                <p className="text-brand-black/60 dark:text-brand-yellow/60 font-medium max-w-md mx-auto px-6">
+                  Maaf Kak, artikel yang Kakak cari sepertinya sudah dipindahkan atau dihapus. Jangan sedih, masih banyak cerita lezat lainnya!
+                </p>
+              </div>
+              <button
+                onClick={handleBack}
+                className="bg-brand-orange text-white px-10 py-4 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50 mx-auto active:scale-95"
+              >
+                <BookOpen className="w-5 h-5" /> Lihat Artikel Lainnya
+              </button>
+            </motion.div>
+          ) : !selectedPost ? (
             <motion.div
               key="list"
               initial={{ opacity: 0, y: 20 }}
@@ -154,7 +194,8 @@ export function BlogView({ onClose }: BlogViewProps) {
                       onClick={() => {
                         setSelectedPost(post);
                         updateUrl(post.slug);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        // Explicit scroll to top using the ref
+                        blogContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }}
                     >
                       <div className="flex flex-col md:flex-row h-full">
@@ -257,7 +298,6 @@ export function BlogView({ onClose }: BlogViewProps) {
                   [&>table_th]:bg-brand-orange/10 [&>table_th]:text-brand-orange [&>table_th]:p-2 md:[&>table_th]:p-3 [&>table_th]:text-left [&>table_th]:border [&>table_th]:border-brand-black/10 [&>table_th]:dark:border-white/10
                   [&>table_td]:p-2 md:[&>table_td]:p-3 [&>table_td]:border [&>table_td]:border-brand-black/10 [&>table_td]:dark:border-white/10
                 ">
-                  <div id="blog-top-anchor" className="absolute -top-32" />
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {selectedPost.content}
                   </ReactMarkdown>

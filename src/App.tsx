@@ -187,6 +187,12 @@ export default function App() {
   }, [isDarkMode]);
 
   useEffect(() => {
+    if (currentView === 'blog') {
+      document.body.style.overflow = 'unset';
+    }
+  }, [currentView]);
+
+  useEffect(() => {
     const handleScroll = () => {
       setShowBackToTop(window.scrollY > 400);
     };
@@ -800,14 +806,15 @@ export default function App() {
         </div>
       </motion.main>
       ) : (
-        <motion.div
+        <motion.main
           key="blog"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
+          className="w-full min-h-screen"
         >
           <BlogView onClose={() => setCurrentView('catalog')} />
-        </motion.div>
+        </motion.main>
       )}
       </AnimatePresence>
 
