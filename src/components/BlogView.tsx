@@ -112,8 +112,9 @@ export function BlogView({ onClose }: BlogViewProps) {
   };
 
   const handleBack = () => {
-    if (selectedPost) {
+    if (selectedPost || isNotFound) {
       setSelectedPost(null);
+      setIsNotFound(false);
       updateUrl(null);
     } else {
       // Clear blog path when going back to catalog
