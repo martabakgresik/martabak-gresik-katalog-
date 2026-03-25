@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, User, Heart, Sparkles, AlertCircle, Box, CookingPot, Download } from "lucide-react";
-import { 
+import {
   MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY,
   STORE_NAME, STORE_ADDRESS, STORE_PHONE, SINCE_YEAR,
   OPEN_HOUR, CLOSE_HOUR, PROMO_CODE, PROMO_PERCENT,
-  SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE 
+  SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE
 } from "../data/config";
 import { formatPrice, type CartItem } from "../hooks/useCart";
 
@@ -25,11 +25,11 @@ interface AiAssistantProps {
   promoPercent?: number;
 }
 
-export const AiAssistant = ({ 
-  onAddToCart, 
-  isOpen = false, 
-  promoCode = PROMO_CODE, 
-  promoPercent = PROMO_PERCENT 
+export const AiAssistant = ({
+  onAddToCart,
+  isOpen = false,
+  promoCode = PROMO_CODE,
+  promoPercent = PROMO_PERCENT
 }: AiAssistantProps) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -56,7 +56,7 @@ export const AiAssistant = ({
           scrollAiToBottom();
         }
       }
-      
+
       if (aiTextareaRef.current) {
         aiTextareaRef.current.style.height = 'auto';
         aiTextareaRef.current.style.height = `${Math.min(aiTextareaRef.current.scrollHeight, 120)}px`;
@@ -83,60 +83,46 @@ export const AiAssistant = ({
 
     try {
       const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
-      const systemPrompt = `Anda adalah "Si Penjual Martabak" (Chef Mascot) dari ${STORE_NAME} (Sejak ${SINCE_YEAR}) yang proaktif, ramah, dan jago jualan. 
-        Tugas Anda: Berjualan dengan hati! Jika pelanggan tanya menu, REKOMENDASIKAN dengan format #product-card.
-  
-        DATA TOKO:
-        - Nama: ${STORE_NAME}
-        - Alamat: ${STORE_ADDRESS}
-        - WhatsApp: ${STORE_PHONE}
-        - Jam Operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
-        - Status Sekarang: ${isOpen ? 'BUKA' : 'TUTUP (Namun tetap bisa tanya-tanya)'}
+      const systemPrompt = `### ROLE
+Anda adalah "Asisten Martabak" (Chef Mascot) resmi ${STORE_NAME}.
+Karakter: Ramah, jujur, gaul Gresik, dan HANYA bicara berdasarkan fakta toko.
 
-        PROMO AKTIF:
-        - Kode Promo: ${PROMO_CODE}
-        - Diskon: ${PROMO_PERCENT}%
-        - Cara Pakai: Masukkan kode di keranjang sebelum checkout.
+### CONSTRAINTS (Wajib Ditaati)
+1. DILARANG KERAS MENGARANG PROMO. HANYA ada SATU promo aktif yaitu ${PROMO_CODE}.
+2. JANGAN PERNAH menyarankan: "Gratis topping", "Beli 1 gratis 1", "Paket hemat", atau promo diskon selain ${PROMO_PERCENT}%.
+3. JANGAN PERNAH menyarankan pembayaran selain QRIS atau manual ke WhatsApp (Hanya QRIS yang didukung sistem).
+4. Jika data tidak tersedia atau pelanggan tanya hal di luar menu, arahkan ke WhatsApp Admin (#whatsapp).
 
-        ONGKIR & PENGIRIMAN:
-        - Tarif: ${formatPrice(SHIPPING_RATE_PER_KM)} per kilometer.
-        - Jarak Maksimal: ${MAX_SHIPPING_DISTANCE} KM dari toko.
-        - Lokasi Toko: ${STORE_ADDRESS}
+### DATA TOKO (SUMBER KEBENARAN)
+- Nama Toko: ${STORE_NAME}
+- Lokasi: ${STORE_ADDRESS}
+- WhatsApp: ${STORE_PHONE}
+- Jam Operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
+- Promo Aktif: Diskon ${PROMO_PERCENT}% dengan Kode: "${PROMO_CODE}" (Berlaku untuk semua menu di katalog website).
 
-        DATA MENU DENGAN GAMBAR:
-        - TERANG BULAN (Manis):
-        ${MENU_SWEET.map(c => c.items.map(i => `- ${i.name} (${formatPrice(i.price)}) | Kategori: ${c.category} | Gambar: ${i.image}`).join('\n')).join('\n')}
-        
-        - MARTABAK TELOR (Asin):
-        ${MENU_SAVORY.map(s => s.variants.map(v => `- ${v.type} (${s.title}) | Gambar: ${v.prices[0].image} | Harga: ${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')}`).join('\n')).join('\n')}
+### MEKANISME WEBSITE (PANDUAN PEMESANAN)
+1. **Navigasi**: Gunakan bar Search atau tombol kategori di atas.
+2. **Kustomisasi**: Klik item/menu untuk buka modal detail untuk pilih Topping (Add-ons) & Varian Telor.
+3. **Keranjang**: Klik "Tambah ke Keranjang" di dalam modal detail.
+4. **Alamat**: Buka keranjang di pojok kanan bawah, isi Nama & Alamat (Bisa klik "Gunakan Lokasi Saya" untuk deteksi GPS).
+5. **Ongkir**: Sistem akan menghitung ongkir otomatis (${formatPrice(SHIPPING_RATE_PER_KM)}/km, Max ${MAX_SHIPPING_DISTANCE}km).
+6. **Selesai**: Pilih metode (Kirim/Ambil), klik "Pesan via WhatsApp".
+7. **Bayar**: Scan QRIS ![QRIS](/qris.png) and kirim bukti bayar ke WA.
 
-        ADD-ONS:
-        - Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
-        - Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
+### DATA MENU
+- MANIS: ${MENU_SWEET.map(c => c.items.map(i => `- ${i.name} (${formatPrice(i.price)})`).join('\n')).join('\n')}
+- ASIN: ${MENU_SAVORY.map(s => s.variants.map(v => `- ${v.type} ${s.title} (${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')})`).join('\n')).join('\n')}
+- ADD-ONS: ${ADDONS_SWEET.map(a => a.name).join(', ')} (Manis), ${ADDONS_SAVORY.map(a => a.name).join(', ')} (Asin).
 
-        DATA PEMBAYARAN:
-        - Martabak Gresik HANYA menerima pembayaran via QRIS (OVO, GoPay, Dana, LinkAja, atau Mobile Banking).
-        - JANGAN PERNAH menyarankan Transfer Bank manual atau COD di awal.
-        - Jika pelanggan tanya cara bayar, instruksikan untuk: 
-           1. Klik tombol "Cara Order & Bayar".
-           2. Scan kode QRIS yang muncul di layar (atau gunakan ![QRIS](/qris.png)).
-           3. Kirim bukti bayar ke WhatsApp Admin.
+### UI PAYLOADS
+- Tampilkan Produk: #product-card|Kategori|Nama|Harga|ImageURL
+- Tombol Keranjang: #add-to-cart|Kategori|Nama|Harga
+- Katalog Fisik: #download-catalog
+- Bantuan Admin: #handover|Alasan
+- Ringkasan: #checkout|Nama|Alamat|NoHP|TotalHarga|RingkasanMenu
 
-        PROTOKOL:
-        1. UPSELLING: Tiap pelanggan pilih menu, wajib tawarkan Add-on yang relevan.
-        2. VISUAL CARD: Gunakan #product-card|Kategori|Nama|Harga|ImageURL.
-        3. KATALOG GAMBAR: Jika minta katalog fisik/buku menu, gunakan #download-catalog.
-        4. SENTIMEN: Jika ada keluhan/error, gunakan #handover|Alasan.
-        5. ADD TO CART: Gunakan #add-to-cart|Kategori|Nama|Harga.
-        6. CHECKOUT: Gunakan #checkout|Nama|Alamat|NoHP|TotalHarga|RingkasanMenu.
-
-        MEKANISME WEBSITE:
-        - Pencarian: Pelanggan bisa mengetik di kolom pencarian di bagian atas katalog.
-        - Filter: Ada tombol kategori (Manis, Asin, Best Seller, Promo) untuk mempermudah.
-        - Keranjang: Klik tombol "Tambah ke Keranjang" atau ikon "+" pada menu.
-        - Checkout: Klik ikon Keranjang di kanan bawah untuk melihat total and kirim pesanan via WhatsApp.
-
-        GAYA BAHASA: Gaul Gresik, ramah, gunakan emoji (🍕, ✨, 🌙). Panggil pelanggan "Kak" atau "Kakak".`;
+### GAYA BAHASA
+Panggil "Kak", santun, gunakan emoji kuliner (😋, 🥞, ✨). Jawaban harus to-the-point dan akurat sesuai data di atas.`;
 
       const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
         method: 'POST',
@@ -166,8 +152,8 @@ export const AiAssistant = ({
 
   const renderMessage = (content: string) => {
     // 1. Bersihkan string dari format marakdown yang sering bocor (Backticks, Asterisks, Bold)
-    let cleanContent = content.replace(/[\x60*_*]/g, ''); 
-    
+    let cleanContent = content.replace(/[\x60*_*]/g, '');
+
     // 2. Buka paksa markdown add-to-cart (jika AI kebandel masih membungkus pakai format link)
     cleanContent = cleanContent.replace(/\[[^\]]*\]\s*\(\s*(#add-to-cart\|[^)]+)\s*\)/g, ' $1 ');
 
@@ -184,21 +170,21 @@ export const AiAssistant = ({
         const sanitizedText = textPart.replace(/#(add-to-cart|whatsapp|checkout|product-card|handover|download-catalog)\|[^\s\n]*/g, '').replace(/#download-catalog/g, '');
         if (sanitizedText) parts.push(sanitizedText);
       }
-      
+
       if (match[1] !== undefined) { // Gambar QRIS atau Gambar lain
         parts.push(
           <div key={match.index} className="flex flex-col gap-2 my-2 w-full max-w-[200px]">
-            <img 
-              src={match[2].trim()} 
-              alt={match[1]} 
-              className="w-full h-auto rounded-xl shadow-lg border border-brand-black/10 dark:border-white/10" 
+            <img
+              src={match[2].trim()}
+              alt={match[1]}
+              className="w-full h-auto rounded-xl shadow-lg border border-brand-black/10 dark:border-white/10"
             />
-            <a 
-              href={match[2].trim()} 
+            <a
+              href={match[2].trim()}
               download={`${match[1] || 'image'}.png`}
               className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 no-underline uppercase"
             >
-               UNDUH {match[1] || 'GAMBAR'}
+              UNDUH {match[1] || 'GAMBAR'}
             </a>
           </div>
         );
@@ -220,7 +206,7 @@ export const AiAssistant = ({
         const price = parseInt(priceStr, 10) || 0;
         const category = payloadParts[1];
         const name = payloadParts.slice(2, payloadParts.length - 1).join(' - ');
-        
+
         parts.push(
           <button
             key={match.index}
@@ -258,7 +244,7 @@ export const AiAssistant = ({
               </div>
               <h4 className="font-black text-xs uppercase italic tracking-tighter dark:text-brand-yellow">Ringkasan Pesanan</h4>
             </div>
-            
+
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase opacity-40 dark:text-white">Penerima:</p>
               <p className="text-xs font-bold dark:text-white">{nama} - {hp}</p>
@@ -297,7 +283,7 @@ export const AiAssistant = ({
         const p = match[8].split('|');
         const [_, category, name, price, img] = p;
         parts.push(
-          <motion.div 
+          <motion.div
             key={match.index}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -328,8 +314,8 @@ export const AiAssistant = ({
         parts.push(
           <div key={match.index} className="bg-red-500/10 border-2 border-red-500/30 p-4 rounded-2xl my-4 space-y-3">
             <div className="flex items-center gap-2 text-red-500">
-               <AlertCircle className="w-4 h-4" />
-               <span className="text-[10px] font-black uppercase tracking-wider">Butuh Bantuan Manusia?</span>
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-wider">Butuh Bantuan Manusia?</span>
             </div>
             <p className="text-[11px] font-medium dark:text-white/80 leading-relaxed italic">
               "{reason}"
@@ -348,14 +334,14 @@ export const AiAssistant = ({
         parts.push(
           <div key={match.index} className="bg-white dark:bg-brand-black border-2 border-brand-black dark:border-brand-yellow p-4 rounded-[2rem] my-4 space-y-4 shadow-xl text-center overflow-hidden">
             <div className="relative group rounded-2xl overflow-hidden shadow-inner border border-brand-black/5">
-               <img src="/katalog.png" alt="Katalog Martabak Gresik" className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500" />
-               <div className="absolute inset-0 bg-brand-black/20 group-hover:bg-brand-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <Maximize2 className="w-6 h-6 text-white" />
-               </div>
+              <img src="/katalog.png" alt="Katalog Martabak Gresik" className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div className="absolute inset-0 bg-brand-black/20 group-hover:bg-brand-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <Maximize2 className="w-6 h-6 text-white" />
+              </div>
             </div>
             <div className="flex flex-col items-center gap-1.5">
-               <h4 className="font-black text-xs uppercase italic tracking-tighter dark:text-brand-yellow">Katalog Harga & Menu</h4>
-               <p className="text-[10px] opacity-60 dark:text-white/60">Satu gambar untuk semua harga, praktis disimpan!</p>
+              <h4 className="font-black text-xs uppercase italic tracking-tighter dark:text-brand-yellow">Katalog Harga & Menu</h4>
+              <p className="text-[10px] opacity-60 dark:text-white/60">Satu gambar untuk semua harga, praktis disimpan!</p>
             </div>
             <a
               href="/katalog.png"
@@ -382,11 +368,11 @@ export const AiAssistant = ({
 
   const ChatMascot = ({ isBusy }: { isBusy: boolean }) => (
     <motion.div
-      animate={isBusy ? { 
+      animate={isBusy ? {
         y: [0, -6, 0],
         scale: [1, 1.05, 1]
-      } : { 
-        y: [0, -2, 0] 
+      } : {
+        y: [0, -2, 0]
       }}
       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       className="shrink-0 self-end mb-1"
@@ -396,7 +382,7 @@ export const AiAssistant = ({
         <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
       </div>
       {isBusy && (
-        <motion.div 
+        <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           className="absolute -top-1 -right-1 bg-brand-orange text-white p-0.5 rounded-full shadow-md"
@@ -415,11 +401,10 @@ export const AiAssistant = ({
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
-            className={`bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left ${
-              isExpanded 
-                ? 'w-[95vw] md:w-[90vw] max-w-5xl h-[calc(100dvh-120px)] md:h-[calc(100vh-140px)]' 
+            className={`bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left ${isExpanded
+                ? 'w-[95vw] md:w-[90vw] max-w-5xl h-[calc(100dvh-120px)] md:h-[calc(100vh-140px)]'
                 : 'w-[300px] sm:w-[350px] h-[450px] max-h-[calc(100dvh-120px)]'
-            }`}
+              }`}
           >
             <div className="bg-brand-black dark:bg-black p-3 sm:p-4 text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
