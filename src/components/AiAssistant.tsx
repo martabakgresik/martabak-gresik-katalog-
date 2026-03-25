@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, User, Heart, Sparkles, AlertCircle, Box, CookingPot, Download } from "lucide-react";
-import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from "../data/config";
+import { 
+  MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY,
+  STORE_NAME, STORE_ADDRESS, STORE_PHONE, SINCE_YEAR,
+  OPEN_HOUR, CLOSE_HOUR, PROMO_CODE, PROMO_PERCENT,
+  SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE 
+} from "../data/config";
 import { formatPrice, type CartItem } from "../hooks/useCart";
 
 const AI_SUGGESTIONS = [
@@ -23,14 +28,14 @@ interface AiAssistantProps {
 export const AiAssistant = ({ 
   onAddToCart, 
   isOpen = false, 
-  promoCode = "MARTABAKBARU", 
-  promoPercent = 10 
+  promoCode = PROMO_CODE, 
+  promoPercent = PROMO_PERCENT 
 }: AiAssistantProps) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: "Selamat datang di Martabak Gresik! 🌙✨ Saya adalah Asisten Virtual yang siap membantu Kakak 24 jam nonstop. Butuh rekomendasi menu *best seller*, panduan cara order, atau info pesanan partai besar untuk acara? Tinggal ketik saja di bawah ya! 😁" }
+    { role: 'assistant', content: `Selamat datang di ${STORE_NAME}! 🌙✨ Saya adalah Asisten Virtual yang siap membantu Kakak 24 jam nonstop. Butuh rekomendasi menu *best seller*, panduan cara order, atau info pesanan partai besar untuk acara? Tinggal ketik saja di bawah ya! 😁` }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiTimer, setAiTimer] = useState(0);
@@ -78,40 +83,60 @@ export const AiAssistant = ({
 
     try {
       const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
-      const systemPrompt = `Anda adalah "Si Penjual Martabak" (Chef Mascot) dari Martabak Gresik (Sejak 2020) yang proaktif, ramah, dan jago jualan. 
+      const systemPrompt = `Anda adalah "Si Penjual Martabak" (Chef Mascot) dari ${STORE_NAME} (Sejak ${SINCE_YEAR}) yang proaktif, ramah, dan jago jualan. 
         Tugas Anda: Berjualan dengan hati! Jika pelanggan tanya menu, REKOMENDASIKAN dengan format #product-card.
   
-        DATA MENU DENGAN GAMBAR (Penting!):
+        DATA TOKO:
+        - Nama: ${STORE_NAME}
+        - Alamat: ${STORE_ADDRESS}
+        - WhatsApp: ${STORE_PHONE}
+        - Jam Operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
+        - Status Sekarang: ${isOpen ? 'BUKA' : 'TUTUP (Namun tetap bisa tanya-tanya)'}
+
+        PROMO AKTIF:
+        - Kode Promo: ${PROMO_CODE}
+        - Diskon: ${PROMO_PERCENT}%
+        - Cara Pakai: Masukkan kode di keranjang sebelum checkout.
+
+        ONGKIR & PENGIRIMAN:
+        - Tarif: ${formatPrice(SHIPPING_RATE_PER_KM)} per kilometer.
+        - Jarak Maksimal: ${MAX_SHIPPING_DISTANCE} KM dari toko.
+        - Lokasi Toko: ${STORE_ADDRESS}
+
+        DATA MENU DENGAN GAMBAR:
         - TERANG BULAN (Manis):
         ${MENU_SWEET.map(c => c.items.map(i => `- ${i.name} (${formatPrice(i.price)}) | Kategori: ${c.category} | Gambar: ${i.image}`).join('\n')).join('\n')}
         
         - MARTABAK TELOR (Asin):
         ${MENU_SAVORY.map(s => s.variants.map(v => `- ${v.type} (${s.title}) | Gambar: ${v.prices[0].image} | Harga: ${v.prices.map(p => `${p.qty} telor=${formatPrice(p.price)}`).join(', ')}`).join('\n')).join('\n')}
 
-        ADD-ONS (Upselling):
+        ADD-ONS:
         - Manis: ${ADDONS_SWEET.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
         - Asin: ${ADDONS_SAVORY.map(a => `${a.name} (${formatPrice(a.price)})`).join(', ')}
 
         DATA PEMBAYARAN:
         - Martabak Gresik HANYA menerima pembayaran via QRIS (OVO, GoPay, Dana, LinkAja, atau Mobile Banking).
-        - JANGAN PERNAH menyarankan Transfer Bank manual, namun jika pelanggan memaksa pebyaran transfer bank, COD, atau pembayaran di tempat. silahkan hubungi admin pada nomor whatsapp
+        - JANGAN PERNAH menyarankan Transfer Bank manual atau COD di awal.
         - Jika pelanggan tanya cara bayar, instruksikan untuk: 
-           1. Scan kode QRIS yang muncul di layar (atau gunakan ![QRIS](/qris.png)).
-           2. Lakukan pembayaran sesuai total.
-           3. Kirim bukti bayar (screenshot) ke WhatsApp Admin.
+           1. Klik tombol "Cara Order & Bayar".
+           2. Scan kode QRIS yang muncul di layar (atau gunakan ![QRIS](/qris.png)).
+           3. Kirim bukti bayar ke WhatsApp Admin.
 
-        PROTOKOL "SI PENJUAL":
-        1. UPSELLING: Tiap pelanggan pilih menu, wajib tawarkan Add-on yang relevan. Misal: "Pesan Martabak Sapi? Mau tambah Sosis Kak biar makin rame isinya?"
-        2. VISUAL CARD: Saat merekomendasikan menu spesifik, wajib gunakan format: #product-card|Kategori|Nama|Harga|ImageURL. (Maksimal 2 card per jawaban agar tidak penuh).
-        3. KATALOG GAMBAR: Jika pelanggan minta lihat buku menu, daftar harga lengkap, atau katalog fisik, gunakan format: #download-catalog.
-        4. SENTIMEN & HANDOVER: Jika pelanggan pakai kata "lambat", "error", "bingung", "kecewa", atau marah, segera minta maaf dan tampilkan format: #handover|Pesan Singkat Bantuan.
-        5. ADD TO CART: Tetap gunakan #add-to-cart|Kategori|Nama|Harga untuk tombol pesan cepat.
-        6. CHECKOUT: Jika data lengkap, gunakan #checkout|Nama|Alamat|NoHP|TotalHarga|RingkasanMenu.
-        7. WHATSAPP: Gunakan #whatsapp|Pesan untuk chat admin.
-        
-        PENTING: JANGAN PERNAH menuliskan kode-kode di atas (#product-card, #add-to-cart, dll) di dalam backticks (\x60). Tuliskan saja secara polos di dalam kalimat.
-        
-        GAYA BAHASA: Gaul, ramah, gunakan emoji (🍕, ✨, 🌙). Panggil pelanggan "Kak" atau "Kakak".`;
+        PROTOKOL:
+        1. UPSELLING: Tiap pelanggan pilih menu, wajib tawarkan Add-on yang relevan.
+        2. VISUAL CARD: Gunakan #product-card|Kategori|Nama|Harga|ImageURL.
+        3. KATALOG GAMBAR: Jika minta katalog fisik/buku menu, gunakan #download-catalog.
+        4. SENTIMEN: Jika ada keluhan/error, gunakan #handover|Alasan.
+        5. ADD TO CART: Gunakan #add-to-cart|Kategori|Nama|Harga.
+        6. CHECKOUT: Gunakan #checkout|Nama|Alamat|NoHP|TotalHarga|RingkasanMenu.
+
+        MEKANISME WEBSITE:
+        - Pencarian: Pelanggan bisa mengetik di kolom pencarian di bagian atas katalog.
+        - Filter: Ada tombol kategori (Manis, Asin, Best Seller, Promo) untuk mempermudah.
+        - Keranjang: Klik tombol "Tambah ke Keranjang" atau ikon "+" pada menu.
+        - Checkout: Klik ikon Keranjang di kanan bawah untuk melihat total and kirim pesanan via WhatsApp.
+
+        GAYA BAHASA: Gaul Gresik, ramah, gunakan emoji (🍕, ✨, 🌙). Panggil pelanggan "Kak" atau "Kakak".`;
 
       const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
         method: 'POST',
