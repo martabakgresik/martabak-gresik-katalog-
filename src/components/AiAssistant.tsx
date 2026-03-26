@@ -463,10 +463,10 @@ PRINSIP KOMUNIKASI & JUALAN:
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => setIsAiOpen(!isAiOpen)}
-        className={`p-4 rounded-full shadow-2xl transition-all border-4 border-brand-black dark:border-brand-yellow ${isAiOpen ? 'bg-brand-black text-white' : 'bg-brand-yellow text-brand-black'
+        className={`p-3 md:p-4 rounded-full shadow-2xl transition-all border-4 border-brand-black dark:border-brand-yellow ${isAiOpen ? 'bg-brand-black text-white' : 'bg-brand-yellow text-brand-black'
           }`}
       >
-        {isAiOpen ? <X className="w-6 h-6" /> : <Store className="w-6 h-6" />}
+        {isAiOpen ? <X className="w-5 h-5 md:w-6 md:h-6" /> : <Store className="w-5 h-5 md:w-6 md:h-6" />}
       </motion.button>
 
       <AnimatePresence>

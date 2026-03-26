@@ -837,7 +837,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="bg-brand-black text-white py-12 px-6 mt-20 relative overflow-hidden">
+      <footer className="bg-brand-black text-white pt-12 pb-32 md:pb-12 px-6 mt-20 relative overflow-hidden">
         {/* Wavy Background Element */}
         <div className="absolute top-0 left-0 w-full h-16 bg-brand-yellow rounded-b-[100%] -translate-y-8" />
 
@@ -930,7 +930,7 @@ export default function App() {
       </footer>
 
       {/* Floating Buttons: Back to Top & Cart */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-4 items-end">
+      <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end">
         <AnimatePresence>
           {showBackToTop && (
             <motion.button
@@ -938,10 +938,10 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90"
+              className="p-3 md:p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90"
               title="Kembali ke Atas"
             >
-              <ArrowUp className="w-6 h-6 group-hover:-translate-y-1 transition-transform" />
+              <ArrowUp className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-y-1 transition-transform" />
             </motion.button>
           )}
         </AnimatePresence>
@@ -953,15 +953,15 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => setIsCartOpen(true)}
-              className="w-auto md:bg-brand-black bg-brand-black text-white px-8 py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite]"
+              className="w-auto md:bg-brand-black bg-brand-black text-white px-6 py-4 md:px-8 md:py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 md:gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite]"
             >
               <div className="relative">
-                <ShoppingBag className="w-6 h-6 animate-[bounce_2s_infinite]" />
-                <span className="absolute -top-2 -right-2 bg-brand-yellow text-brand-black text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-brand-black">
+                <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 animate-[bounce_2s_infinite]" />
+                <span className="absolute -top-1.5 -right-1.5 md:-top-2 md:-right-2 bg-brand-yellow text-brand-black text-[9px] md:text-[10px] font-black w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center border-2 border-brand-black">
                   {totalItems}
                 </span>
               </div>
-              <span className="hidden md:inline font-bold text-lg md:text-base pr-2 tracking-wide uppercase">Lihat Pesanan</span>
+              <span className="font-bold text-sm md:text-base pr-1 md:pr-2 tracking-wide uppercase">Lihat Pesanan</span>
             </motion.button>
           )}
         </AnimatePresence>
