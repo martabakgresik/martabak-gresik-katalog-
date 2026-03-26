@@ -1,4 +1,4 @@
-const CACHE_NAME = 'martabak-gresik-v4'; // Increment version
+const CACHE_NAME = 'martabak-gresik-v5'; // Increment version
 const ASSETS = [
   '/',
   '/index.html',
@@ -9,7 +9,7 @@ const ASSETS = [
   '/martabak.webp',
   '/terang-bulan.webp',
   '/manifest.json',
-  '/ariftitana.jpg'
+  '/ariftitana.webp'
 ];
 
 self.addEventListener('install', (event) => {

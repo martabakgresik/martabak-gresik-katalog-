@@ -66,7 +66,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose }) => {
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-tr from-brand-orange to-brand-yellow rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
               <img 
-                src="/ariftitana.jpg" 
+                src="/ariftitana.webp" 
                 alt="Arif Tirtana" 
                 className="relative w-32 h-32 md:w-48 md:h-48 rounded-full object-cover border-4 border-white dark:border-brand-black shadow-2xl"
               />
