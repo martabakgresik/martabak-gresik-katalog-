@@ -134,6 +134,10 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
+  // Add-ons modal state
+  const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);
+  const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
+
   // Deep Linking Effect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -163,7 +167,7 @@ export default function App() {
           setSelectedItemForAddon({ 
             name: `${section.title} ${variant.type}`, 
             price: priceObj.price, 
-            image: variant.image || "", 
+            image: priceObj.image || "", 
             description: variant.description || "",
             type: 'savory',
             category: section.title
@@ -198,9 +202,6 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Add-ons modal state
-  const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);
-  const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
