@@ -35,6 +35,12 @@ export const MAX_SHIPPING_DISTANCE = 10;
 // Jarak antara Pencarian dan Scroll Indicator (Gunakan class Tailwind: mt-2, mt-4, mt-8, dsb.)
 export const SCROLL_SPACING = "mt-2"; 
 
+// 🔑 KEAMANAN (Security)
+// Ganti kode di bawah ini dengan kata rahasia Anda sendiri.
+// Dashboard hanya bisa diakses via URL: ?access=KATA_RAHASIA
+export const ADMIN_ACCESS_KEY = "gresik-admin-login";
+export const TURNSTILE_SITE_KEY = "0x4AAAAAACwdrus7K-Tn9Gd-";
+
 // 🖼️ ASSETS
 const ASSET_BASE_URL = "/images";
 

@@ -5,7 +5,7 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock, ChevronDown,
-  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2
+  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2, Settings
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
 import { 
@@ -20,15 +20,18 @@ import {
   HOLIDAYS, 
   SCROLL_SPACING,
   SHIPPING_RATE_PER_KM,
-  MAX_SHIPPING_DISTANCE 
+  MAX_SHIPPING_DISTANCE,
+  ADMIN_ACCESS_KEY 
 } from "./data/config";
 import { AiAssistant } from "./components/AiAssistant";
+import { Dashboard } from "./components/Dashboard";
 import { LegalPages } from "./components/LegalPages";
 import { AboutMe } from "./components/AboutMe";
 import { CookieConsent } from "./components/CookieConsent";
 import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
+import { supabase } from "./lib/supabase";
 
 interface FavoriteItem {
   id: string;
@@ -37,9 +40,25 @@ interface FavoriteItem {
   category?: string;
 }
 
-const PROMO_TEXT = `🔥 Diskon ${PROMO_PERCENT}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${PROMO_CODE})`;
+const PROMO_TEXT = (code: string, pct: number) => `🔥 Diskon ${pct}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${code})`;
 
 export default function App() {
+  // --- DATABASE & STORE STATE ---
+  const [menuSweet, setMenuSweet] = useState(MENU_SWEET);
+  const [menuSavory, setMenuSavory] = useState(MENU_SAVORY);
+  const [openHour, setOpenHour] = useState(OPEN_HOUR);
+  const [closeHour, setCloseHour] = useState(CLOSE_HOUR);
+  const [activePromoCode, setActivePromoCode] = useState(PROMO_CODE);
+  const [activePromoPercent, setActivePromoPercent] = useState(PROMO_PERCENT);
+  const [holidays, setHolidays] = useState(HOLIDAYS);
+  const [storeName, setStoreName] = useState("Martabak Gresik");
+  const [storeAddress, setStoreAddress] = useState("Jl. Usman Sadar No 10, Gresik");
+  const [storePhone, setStorePhone] = useState("081330763633");
+  const [shippingRate, setShippingRate] = useState(SHIPPING_RATE_PER_KM);
+  const [maxDistance, setMaxDistance] = useState(MAX_SHIPPING_DISTANCE);
+  const [isEmergencyClosed, setIsEmergencyClosed] = useState(false);
+  const [dbLoading, setDbLoading] = useState(true);
+
   const {
     cart,
     distance,
@@ -65,7 +84,64 @@ export default function App() {
     sendWhatsAppOrder,
     isGoogleMapsLink,
     processAddressWithAI
-  } = useCart();
+  } = useCart(shippingRate, maxDistance);
+
+  // 1. Fetch from Supabase
+  useEffect(() => {
+    async function initDb() {
+      try {
+        const { data: settings } = await supabase.from('store_settings').select('*').eq('id', 'main_config').single();
+        const { data: categories } = await supabase.from('categories').select('*, menu_items(*)').order('display_order');
+
+        if (settings) {
+          setOpenHour(settings.open_hour);
+          setCloseHour(settings.close_hour);
+          setActivePromoCode(settings.promo_code);
+          setActivePromoPercent(settings.promo_percent);
+          setStoreName(settings.store_name);
+          setStoreAddress(settings.store_address);
+          setStorePhone(settings.store_phone);
+          setShippingRate(settings.shipping_rate_per_km || SHIPPING_RATE_PER_KM);
+          setMaxDistance(settings.max_shipping_distance || MAX_SHIPPING_DISTANCE);
+          setIsEmergencyClosed(settings.is_emergency_closed || false);
+        }
+
+        if (categories && categories.length > 0) {
+          const sweet = categories.filter(c => c.type === 'sweet').map(c => ({
+            category: c.name,
+            items: c.menu_items.map((i: any) => ({
+              name: i.name,
+              price: i.price,
+              image: i.image,
+              description: i.description,
+              isBestSeller: i.is_best_seller
+            }))
+          }));
+
+          const savory = categories.filter(c => c.type === 'savory').map(c => ({
+            title: c.name,
+            variants: Array.from(new Set(c.menu_items.map((i: any) => i.variant_type))).map(vType => ({
+              type: vType,
+              description: c.menu_items.find((i: any) => i.variant_type === vType)?.description || "",
+              prices: c.menu_items.filter((i: any) => i.variant_type === vType).map((i: any) => ({
+                qty: i.qty,
+                price: i.price,
+                isBestSeller: i.is_best_seller
+              }))
+            }))
+          }));
+
+          setMenuSweet(sweet as any);
+          setMenuSavory(savory as any);
+        }
+      } catch (e) {
+        console.error("Supabase load error:", e);
+      } finally {
+        setDbLoading(false);
+      }
+    }
+    initDb();
+  }, []);
 
   const [locationStatus, setLocationStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
   const [isAiProcessing, setIsAiProcessing] = useState(false);
@@ -99,7 +175,7 @@ export default function App() {
   // Legal & Privacy State
   const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | 'faq' | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
-  const [currentView, setCurrentView] = useState<'catalog' | 'blog'>('catalog');
+  const [currentView, setCurrentView] = useState<'catalog' | 'blog' | 'dashboard'>('catalog');
 
   useEffect(() => {
     const consent = localStorage.getItem('martabak_cookie_consent');
@@ -120,13 +196,13 @@ export default function App() {
       const dateString = now.toISOString().split('T')[0];
       const hour = now.getHours();
 
-      const holidayFound = HOLIDAYS.includes(dateString);
+      const holidayFound = holidays.includes(dateString);
       setIsHoliday(holidayFound);
 
-      if (holidayFound) {
+      if (holidayFound || isEmergencyClosed) {
         setIsOpen(false);
       } else {
-        setIsOpen(hour >= OPEN_HOUR && hour < CLOSE_HOUR);
+        setIsOpen(hour >= openHour && hour < closeHour);
       }
     };
     checkStatus();
@@ -149,9 +225,15 @@ export default function App() {
       return;
     }
 
+    if (params.get('access') === ADMIN_ACCESS_KEY) {
+      setCurrentView('dashboard');
+      window.history.replaceState({}, '', window.location.pathname);
+      return;
+    }
+
     if (itemName && !selectedItemForAddon) {
       // Find item in sweet menu
-      for (const section of MENU_SWEET) {
+      for (const section of menuSweet) {
         const item = section.items.find(i => i.name.toLowerCase() === itemName.toLowerCase());
         if (item) {
           setSelectedItemForAddon({ ...item, type: 'sweet', category: section.category });
@@ -159,7 +241,7 @@ export default function App() {
         }
       }
       // Find item in savory menu
-      for (const section of MENU_SAVORY) {
+      for (const section of menuSavory) {
         const variant = section.variants.find(v => (section.title + " " + v.type).toLowerCase() === itemName.toLowerCase() || v.type.toLowerCase() === itemName.toLowerCase());
         if (variant) {
           // Find first price for default
@@ -176,7 +258,7 @@ export default function App() {
         }
       }
     }
-  }, []);
+  }, [menuSweet, menuSavory, selectedItemForAddon]);
 
   // Sync URL with Selected Item
   useEffect(() => {
@@ -319,15 +401,15 @@ export default function App() {
 
   const totalFavorites = favorites.length;
 
-  const filteredSweet = useMemo(() => MENU_SWEET.map(section => ({
+  const filteredSweet = useMemo(() => menuSweet.map(section => ({
     ...section,
     items: section.items.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       section.category.toLowerCase().includes(searchQuery.toLowerCase())
     )
-  })).filter(section => section.items.length > 0), [searchQuery]);
+  })).filter(section => section.items.length > 0), [searchQuery, menuSweet]);
 
-  const filteredSavory = useMemo(() => MENU_SAVORY.map(section => ({
+  const filteredSavory = useMemo(() => menuSavory.map(section => ({
     ...section,
     variants: section.variants.map(variant => ({
       ...variant,
@@ -335,7 +417,7 @@ export default function App() {
         `${section.title} ${variant.type} ${p.desc || `${p.qty} Telor`} ${formatPrice(p.price)}`.toLowerCase().includes(searchQuery.toLowerCase())
       )
     })).filter(v => v.prices.length > 0)
-  })).filter(section => section.variants.length > 0), [searchQuery]);
+  })).filter(section => section.variants.length > 0), [searchQuery, menuSavory]);
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
@@ -346,6 +428,7 @@ export default function App() {
         url={selectedItemForAddon ? `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}` : undefined}
         price={selectedItemForAddon?.price}
         category={selectedItemForAddon?.category}
+        noindex={currentView === 'dashboard'}
       />
       {/* Promo Banner */}
       <AnimatePresence>
@@ -356,7 +439,7 @@ export default function App() {
             exit={{ y: -50 }}
             className="bg-brand-orange text-brand-black text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
           >
-              🔥 Diskon {PROMO_PERCENT}% untuk Pembelian Pertama via Katalog! (Gunakan kode: <span className="bg-brand-black text-brand-yellow px-1.5 py-0.5 rounded-md inline-block animate-pulse">{PROMO_CODE}</span>)
+              {PROMO_TEXT(activePromoCode, activePromoPercent)}
             <button
               onClick={() => setShowPromo(false)}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
@@ -460,15 +543,15 @@ export default function App() {
               className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer"
             >
               <MapPin className="w-4 h-4 text-brand-orange" />
-              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">Jl. Usman Sadar No 10, Gresik</span>
+              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storeAddress}</span>
             </a>
-            <a href="tel:081330763633" className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
+            <a href={`tel:${storePhone.replace(/\s/g, '')}`} className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
               <Phone className="w-4 h-4 text-brand-orange" />
-              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">081 330 763 633</span>
+              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storePhone}</span>
             </a>
             <div className="flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-brand-orange" />
-              <span>Jam Buka: 16.00 - 23.00 WIB</span>
+              <span>Jam Buka: {openHour}.00 - {closeHour}.00 WIB</span>
             </div>
           </motion.div>
 
@@ -484,7 +567,7 @@ export default function App() {
               } font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-lg backdrop-blur-md`}
             >
               <span className={`w-2 h-2 rounded-full animate-pulse ${isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
-              {isOpen ? 'Sedang Buka - Siap Melayani!' : `Sedang Tutup - Buka Jam ${OPEN_HOUR}:00`}
+              {isEmergencyClosed ? 'TUTUP SEMENTARA (DARURAT)' : isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'Sedang Buka - Siap Melayani!' : `Sedang Tutup - Buka Jam ${openHour}:00`}
             </motion.div>
           </div>
 
@@ -605,7 +688,16 @@ export default function App() {
 
       {/* Main Content */}
       <AnimatePresence mode="wait">
-        {currentView === 'catalog' ? (
+        {currentView === 'dashboard' ? (
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.05 }}
+          >
+            <Dashboard onBack={() => setCurrentView('catalog')} />
+          </motion.div>
+        ) : currentView === 'catalog' ? (
           <motion.main 
             key="catalog"
             initial={{ opacity: 0, x: -20 }}
@@ -1003,7 +1095,14 @@ export default function App() {
       </div>
 
       {/* AI Assistant UI */}
-      <AiAssistant onAddToCart={addToCart} isOpen={isOpen} promoCode={PROMO_CODE} promoPercent={PROMO_PERCENT} />
+      <AiAssistant 
+        onAddToCart={addToCart} 
+        isOpen={isOpen} 
+        promoCode={activePromoCode || PROMO_CODE} 
+        promoPercent={activePromoPercent || PROMO_PERCENT}
+        menuSweet={menuSweet}
+        menuSavory={menuSavory}
+      />
 
       {/* Cart Sidebar */}
       <AnimatePresence>
@@ -1182,8 +1281,8 @@ export default function App() {
                                     DIVERIFIKASI AI ✔️
                                     </span>
                                   )}
-                                  <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > MAX_SHIPPING_DISTANCE ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg'} ${isDistanceAiVerified && ! (distance > MAX_SHIPPING_DISTANCE) ? 'ring-2 ring-brand-orange ring-offset-2 dark:ring-offset-brand-black animate-in zoom-in' : ''}`}>
-                                    {distance} KM {distance > MAX_SHIPPING_DISTANCE && " (MAKS 10KM)"}
+                                  <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > maxDistance ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg'} ${isDistanceAiVerified && ! (distance > maxDistance) ? 'ring-2 ring-brand-orange ring-offset-2 dark:ring-offset-brand-black animate-in zoom-in' : ''}`}>
+                                    {distance} KM {distance > maxDistance && " (MAKS 10KM)"}
                                   </span>
                                 </div>
                               </div>
@@ -1211,7 +1310,7 @@ export default function App() {
                                 <span>10KM</span>
                                 <span>15KM</span>
                               </div>
-                              {distance > 0 && distance <= MAX_SHIPPING_DISTANCE && (
+                              {distance > 0 && distance <= maxDistance && (
                                 <p className="text-[10px] mt-4 font-black text-brand-black text-center uppercase tracking-widest bg-brand-black/5 py-2 rounded-xl border border-brand-orange/20">
                                   Estimasi Ongkir: + {formatPrice(shippingCost)}
                                 </p>

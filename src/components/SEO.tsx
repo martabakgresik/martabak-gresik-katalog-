@@ -9,6 +9,7 @@ interface SEOProps {
   type?: string;
   price?: number;
   category?: string;
+  noindex?: boolean;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -18,7 +19,8 @@ export const SEO: React.FC<SEOProps> = ({
   url = "https://martabakgresik.com/",
   type = "website",
   price,
-  category
+  category,
+  noindex = false
 }) => {
   const siteTitle = title.includes("Martabak Gresik") ? title : `${title} | Martabak Gresik`;
 
@@ -100,7 +102,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:image" content={image} />
       
       {/* Additional Tags */}
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       <link rel="canonical" href={url} />
     </Helmet>

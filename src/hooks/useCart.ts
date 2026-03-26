@@ -34,7 +34,10 @@ export const formatPrice = (price: number) => {
   }).format(price);
 };
 
-export const useCart = () => {
+export const useCart = (customShippingRate?: number, customMaxDistance?: number) => {
+  const rate = customShippingRate ?? SHIPPING_RATE_PER_KM;
+  const maxDist = customMaxDistance ?? MAX_SHIPPING_DISTANCE;
+  
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('martabak_cart');
     return saved ? JSON.parse(saved) : [];
@@ -89,7 +92,7 @@ export const useCart = () => {
     const itemAddonsPrice = item.addons ? item.addons.reduce((a, b) => a + (b.price * (b.quantity || 1)), 0) : 0;
     return sum + ((item.price + itemAddonsPrice) * item.quantity);
   }, 0);
-  const shippingCost = deliveryMethod === 'delivery' ? distance * SHIPPING_RATE_PER_KM : 0;
+  const shippingCost = deliveryMethod === 'delivery' ? distance * rate : 0;
   const discountAmount = Math.round(itemsPrice * (discountPercent / 100));
   const totalPrice = itemsPrice + shippingCost - discountAmount;
 
@@ -249,6 +252,23 @@ export const useCart = () => {
     message += `Mohon segera diproses ya, terima kasih! 🙏`;
 
     const encodedMessage = encodeURIComponent(message);
+    
+    // Log Analytics to Supabase
+    try {
+      import('../lib/supabase').then(({ supabase }) => {
+        supabase.from('analytics').insert([{ 
+          event_type: 'whatsapp_click', 
+          metadata: { 
+            customer: customerName, 
+            total: totalPrice,
+            items_count: cart.length
+          } 
+        }]).then(() => {});
+      });
+    } catch (e) {
+      console.error("Analytics error:", e);
+    }
+
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
   };
 

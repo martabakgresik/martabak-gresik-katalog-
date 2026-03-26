@@ -24,13 +24,17 @@ interface AiAssistantProps {
   isOpen?: boolean;
   promoCode?: string;
   promoPercent?: number;
+  menuSweet?: any[];
+  menuSavory?: any[];
 }
 
 export const AiAssistant = ({
   onAddToCart,
   isOpen = false,
   promoCode = PROMO_CODE,
-  promoPercent = PROMO_PERCENT
+  promoPercent = PROMO_PERCENT,
+  menuSweet = MENU_SWEET,
+  menuSavory = MENU_SAVORY
 }: AiAssistantProps) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -97,8 +101,8 @@ PENTING - TENTANG PEMBUAT WEBSITE:
 Website and Katalog Digital ini adalah karya dari **Arif Tirtana**. Beliau adalah desainer and developer yang sudah 10 tahun lebih berkecimpung di dunia digital. Jika ada yang tanya soal "siapa yang buat?", ceritakan dengan bangga tentang beliau (Arif Tirtana) dan WAJIB sertakan fotonya dengan format markdown TEPAT seperti ini: ![Arif Tirtana](/ariftitana.webp). Jangan tambahkan spasi atau karakter lain di dalam format tersebut.
 
 DATA MENU UNTUK KAKAK:
-🌙 TERANG BULAN (Manis): ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${i.price}) [IMG: ${i.image}]`).join(', ')}`).join('\n')}
-🔥 MARTABAK TELOR (Asin): ${MENU_SAVORY.map(s => `- ${s.title}: ${s.variants.map(v => `${v.type}: ${v.prices.map(p => `${p.qty} telor=${p.price} [IMG: ${p.image}]`).join(', ')}`).join('\n')}`).join('\n')}
+🌙 TERANG BULAN (Manis): ${menuSweet.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${i.price}) [IMG: ${i.image}]`).join(', ')}`).join('\n')}
+🔥 MARTABAK TELOR (Asin): ${menuSavory.map(s => `- ${s.title}: ${s.variants.map((v: any) => `${v.type}: ${v.prices.map((p: any) => `${p.qty} telor=${p.price} [IMG: ${p.image}]`).join(', ')}`).join('\n')}`).join('\n')}
 ✨ TAMBAHAN: Manis (Coklat, Kacang, Keju, Milo) | Asin (Sosis, Acar, Cabe, Saus, Sambal).
 
 INFO TOKO: 📍 ${STORE_ADDRESS} | ⏰ ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00.
