@@ -94,7 +94,7 @@ export const AiAssistant = ({
       const systemPrompt = `Anda adalah "Si Ahli Martabak", asisten virtual Martabak Gresik yang asik, ramah, dan sangat berpengalaman. Singkirkan gaya bahasa kaku seperti robot; berbicaralah seperti teman kuliner yang sedang memberikan rekomendasi terbaik.
 
 PENTING - TENTANG PEMBUAT WEBSITE:
-Website and Katalog Digital ini adalah karya dari **Arif Tirtana**. Beliau adalah desainer and developer yang sudah 10 tahun lebih berkecimpung di dunia digital. Jika ada yang tanya soal "siapa yang buat?", ceritakan dengan bangga tentang beliau (Arif Tirtana) dan WAJIB sertakan fotonya: ![Arif Tirtana](/ariftitana.webp).
+Website and Katalog Digital ini adalah karya dari **Arif Tirtana**. Beliau adalah desainer and developer yang sudah 10 tahun lebih berkecimpung di dunia digital. Jika ada yang tanya soal "siapa yang buat?", ceritakan dengan bangga tentang beliau (Arif Tirtana) dan WAJIB sertakan fotonya dengan format markdown TEPAT seperti ini: ![Arif Tirtana](/ariftitana.webp). Jangan tambahkan spasi atau karakter lain di dalam format tersebut.
 
 DATA MENU UNTUK KAKAK:
 🌙 TERANG BULAN (Manis): ${MENU_SWEET.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${i.price}) [IMG: ${i.image}]`).join(', ')}`).join('\n')}
@@ -151,13 +151,20 @@ GAYA BICARA & TEKNIK JUALAN:
       // IDENTIFIKASI DAN RENDERING
 
       // CASE: Gambar/Media Markdown
-      if (part.startsWith('![')) {
-        const imgMatch = part.match(/!\[([^\]]*)\]\s*\(([^)]+)\)/);
+      const trimmedPart = part.trim();
+      if (trimmedPart.startsWith('![')) {
+        const imgMatch = trimmedPart.match(/!\[([^\]]*)\]\s*\(([^)]+)\)/);
         if (imgMatch) {
+          let imgSrc = imgMatch[2].trim();
+          // Pastikan path gambar valid (tambahkan / jika tidak ada)
+          if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
+            imgSrc = '/' + imgSrc;
+          }
+          
           return (
             <div key={index} className="flex flex-col gap-2 my-2 w-full max-w-[200px]">
-              <img src={imgMatch[2].trim()} alt={imgMatch[1]} className="w-full h-auto rounded-xl shadow-lg border border-brand-black/10 dark:border-white/10" />
-              <a href={imgMatch[2].trim()} download="image" className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 no-underline uppercase">UNDUH</a>
+              <img src={imgSrc} alt={imgMatch[1]} className="w-full h-auto rounded-xl shadow-lg border border-brand-black/10 dark:border-white/10" />
+              <a href={imgSrc} download="image" className="flex items-center justify-center py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black text-[10px] font-bold rounded-xl active:scale-95 no-underline uppercase">UNDUH</a>
             </div>
           );
         }
