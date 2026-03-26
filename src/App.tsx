@@ -901,7 +901,7 @@ export default function App() {
             </div>
             
             <p className="font-bold">
-              Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity">Arif Tirtana</a>
+              Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity cursor-pointer">Arif Tirtana</a>
             </p>
             
             <div className="flex flex-wrap justify-center gap-6 mt-4 md:mt-0 font-bold uppercase tracking-widest text-[9px] md:text-[10px]">
