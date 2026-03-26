@@ -316,6 +316,8 @@ export default function App() {
         description={selectedItemForAddon?.description}
         image={selectedItemForAddon?.image}
         url={selectedItemForAddon ? `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}` : undefined}
+        price={selectedItemForAddon?.price}
+        category={selectedItemForAddon?.category}
       />
       {/* Promo Banner */}
       <AnimatePresence>

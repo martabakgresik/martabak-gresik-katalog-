@@ -7,6 +7,8 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: string;
+  price?: number;
+  category?: string;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -14,15 +16,74 @@ export const SEO: React.FC<SEOProps> = ({
   description = "Katalog resmi Martabak Gresik (Jl. Usman Sadar No 10). Pesan Terang Bulan Lumer dan Martabak Telor Gurih sekarang! Sejak 2020.",
   image = "https://martabakgresik.com/logo.webp",
   url = "https://martabakgresik.com/",
-  type = "website"
+  type = "website",
+  price,
+  category
 }) => {
   const siteTitle = title.includes("Martabak Gresik") ? title : `${title} | Martabak Gresik`;
+
+  // Default Restaurant Schema
+  const restaurantSchema = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": "Martabak Gresik",
+    "image": image,
+    "url": url,
+    "telephone": "+6281330763633",
+    "priceRange": "Rp",
+    "servesCuisine": "Indonesian, Martabak, Terang Bulan",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Jl. Usman Sadar No 10",
+      "addressLocality": "Gresik",
+      "addressRegion": "Jawa Timur",
+      "postalCode": "61111",
+      "addressCountry": "ID"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -7.1593,
+      "longitude": 112.6565
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+      "opens": "16:00",
+      "closes": "23:00"
+    }
+  };
+
+  const productSchema = price ? {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": title,
+    "description": description,
+    "image": image,
+    "offers": {
+      "@type": "Offer",
+      "price": price,
+      "priceCurrency": "IDR",
+      "availability": "https://schema.org/InStock",
+      "url": url
+    },
+    "category": category
+  } : null;
 
   return (
     <Helmet>
       {/* Standard metadata tags */}
       <title>{siteTitle}</title>
       <meta name='description' content={description} />
+
+      {/* Structured Data */}
+      <script type="application/ld+json">
+        {JSON.stringify(restaurantSchema)}
+      </script>
+      {productSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(productSchema)}
+        </script>
+      )}
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
