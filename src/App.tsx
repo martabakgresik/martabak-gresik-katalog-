@@ -453,10 +453,15 @@ export default function App() {
             transition={{ delay: 0.3 }}
             className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-sm md:text-base opacity-80 w-full"
           >
-            <div className="flex items-center justify-center gap-2">
+            <a 
+              href="https://maps.app.goo.gl/hQUez8CW4wTCXYg3A" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer"
+            >
               <MapPin className="w-4 h-4 text-brand-orange" />
-              <span>Jl. Usman Sadar No 10, Gresik</span>
-            </div>
+              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">Jl. Usman Sadar No 10, Gresik</span>
+            </a>
             <a href="tel:081330763633" className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
               <Phone className="w-4 h-4 text-brand-orange" />
               <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">081 330 763 633</span>
