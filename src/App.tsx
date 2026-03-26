@@ -137,30 +137,57 @@ export default function App() {
   // Deep Linking Effect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const pathname = window.location.pathname;
     const itemName = params.get('item');
+    const pathname = window.location.pathname;
 
     if (pathname.startsWith('/blog')) {
       setCurrentView('blog');
+      return;
     }
 
-    if (itemName) {
-      setTimeout(() => {
-        const elements = document.getElementsByTagName('*');
-        for (let i = 0; i < elements.length; i++) {
-          if (elements[i].textContent?.toLowerCase() === itemName.toLowerCase()) {
-            elements[i].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Add a temporary highlight
-            const target = elements[i] as HTMLElement;
-            target.style.transition = 'background-color 0.5s';
-            target.style.backgroundColor = 'rgba(255, 145, 0, 0.2)';
-            setTimeout(() => target.style.backgroundColor = '', 3000);
-            break;
-          }
+    if (itemName && !selectedItemForAddon) {
+      // Find item in sweet menu
+      for (const section of MENU_SWEET) {
+        const item = section.items.find(i => i.name.toLowerCase() === itemName.toLowerCase());
+        if (item) {
+          setSelectedItemForAddon({ ...item, type: 'sweet', category: section.category });
+          return;
         }
-      }, 1000);
+      }
+      // Find item in savory menu
+      for (const section of MENU_SAVORY) {
+        const variant = section.variants.find(v => (section.title + " " + v.type).toLowerCase() === itemName.toLowerCase() || v.type.toLowerCase() === itemName.toLowerCase());
+        if (variant) {
+          // Find first price for default
+          const priceObj = variant.prices[0];
+          setSelectedItemForAddon({ 
+            name: `${section.title} ${variant.type}`, 
+            price: priceObj.price, 
+            image: variant.image || "", 
+            description: variant.description || "",
+            type: 'savory',
+            category: section.title
+          });
+          return;
+        }
+      }
     }
   }, []);
+
+  // Sync URL with Selected Item
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (selectedItemForAddon) {
+      url.searchParams.set('item', selectedItemForAddon.name);
+    } else {
+      url.searchParams.delete('item');
+    }
+    
+    // Only push if different from current search
+    if (url.search !== window.location.search) {
+      window.history.pushState({}, '', url.toString());
+    }
+  }, [selectedItemForAddon]);
   // Image loading state
   const [imagesLoaded, setImagesLoaded] = useState<Record<string, boolean>>({});
   const handleImageLoad = (src: string) => {
@@ -1476,12 +1503,26 @@ export default function App() {
                     <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-1">Pilih topping ekstra supaya makin mantap Kak!</p>
                     <p className="text-xs font-bold text-brand-orange uppercase tracking-wider mb-2">{selectedItemForAddon.name}</p>
                   </div>
-                  <button
-                    onClick={() => setSelectedItemForAddon(null)}
-                    className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white shrink-0"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}`;
+                        navigator.clipboard.writeText(url);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white"
+                      title="Salin Link Menu"
+                    >
+                      {copied ? <Check className="w-5 h-5 text-green-500" /> : <Share2 className="w-5 h-5" />}
+                    </button>
+                    <button
+                      onClick={() => setSelectedItemForAddon(null)}
+                      className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
 

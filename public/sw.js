@@ -1,4 +1,4 @@
-const CACHE_NAME = 'martabak-gresik-v3'; // Increment version
+const CACHE_NAME = 'martabak-gresik-v4'; // Increment version
 const ASSETS = [
   '/',
   '/index.html',
