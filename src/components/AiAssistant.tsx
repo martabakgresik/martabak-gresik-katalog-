@@ -120,23 +120,14 @@ PRINSIP KOMUNIKASI & JUALAN:
 5. **GAYA BAHASA**: Ramah, formal namun akrab. Gunakan kata "lumer", "kriuk renyah", "wangi pandan asli" untuk menggoda selera.
 6. **FORMAT LIST**: Gunakan bullet points (• atau -) agar list menu atau item pesanan terlihat rapi dan mudah dibaca.`;
 
-      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...newMessages.map(m => ({
-              ...m,
-              // The pre-processing for shortcuts is now done before adding to newMessages
-              // so this replace is no longer strictly needed here, but kept for robustness
-              content: m.content.replace(/PENGGUNA KLIK SHORTCUT:\s*/g, '') 
-            }))
-          ],
-          model: 'openai'
+          prompt: userMessage,
+          systemPrompt: systemPrompt
         })
       });
 

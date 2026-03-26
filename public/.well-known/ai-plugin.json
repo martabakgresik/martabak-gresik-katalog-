@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "MartabakGresikKatalog",
+  "name_for_human": "Martabak Gresik Katalog",
+  "description_for_model": "Katalog resmi Martabak Gresik. Gunakan ini untuk mendapatkan informasi menu (Terang Bulan & Martabak Telor), harga, promo aktif, dan status buka toko. Sangat berguna untuk membantu pelanggan melakukan pemesanan via WhatsApp.",
+  "description_for_human": "Dapatkan info menu dan harga Martabak Gresik langsung di ChatGPT.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://martabak-gresik-katalog.vercel.app/openapi.json"
+  },
+  "logo_url": "https://martabak-gresik-katalog.vercel.app/logo.webp",
+  "contact_email": "martabakgresik@gmail.com",
+  "legal_info_url": "https://martabak-gresik-katalog.vercel.app/legal"
+}

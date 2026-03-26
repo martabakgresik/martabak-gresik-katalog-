@@ -1,0 +1,73 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Martabak Gresik API",
+    "description": "API resmi untuk Katalog Martabak Gresik. Digunakan oleh AI Agent untuk mendapatkan info menu, harga, promo, dan status toko.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://martabak-gresik-katalog.vercel.app",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/api/menu": {
+      "get": {
+        "summary": "Mendapatkan seluruh menu dan info toko",
+        "description": "Mengembalikan data lengkap katalog Martabak Gresik, termasuk status buka/tutup, harga, dan promo aktif.",
+        "responses": {
+          "200": {
+            "description": "Data berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "store": {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" },
+                        "isOpen": { "type": "boolean" },
+                        "operationalHours": { "type": "string" }
+                      }
+                    },
+                    "catalog": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/chat": {
+      "post": {
+        "summary": "Interaksi dengan Asisten AI Toko",
+        "description": "Mengirimkan pesan ke asisten virtual Martabak Gresik (Si Penjual Martabak).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": { "type": "string", "description": "Pesan dari pengguna" },
+                  "systemPrompt": { "type": "string", "description": "Instruksi sistem opsional" }
+                },
+                "required": ["prompt"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respon dari AI"
+          }
+        }
+      }
+    }
+  }
+}

@@ -134,44 +134,27 @@ export const useCart = () => {
   const processAddressWithAI = async (address: string) => {
     if (!address || address.length < 5) return null;
 
-    // Use VITE_ prefix as required by Vite for client-side exposure, 
-    // but the user reminded the source is POLLINATIONS_API_KEY
-    const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY || import.meta.env.POLLINATIONS_API_KEY;
-    if (!apiKey) {
-      const errorMsg = "⚠️ POLLINATIONS_API_KEY tidak ditemukan (VITE_ prefix diperlukan untuk browser). Mohon cek konfigurasi .env Anda.";
-      console.error(errorMsg);
-      alert(errorMsg);
-      return null;
-    }
-
     try {
-      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          messages: [
-            { 
-              role: 'system', 
-              content: `Sistem ahli geocoding dan validasi wilayah Gresik. 
-              LOKASI TOKO: Jl. Usman Sadar No. 10, Gresik (Pusat Kota).
-              
-              TUGAS: 
-              1. Analisis apakah alamat "${address}" berada di wilayah kabupaten Gresik, Jawa Timur, Indonesia.
-              2. Estimasi secara akurat jarak (dalam angka KM) dari TOKO (Jl. Usman Sadar No. 10) ke alamat tujuan.
-                 - CATATAN GEOGRAFI: Jl. Pahlawan, Jl. Basuki Rahmat, Jl. Jaksa Agung adalah area DEKAT (< 1.5 KM).
-                 - Gunakan estimasi rute jalan raya, bukan garis lurus.
-              3. Pastikan alamat mencantumkan NOMOR RUMAH yang jelas.
-              4. Jika VALID (Gresik, <= 10KM, & Ada No Rumah): Return JSON: {"success": true, "beautifiedAddress": "Alamat yang diperbaiki", "googleMapsLink": "https://www.google.com/maps/search/...", "distance": [angka_km_presisi]}.
-              5. Jika INVALID (Luar Gresik, > 10KM, atau TANPA No Rumah): Return JSON: {"success": false, "error": "Pesan peringatan dalam Bahasa Indonesia yang spesifik (misal: 'Mohon cantumkan nomor rumah' atau 'Di luar wilayah Gresik') dan minta konfirmasi admin"}.
-              
-              ATURAN: Return HANYA JSON tersebut. Tanpa markdown backticks, tanpa penjelasan.` 
-            },
-            { role: 'user', content: `Validasi dan proses alamat ini: ${address}` }
-          ],
-          model: 'openai-fast'
+          prompt: `Sistem ahli geocoding dan validasi wilayah Gresik. 
+          LOKASI TOKO: Jl. Usman Sadar No. 10, Gresik (Pusat Kota).
+          
+          TUGAS: 
+          1. Analisis apakah alamat "${address}" berada di wilayah kabupaten Gresik, Jawa Timur, Indonesia.
+          2. Estimasi secara akurat jarak (dalam angka KM) dari TOKO (Jl. Usman Sadar No. 10) ke alamat tujuan.
+             - CATATAN GEOGRAFI: Jl. Pahlawan, Jl. Basuki Rahmat, Jl. Jaksa Agung adalah area DEKAT (< 1.5 KM).
+             - Gunakan estimasi rute jalan raya, bukan garis lurus.
+          3. Pastikan alamat mencantumkan NOMOR RUMAH yang jelas.
+          4. Jika VALID (Gresik, <= 10KM, & Ada No Rumah): Return JSON: {"success": true, "beautifiedAddress": "Alamat yang diperbaiki", "googleMapsLink": "https://www.google.com/maps/search/...", "distance": [angka_km_presisi]}.
+          5. Jika INVALID (Luar Gresik, > 10KM, atau TANPA No Rumah): Return JSON: {"success": false, "error": "Pesan peringatan dalam Bahasa Indonesia yang spesifik (misal: 'Mohon cantumkan nomor rumah' atau 'Di luar wilayah Gresik') dan minta konfirmasi admin"}.
+          
+          ATURAN: Return HANYA JSON tersebut. Tanpa markdown backticks, tanpa penjelasan.`,
+          systemPrompt: "You are a geocoding expert for Gresik region."
         })
       });
 
@@ -197,25 +180,15 @@ export const useCart = () => {
   };
 
   const reverseGeocodeWithAI = async (lat: number, lng: number) => {
-    const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
-    if (!apiKey) return null;
-
     try {
-      const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          messages: [
-            { 
-              role: 'system', 
-              content: 'Sistem ahli geocoding. Tugas: Berikan alamat jalan yang lengkap, akurat, dan manusiawi berdasarkan koordinat latitude dan longitude yang diberikan. Contoh return: "Jl. Usman Sadar No. 10, Gresik, Jawa Timur". Berikan HANYA teks alamat tersebut tanpa penjelasan lain, tanpa markdown.' 
-            },
-            { role: 'user', content: `Berapa alamat untuk koordinat ini: ${lat}, ${lng}?` }
-          ],
-          model: 'openai-fast'
+          prompt: `Berapa alamat untuk koordinat ini: ${lat}, ${lng}?`,
+          systemPrompt: 'Sistem ahli geocoding. Tugas: Berikan alamat jalan yang lengkap, akurat, dan manusiawi berdasarkan koordinat latitude dan longitude yang diberikan. Contoh return: "Jl. Usman Sadar No. 10, Gresik, Jawa Timur". Berikan HANYA teks alamat tersebut tanpa penjelasan lain, tanpa markdown.'
         })
       });
 

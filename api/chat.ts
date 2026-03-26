@@ -5,11 +5,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { messages } = req.body;
+  const { messages, prompt, systemPrompt, model } = req.body;
   const apiKey = process.env.POLLINATIONS_API_KEY;
 
   if (!apiKey) {
     return res.status(500).json({ error: 'API Key not configured on server' });
+  }
+
+  // Construct messages if not provided directly
+  let apiMessages = messages;
+  if (!apiMessages && prompt) {
+    apiMessages = [
+      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+      { role: 'user', content: prompt }
+    ];
+  }
+
+  if (!apiMessages) {
+    return res.status(400).json({ error: 'Missing messages or prompt' });
   }
 
   try {
@@ -20,8 +33,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        messages,
-        model: 'openai'
+        messages: apiMessages,
+        model: model || 'openai'
       })
     });
 

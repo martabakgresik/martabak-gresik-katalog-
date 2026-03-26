@@ -27,6 +27,8 @@ import { LegalPages } from "./components/LegalPages";
 import { AboutMe } from "./components/AboutMe";
 import { CookieConsent } from "./components/CookieConsent";
 import { BlogView } from "./components/BlogView";
+import { SEO } from "./components/SEO";
+import { FAQ } from "./components/FAQ";
 
 interface FavoriteItem {
   id: string;
@@ -95,7 +97,7 @@ export default function App() {
   const [isCheckoutPhase, setIsCheckoutPhase] = useState(false);
 
   // Legal & Privacy State
-  const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | null>(null);
+  const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | 'faq' | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
   const [currentView, setCurrentView] = useState<'catalog' | 'blog'>('catalog');
 
@@ -174,14 +176,24 @@ export default function App() {
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e: MediaQueryListEvent) => {
+      if (!localStorage.getItem('theme')) {
+        setIsDarkMode(e.matches);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  useEffect(() => {
     const metaThemeColor = document.getElementById('theme-color-meta');
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#000000');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
       if (metaThemeColor) metaThemeColor.setAttribute('content', '#1E1E1E');
     }
   }, [isDarkMode]);
@@ -299,6 +311,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
+      <SEO 
+        title={selectedItemForAddon ? `${selectedItemForAddon.name} - Martabak Gresik` : undefined}
+        description={selectedItemForAddon?.description}
+        image={selectedItemForAddon?.image}
+        url={selectedItemForAddon ? `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}` : undefined}
+      />
       {/* Promo Banner */}
       <AnimatePresence>
         {showPromo && (
@@ -891,6 +909,13 @@ export default function App() {
                 type="button"
               >
                 About Me
+              </button>
+              <button 
+                onClick={() => setActiveLegalPage('faq')}
+                className="hover:text-brand-orange transition-colors"
+                type="button"
+              >
+                Tanya Jawab (FAQ)
               </button>
             </div>
             
@@ -1841,7 +1866,7 @@ export default function App() {
 
       {/* Legal Pages Overlay */}
       <AnimatePresence>
-        {activeLegalPage && activeLegalPage !== 'about' && (
+        {activeLegalPage && activeLegalPage !== 'about' && activeLegalPage !== 'faq' && (
           <LegalPages 
             type={activeLegalPage as any} 
             onClose={() => setActiveLegalPage(null)} 
@@ -1851,6 +1876,23 @@ export default function App() {
           <AboutMe 
             onClose={() => setActiveLegalPage(null)} 
           />
+        )}
+        {activeLegalPage === 'faq' && (
+          <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-brand-black/60 backdrop-blur-sm p-4">
+             <motion.div 
+               initial={{ opacity: 0, scale: 0.9, y: 20 }}
+               animate={{ opacity: 1, scale: 1, y: 0 }}
+               className="bg-white dark:bg-brand-black rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
+             >
+               <div className="p-6 bg-brand-black text-white flex justify-between items-center shrink-0">
+                 <h3 className="text-xl font-black uppercase italic tracking-tighter">Bantuan & FAQ</h3>
+                 <button onClick={() => setActiveLegalPage(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+               </div>
+               <div className="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
+                 <FAQ />
+               </div>
+             </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
