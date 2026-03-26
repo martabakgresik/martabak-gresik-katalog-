@@ -241,7 +241,7 @@ PRINSIP KOMUNIKASI & JUALAN:
           return (
             <motion.div key={index} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-white/5 border-2 border-brand-black dark:border-brand-yellow/50 rounded-[2.5rem] overflow-hidden my-6 shadow-2xl max-w-[280px] mx-auto group">
               <div className="relative aspect-[3/4] overflow-hidden bg-brand-yellow/10">
-                <img src="/katalog.png" alt="Katalog Martabak Gresik" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                <img src="/katalog.webp" alt="Katalog Martabak Gresik" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-0 bg-gradient-to-t from-brand-black/80 via-transparent to-transparent opacity-60" />
                 <div className="absolute bottom-4 left-0 right-0 text-center">
                   <span className="bg-brand-yellow text-brand-black text-[10px] font-black px-3 py-1 rounded-full shadow-lg uppercase tracking-widest">Digital Catalog v2026</span>
@@ -252,7 +252,7 @@ PRINSIP KOMUNIKASI & JUALAN:
                   <h4 className="text-sm font-black dark:text-white uppercase tracking-tighter mb-1">Katalog Produk Lengkap</h4>
                   <p className="text-[10px] text-brand-black/60 dark:text-white/60 font-medium">Download untuk simpan di galeri HP Kakak</p>
                 </div>
-                <a href="/katalog.png" download="Katalog-Martabak-Gresik.png" className="flex items-center justify-center gap-3 w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl no-underline group/btn">
+                <a href="/katalog.webp" download="Katalog-Martabak-Gresik.webp" className="flex items-center justify-center gap-3 w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl no-underline group/btn">
                   <Download className="w-4 h-4 group-hover/btn:bounce" /> 
                   Simpan Katalog
                 </a>
