@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { getBlogPosts, type BlogPost } from '../data/blogUtils';
+import { getBlogPostsFromSupabase, getBlogPosts, type BlogPost } from '../data/blogUtils';
 
 interface BlogViewProps {
   onClose: () => void;
@@ -13,8 +13,29 @@ export function BlogView({ onClose }: BlogViewProps) {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
-  
-  const posts = useMemo(() => getBlogPosts(), []);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+
+  // Fetch posts: Supabase first, fallback to local
+  useEffect(() => {
+    async function loadPosts() {
+      setPostsLoading(true);
+      try {
+        const supabasePosts = await getBlogPostsFromSupabase();
+        if (supabasePosts.length > 0) {
+          setPosts(supabasePosts);
+        } else {
+          // Fallback ke local .md files
+          setPosts(getBlogPosts());
+        }
+      } catch {
+        setPosts(getBlogPosts());
+      } finally {
+        setPostsLoading(false);
+      }
+    }
+    loadPosts();
+  }, []);
 
   const blogContainerRef = React.useRef<HTMLDivElement>(null);
 

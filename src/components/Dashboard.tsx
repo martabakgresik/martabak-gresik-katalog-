@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { BlogManager } from './BlogManager';
 import { 
   BarChart3, 
   Package, 
@@ -23,7 +24,8 @@ import {
   Trash2,
   Sparkles,
   CircleSlash,
-  ChevronDown
+  ChevronDown,
+  BookOpen
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -46,7 +48,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pinError, setPinError] = useState(false);
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'settings' | 'blog'>('overview');
   const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -499,9 +501,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
           </div>
           
           <div className="hidden md:flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl">
-            {(['overview', 'menu', 'settings'] as const).map((id) => {
-              const icons = { overview: BarChart3, menu: Package, settings: Settings };
-              const labels = { overview: 'Ringkasan', menu: 'Atur Menu', settings: 'Toko' };
+            {(['overview', 'menu', 'blog', 'settings'] as const).map((id) => {
+              const icons = { overview: BarChart3, menu: Package, blog: BookOpen, settings: Settings };
+              const labels = { overview: 'Ringkasan', menu: 'Atur Menu', blog: 'Blog', settings: 'Toko' };
               const Icon = icons[id];
               return (
                 <button key={id} onClick={() => setActiveTab(id)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === id ? 'bg-white dark:bg-zinc-800 shadow-sm text-brand-orange' : 'text-zinc-500 hover:text-zinc-700'}`}>
@@ -513,16 +515,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
 
           <div className="relative md:hidden">
             <button onClick={() => setIsNavDropdownOpen(!isNavDropdownOpen)} className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 px-4 py-2 rounded-xl font-bold text-sm">
-              {activeTab === 'overview' ? <BarChart3 className="w-4 h-4 text-brand-orange" /> : activeTab === 'menu' ? <Package className="w-4 h-4 text-brand-orange" /> : <Settings className="w-4 h-4 text-brand-orange" />}
-              {activeTab === 'overview' ? 'Ringkasan' : activeTab === 'menu' ? 'Atur Menu' : 'Toko'}
+              {activeTab === 'overview' ? <BarChart3 className="w-4 h-4 text-brand-orange" /> : activeTab === 'menu' ? <Package className="w-4 h-4 text-brand-orange" /> : activeTab === 'blog' ? <BookOpen className="w-4 h-4 text-brand-orange" /> : <Settings className="w-4 h-4 text-brand-orange" />}
+              {activeTab === 'overview' ? 'Ringkasan' : activeTab === 'menu' ? 'Atur Menu' : activeTab === 'blog' ? 'Blog' : 'Toko'}
               <ChevronDown className={`w-4 h-4 transition-transform ${isNavDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
             <AnimatePresence>
               {isNavDropdownOpen && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl z-50 overflow-hidden">
-                  {(['overview', 'menu', 'settings'] as const).map((id) => {
-                    const icons = { overview: BarChart3, menu: Package, settings: Settings };
-                    const labels = { overview: 'Ringkasan', menu: 'Atur Menu', settings: 'Toko' };
+                  {(['overview', 'menu', 'blog', 'settings'] as const).map((id) => {
+                    const icons = { overview: BarChart3, menu: Package, blog: BookOpen, settings: Settings };
+                    const labels = { overview: 'Ringkasan', menu: 'Atur Menu', blog: 'Blog', settings: 'Toko' };
                     const Icon = icons[id];
                     return (
                       <button key={id} onClick={() => { setActiveTab(id); setIsNavDropdownOpen(false); }} className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold transition-colors ${activeTab === id ? 'bg-brand-orange/10 text-brand-orange' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-600'}`}>
@@ -623,6 +625,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                   </div>
                 ))}
               </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'blog' && (
+            <motion.div key="blog" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <BlogManager />
             </motion.div>
           )}
 
