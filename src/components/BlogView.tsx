@@ -16,19 +16,37 @@ export function BlogView({ onClose }: BlogViewProps) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
 
-  // Fetch posts: Supabase first, fallback to local
+  // Fetch posts: Supabase AND local merge
   useEffect(() => {
     async function loadPosts() {
       setPostsLoading(true);
       try {
         const supabasePosts = await getBlogPostsFromSupabase();
-        if (supabasePosts.length > 0) {
-          setPosts(supabasePosts);
-        } else {
-          // Fallback ke local .md files
-          setPosts(getBlogPosts());
-        }
-      } catch {
+        const localPosts = getBlogPosts(); // Dari folder content/blog
+
+        // Gabungkan keduanya
+        const allPosts = [...supabasePosts, ...localPosts];
+
+        // Unique by slug (Supabase takes priority if duplicate)
+        const postMap = new Map();
+        allPosts.forEach(post => {
+          if (!postMap.has(post.slug)) {
+            postMap.set(post.slug, post);
+          }
+        });
+
+        const mergedPosts = Array.from(postMap.values());
+
+        // Sort by date descending
+        const sortedPosts = mergedPosts.sort((a, b) => {
+          const dateA = new Date(a.date).getTime() || 0;
+          const dateB = new Date(b.date).getTime() || 0;
+          return dateB - dateA;
+        });
+
+        setPosts(sortedPosts);
+      } catch (err) {
+        console.error('Error merging blog posts:', err);
         setPosts(getBlogPosts());
       } finally {
         setPostsLoading(false);
