@@ -22,8 +22,8 @@ interface LogoutResponse {
 
 export default async function handler(
   req: VercelRequest,
-  res: VercelResponse<LogoutResponse>
-): Promise<void> {
+  res: VercelResponse
+) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ 

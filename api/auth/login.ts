@@ -62,13 +62,13 @@ async function checkRateLimit(
 
 export default async function handler(
   req: VercelRequest,
-  res: VercelResponse<LoginResponseBody>
-): Promise<void> {
+  res: VercelResponse
+) {
   // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       error: 'Method not allowed' 
-    });
+    } as LoginResponseBody);
   }
 
   try {
@@ -83,21 +83,21 @@ export default async function handler(
     if (!username || !password) {
       return res.status(400).json({ 
         error: 'Username dan password harus diisi' 
-      });
+      } as LoginResponseBody);
     }
 
     // Username validation
     if (username.length < 3 || username.length > 50) {
       return res.status(400).json({ 
         error: 'Username harus 3-50 karakter' 
-      });
+      } as LoginResponseBody);
     }
 
     // Password validation
     if (password.length < 6) {
       return res.status(400).json({ 
         error: 'Password terlalu pendek' 
-      });
+      } as LoginResponseBody);
     }
 
     // Rate limiting check
@@ -112,7 +112,7 @@ export default async function handler(
 
       return res.status(429).json({ 
         error: 'Terlalu banyak percobaan login. Coba lagi nanti.' 
-      });
+      } as LoginResponseBody);
     }
 
     // Query admin user dari database
@@ -134,7 +134,7 @@ export default async function handler(
       // Don't reveal if user exists or not
       return res.status(401).json({ 
         error: 'Username atau password salah' 
-      });
+      } as LoginResponseBody);
     }
 
     // Verify password menggunakan bcrypt
@@ -145,7 +145,7 @@ export default async function handler(
       console.error('[Auth] Bcrypt error:', bcryptError);
       return res.status(500).json({ 
         error: 'Password verification failed' 
-      });
+      } as LoginResponseBody);
     }
 
     if (!passwordMatch) {
@@ -158,7 +158,7 @@ export default async function handler(
 
       return res.status(401).json({ 
         error: 'Username atau password salah' 
-      });
+      } as LoginResponseBody);
     }
 
     // Generate JWT token
@@ -167,7 +167,7 @@ export default async function handler(
       console.error('[Auth] JWT_SECRET not configured');
       return res.status(500).json({ 
         error: 'Server configuration error' 
-      });
+      } as LoginResponseBody);
     }
 
     const token = jwt.sign(
@@ -194,7 +194,7 @@ export default async function handler(
       console.error('[Auth] Failed to save session:', sessionError);
       return res.status(500).json({ 
         error: 'Failed to create session' 
-      });
+      } as LoginResponseBody);
     }
 
     // Log successful attempt
@@ -218,11 +218,11 @@ export default async function handler(
         username: adminUser.username,
         email: adminUser.email,
       },
-    });
+    } as LoginResponseBody);
   } catch (error) {
     console.error('[Auth] Login handler error:', error);
     return res.status(500).json({ 
       error: 'Internal server error' 
-    });
+    } as LoginResponseBody);
   }
 }

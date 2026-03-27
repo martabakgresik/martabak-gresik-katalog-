@@ -21,8 +21,8 @@ interface VerifyResponse {
 
 export default async function handler(
   req: VercelRequest,
-  res: VercelResponse<VerifyResponse>
-): Promise<void> {
+  res: VercelResponse
+) {
   // Only allow GET
   if (req.method !== 'GET') {
     return res.status(405).json({ 
