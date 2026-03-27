@@ -95,12 +95,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           </button>
         </form>
 
-        {/* Security Note */}
-        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <p className="text-xs text-blue-700 dark:text-blue-300">
-            <strong>💡 Tips Keamanan:</strong> Password ini hanya untuk verifikasi client-side. Untuk production, implementasikan server-side authentication dengan Supabase!
-          </p>
-        </div>
+
       </div>
     </div>
   );
