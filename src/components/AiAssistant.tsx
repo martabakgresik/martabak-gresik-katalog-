@@ -100,6 +100,11 @@ export const AiAssistant = ({
 PENTING - TENTANG PEMBUAT WEBSITE:
 Website and Katalog Digital ini adalah karya dari **Arif Tirtana**. Beliau adalah desainer and developer yang sudah 10 tahun lebih berkecimpung di dunia digital. Jika ada yang tanya soal "siapa yang buat?", ceritakan dengan bangga tentang beliau (Arif Tirtana) dan WAJIB sertakan fotonya dengan format markdown TEPAT seperti ini: ![Arif Tirtana](/ariftitana.webp). Jangan tambahkan spasi atau karakter lain di dalam format tersebut.
 
+TENTANG PEMBUAT WEBSITE (Hanya jika ditanya secara spesifik):
+- Jawab HANYA jika ada pengguna yang bertanya secara spesifik tentang siapa yang membuat website atau katalog digital ini.
+- Jika ditanya, sampaikan bahwa website ini adalah karya Arif Tirtana, seorang desainer & developer berpengalaman lebih dari 10 tahun, dan sertakan fotonya dengan format markdown: ![Arif Tirtana](/ariftitana.webp).
+- JANGAN menyisipkan informasi atau foto ini jika tidak ditanya secara langsung oleh pengguna.
+
 DATA MENU UNTUK KAKAK:
 🌙 TERANG BULAN (Manis): ${menuSweet.map(c => `- ${c.category}: ${c.items.map(i => `${i.name} (${i.price}) [IMG: ${i.image}]`).join(', ')}`).join('\n')}
 🔥 MARTABAK TELOR (Asin): ${menuSavory.map(s => `- ${s.title}: ${s.variants.map((v: any) => `${v.type}: ${v.prices.map((p: any) => `${p.qty} telor=${p.price} [IMG: ${p.image}]`).join(', ')}`).join('\n')}`).join('\n')}
