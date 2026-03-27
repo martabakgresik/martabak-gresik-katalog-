@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { 
   BarChart3, 
   Package, 
@@ -198,9 +199,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<any>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check Turnstile Token
+    if (!turnstileToken) {
+      alert("Silakan verifikasi Turnstile terlebih dahulu!");
+      return;
+    }
 
     // Check Lockout
     const lockoutUntil = localStorage.getItem('martabak_lockout_until');
@@ -210,6 +219,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       setTimeout(() => setLockoutMessage(null), 5000);
       return;
     }
+
+    // Verify Turnstile on Backend
+    try {
+      const verifyResponse = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: turnstileToken })
+      });
+
+      const verifyData = await verifyResponse.json();
+      if (!verifyData.success) {
+        alert("Verifikasi Turnstile gagal. Silakan coba lagi.");
+        setTurnstileToken(null);
+        if (turnstileRef.current) {
+          turnstileRef.current.reset();
+        }
+        return;
+      }
+    } catch (error) {
+      console.error('Turnstile verification error:', error);
+      alert("Gagal melakukan verifikasi. Silakan coba lagi.");
+      return;
+    }
+
     const { data: settings, error } = await supabase
       .from('store_settings')
       .select('admin_username, admin_password')
@@ -218,6 +251,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
 
     if (error) {
       alert("Gagal terhubung ke Database: " + error.message);
+      setTurnstileToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
+      }
       return;
     }
 
@@ -235,6 +272,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         const lockoutTime = Date.now() + 15 * 60 * 1000;
         localStorage.setItem('martabak_lockout_until', lockoutTime.toString());
         setLockoutMessage("Akun terkunci sementara selama 15 menit.");
+      }
+      setTurnstileToken(null);
+      if (turnstileRef.current) {
+        turnstileRef.current.reset();
       }
       setTimeout(() => { setPinError(false); setLockoutMessage(null); }, 5000);
     }
@@ -428,6 +469,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               </div>
             </div>
             {pinError && <p className="text-red-500 text-[10px] font-black uppercase">Username atau Password salah!</p>}
+            <div className="flex justify-center my-4">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setTurnstileToken(token)}
+                onError={() => {
+                  setTurnstileToken(null);
+                  alert("Turnstile verification failed. Silakan coba lagi.");
+                }}
+                onExpire={() => {
+                  setTurnstileToken(null);
+                  alert("Turnstile token expired. Silakan verifikasi ulang.");
+                }}
+              />
+            </div>
             <button type="submit" className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform shadow-xl shadow-brand-orange/20">Masuk</button>
           </form>
           <button onClick={onBack} className="mt-8 text-zinc-600 hover:text-zinc-400 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 mx-auto"><ArrowLeft className="w-3 h-3" /> Kembali</button>
