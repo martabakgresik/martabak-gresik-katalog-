@@ -64,10 +64,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     phone: "081330763633",
     shippingRate: 2500,
     maxDist: 10,
-    adminPin: INITIAL_PIN,
     adminUsername: 'admin',
     adminPassword: INITIAL_PIN,
-    isEmergencyClosed: false
+    isEmergencyClosed: false,
+    promoStartAt: '',
+    promoEndAt: ''
   });
   const [loading, setLoading] = useState(true);
 
@@ -89,10 +90,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             phone: settings.store_phone || "081330763633",
             shippingRate: settings.shipping_rate_per_km || 2500,
             maxDist: settings.max_shipping_distance || 10,
-            adminPin: settings.admin_pin || INITIAL_PIN,
             adminUsername: settings.admin_username || 'admin',
             adminPassword: settings.admin_password || INITIAL_PIN,
-            isEmergencyClosed: settings.is_emergency_closed || false
+            isEmergencyClosed: settings.is_emergency_closed || false,
+            promoStartAt: settings.promo_start_at ? new Date(settings.promo_start_at).toISOString().slice(0, 16) : '',
+            promoEndAt: settings.promo_end_at ? new Date(settings.promo_end_at).toISOString().slice(0, 16) : ''
           });
         }
 
@@ -106,7 +108,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               price: i.price,
               image: i.image,
               description: i.description,
-              isBestSeller: i.is_best_seller
+              isBestSeller: i.is_best_seller,
+              isAvailable: i.is_available ?? true
             }))
           }));
 
@@ -120,7 +123,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                 id: i.id,
                 qty: i.qty,
                 price: i.price,
-                isBestSeller: i.is_best_seller
+                isBestSeller: i.is_best_seller,
+                isAvailable: i.is_available ?? true
               }))
             }))
           }));
@@ -206,22 +210,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
 
     // Server-side verification of Turnstile token
     if (!isBypass) {
-      if (!turnstileToken) return;
+      if (!turnstileToken) {
+        alert("Selesaikan verifikasi Turnstile terlebih dahulu.");
+        return;
+      }
       try {
         const verifyRes = await fetch('/api/verify-turnstile', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: turnstileToken })
         });
-        const verifyData = await verifyRes.json();
         
-        if (!verifyData.success) {
-          alert("Gagal verifikasi keamanan (Bot detected). Silakan coba lagi.");
-          setTurnstileToken(null);
-          return;
+        if (verifyRes.status === 404) {
+          // Local development fallback/warning
+          console.warn("Turnstile API not found (likely running with npm run dev instead of vercel dev). Skipping verification for local testing.");
+        } else {
+          const verifyData = await verifyRes.json();
+          if (!verifyData.success) {
+            alert("Gagal verifikasi keamanan (Bot detected). Silakan coba lagi.");
+            setTurnstileToken(null);
+            return;
+          }
         }
       } catch (err) {
         console.error("Turnstile verification failed:", err);
+        // During local dev, fetch might fail if API is not running. 
+        // We alert the user instead of stucking.
+        alert("Sistem verifikasi tidak merespons. Jika Anda di lokal, gunakan 'vercel dev' atau pastikan API berjalan.");
         return;
       }
     }
@@ -283,6 +298,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   };
 
   // --- EDITING LOGIC ---
+  const handleToggleAvailability = async (type: 'sweet' | 'savory', catIdx: number, itemIdx: number, vIdx?: number, pIdx?: number) => {
+    let itemId: string;
+    let newValue: boolean;
+
+    if (type === 'sweet') {
+      itemId = (menuSweet as any)[catIdx].items[itemIdx].id;
+      newValue = !(menuSweet as any)[catIdx].items[itemIdx].isAvailable;
+    } else {
+      itemId = (menuSavory as any)[catIdx].variants[vIdx!].prices[pIdx!].id;
+      newValue = !(menuSavory as any)[catIdx].variants[vIdx!].prices[pIdx!].isAvailable;
+    }
+
+    const { error } = await supabase
+      .from('menu_items')
+      .update({ is_available: newValue })
+      .eq('id', itemId);
+
+    if (error) {
+      alert("Gagal update ketersediaan: " + error.message);
+      return;
+    }
+
+    if (type === 'sweet') {
+      const newMenu = [...menuSweet];
+      (newMenu as any)[catIdx].items[itemIdx].isAvailable = newValue;
+      setMenuSweet(newMenu);
+    } else {
+      const newMenu = [...menuSavory];
+      (newMenu as any)[catIdx].variants[vIdx!].prices[pIdx!].isAvailable = newValue;
+      setMenuSavory(newMenu);
+    }
+  };
+
   const handleUpdateItem = async (newData: any) => {
     if (!editingItem) return;
 
@@ -331,7 +379,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         variant_type: data.variant_type || (type === 'savory' ? 'Daging Sapi' : null),
         image: data.image,
         description: data.description,
-        is_best_seller: false
+        is_best_seller: false,
+        is_available: true
       })
       .select()
       .single();
@@ -395,7 +444,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         admin_password: storeSettings.adminPassword,
         store_address: storeSettings.address,
         store_phone: storeSettings.phone,
-        is_emergency_closed: storeSettings.isEmergencyClosed
+        is_emergency_closed: storeSettings.isEmergencyClosed,
+        promo_start_at: storeSettings.promoStartAt || null,
+        promo_end_at: storeSettings.promoEndAt || null
       })
       .eq('id', 'main_config');
 
@@ -681,6 +732,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                           </div>
                           <div className="flex items-center gap-2">
                             <button 
+                              onClick={() => handleToggleAvailability('sweet', catIdx, itemIdx)}
+                              className={`p-2 rounded-lg transition-colors flex items-center gap-1.5 ${(item as any).isAvailable ? 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
+                              title={(item as any).isAvailable ? "Tersedia" : "Stok Habis"}
+                            >
+                              {(item as any).isAvailable ? <Check className="w-4 h-4" /> : <CircleSlash className="w-4 h-4" />}
+                              <span className="text-[9px] font-black uppercase tracking-tighter hidden sm:inline">{(item as any).isAvailable ? 'Ready' : 'Habis'}</span>
+                            </button>
+                            <button 
                               onClick={() => setEditingItem({ type: 'sweet', categoryIdx: catIdx, itemIdx, data: {...item} })}
                               className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-brand-orange transition-colors"
                             >
@@ -714,8 +773,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                             {v.prices.map((p, pIdx) => (
                               <div key={pIdx} className="bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 flex justify-between items-center">
                                 <span className="text-xs font-bold">{p.qty} Telor</span>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1.5">
                                   <span className="text-xs font-black text-brand-orange">{formatPrice(p.price)}</span>
+                                  <button 
+                                    onClick={() => handleToggleAvailability('savory', catIdx, -1, vIdx, pIdx)}
+                                    className={`p-1 transition-colors ${(p as any).isAvailable ? 'text-green-500' : 'text-red-500'}`}
+                                    title={(p as any).isAvailable ? "Tersedia" : "Stok Habis"}
+                                  >
+                                    {(p as any).isAvailable ? <Check className="w-3 h-3" /> : <CircleSlash className="w-3 h-3" />}
+                                  </button>
                                   <button 
                                     onClick={() => setEditingItem({ type: 'savory', categoryIdx: catIdx, variantIdx: vIdx, priceIdx: pIdx, itemIdx: -1, data: {...p} })}
                                     className="p-1 hover:text-brand-orange transition-colors"
@@ -816,11 +882,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                         />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                         <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
                     <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400 flex items-center gap-2">
-                       Promo Aktif
+                       Promo Aktif & Jadwal
                     </h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -842,7 +906,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                         />
                       </div>
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase px-1 text-brand-orange">📅 Mulai Promo</label>
+                        <input 
+                          type="datetime-local" 
+                          value={storeSettings.promoStartAt}
+                          onChange={(e) => setStoreSettings({...storeSettings, promoStartAt: e.target.value})}
+                          className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none transition-all text-sm" 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase px-1 text-red-500">🏁 Selesai Promo</label>
+                        <input 
+                          type="datetime-local" 
+                          value={storeSettings.promoEndAt}
+                          onChange={(e) => setStoreSettings({...storeSettings, promoEndAt: e.target.value})}
+                          className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-200 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none transition-all text-sm" 
+                        />
+                      </div>
+                    </div>
                   </div>
+            </div>
 
                   <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
                     <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400 flex items-center gap-2">

@@ -58,6 +58,8 @@ export default function App() {
   const [maxDistance, setMaxDistance] = useState(MAX_SHIPPING_DISTANCE);
   const [isEmergencyClosed, setIsEmergencyClosed] = useState(false);
   const [dbLoading, setDbLoading] = useState(true);
+  const [promoStartAt, setPromoStartAt] = useState<string | null>(null);
+  const [promoEndAt, setPromoEndAt] = useState<string | null>(null);
 
   const {
     cart,
@@ -104,6 +106,8 @@ export default function App() {
           setShippingRate(settings.shipping_rate_per_km || SHIPPING_RATE_PER_KM);
           setMaxDistance(settings.max_shipping_distance || MAX_SHIPPING_DISTANCE);
           setIsEmergencyClosed(settings.is_emergency_closed || false);
+          setPromoStartAt(settings.promo_start_at || null);
+          setPromoEndAt(settings.promo_end_at || null);
         }
 
         if (categories && categories.length > 0) {
@@ -114,7 +118,8 @@ export default function App() {
               price: i.price,
               image: i.image,
               description: i.description,
-              isBestSeller: i.is_best_seller
+              isBestSeller: i.is_best_seller,
+              isAvailable: i.is_available ?? true
             }))
           }));
 
@@ -126,7 +131,8 @@ export default function App() {
               prices: c.menu_items.filter((i: any) => i.variant_type === vType).map((i: any) => ({
                 qty: i.qty,
                 price: i.price,
-                isBestSeller: i.is_best_seller
+                isBestSeller: i.is_best_seller,
+                isAvailable: i.is_available ?? true
               }))
             }))
           }));
@@ -419,6 +425,16 @@ export default function App() {
     })).filter(v => v.prices.length > 0)
   })).filter(section => section.variants.length > 0), [searchQuery, menuSavory]);
 
+  const isPromoScheduledActive = useMemo(() => {
+    if (!promoStartAt && !promoEndAt) return true;
+    const now = new Date();
+    const start = promoStartAt ? new Date(promoStartAt) : null;
+    const end = promoEndAt ? new Date(promoEndAt) : null;
+    if (start && now < start) return false;
+    if (end && now > end) return false;
+    return true;
+  }, [promoStartAt, promoEndAt]);
+
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
       <SEO 
@@ -432,7 +448,7 @@ export default function App() {
       />
       {/* Promo Banner */}
       <AnimatePresence>
-        {showPromo && (
+        {(showPromo && isPromoScheduledActive) && (
           <motion.div
             initial={{ y: -50 }}
             animate={{ y: 0 }}
@@ -788,14 +804,22 @@ export default function App() {
                                 <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
                               </button>
                               <button
-                                onClick={() => handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
-                                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
+                                onClick={() => item.isAvailable !== false && handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
+                                disabled={item.isAvailable === false}
+                                className={`p-1.5 rounded-full transition-colors active:scale-90 ${item.isAvailable === false 
+                                  ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
+                                  : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black hover:bg-brand-orange hover:text-white'}`}
                               >
-                                <Plus className="w-4 h-4" />
+                                {item.isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                               </button>
                             </div>
                           </div>
                         </div>
+                        {item.isAvailable === false && (
+                          <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[1px] flex items-center justify-center rounded-2xl pointer-events-none z-[5]">
+                             <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase italic tracking-widest shadow-lg shadow-red-500/20">Stok Habis</span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -893,18 +917,26 @@ export default function App() {
                                     <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`) ? 'fill-current' : ''}`} />
                                   </button>
                                   <button
-                                    onClick={() => handleOpenAddonModal({
+                                    onClick={() => p.isAvailable !== false && handleOpenAddonModal({
                                       name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
                                       price: p.price,
                                       image: (p as any).image,
                                       description: (variant as any).description
                                     }, 'savory')}
-                                    className="bg-brand-yellow text-brand-black p-1.5 rounded-full hover:bg-brand-orange hover:text-white transition-colors active:scale-90"
+                                    disabled={p.isAvailable === false}
+                                    className={`p-1.5 rounded-full transition-colors active:scale-90 ${p.isAvailable === false 
+                                      ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
+                                      : 'bg-brand-yellow text-brand-black hover:bg-brand-orange hover:text-white'}`}
                                   >
-                                    <Plus className="w-4 h-4" />
+                                    {p.isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                   </button>
                                 </div>
                               </div>
+                              {p.isAvailable === false && (
+                                <div className="absolute inset-0 bg-white/20 dark:bg-black/60 backdrop-blur-[1px] flex items-center justify-center rounded-xl pointer-events-none z-[5]">
+                                  <span className="text-[10px] font-black text-red-500 tracking-[0.2em] italic uppercase bg-white/90 dark:bg-zinc-950 px-2 py-0.5 rounded shadow-sm border border-red-500/20 underline decoration-red-500">HABIS</span>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
