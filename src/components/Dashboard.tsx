@@ -24,7 +24,6 @@ import {
   CircleSlash,
   ChevronDown
 } from 'lucide-react';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { supabase } from '../lib/supabase';
 import { 
   MENU_SWEET as INITIAL_SWEET, 
@@ -163,7 +162,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   // --- STATS CALCULATION ---
   const stats = useMemo(() => {
@@ -212,40 +210,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       setTimeout(() => setLockoutMessage(null), 5000);
       return;
     }
-
-    const urlParams = new URL(window.location.href).searchParams;
-    const isBypass = urlParams.get('bypass') === 'true';
-
-    // Server-side verification of Turnstile token
-    if (!isBypass) {
-      if (!turnstileToken) {
-        alert("Selesaikan verifikasi Turnstile terlebih dahulu.");
-        return;
-      }
-      try {
-        const verifyRes = await fetch('/api/verify-turnstile', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: turnstileToken })
-        });
-        
-        if (verifyRes.status === 404) {
-          console.warn("Turnstile API not found. Skipping verification for local testing.");
-        } else {
-          const verifyData = await verifyRes.json();
-          if (!verifyData.success) {
-            alert("Gagal verifikasi keamanan (Bot detected). Silakan coba lagi.");
-            setTurnstileToken(null);
-            return;
-          }
-        }
-      } catch (err) {
-        console.error("Turnstile verification failed:", err);
-        alert("Sistem verifikasi tidak merespons. Jika Anda di lokal, gunakan 'vercel dev' atau pastikan API berjalan.");
-        return;
-      }
-    }
-
     const { data: settings, error } = await supabase
       .from('store_settings')
       .select('admin_username, admin_password')
@@ -464,10 +428,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               </div>
             </div>
             {pinError && <p className="text-red-500 text-[10px] font-black uppercase">Username atau Password salah!</p>}
-            <div className="flex justify-center mb-4">
-              <Turnstile siteKey={TURNSTILE_SITE_KEY} onSuccess={(token) => setTurnstileToken(token)} options={{ theme: 'dark' }} />
-            </div>
-            <button type="submit" disabled={!turnstileToken && !(new URL(window.location.href).searchParams.get('bypass') === 'true')} className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform shadow-xl shadow-brand-orange/20 disabled:opacity-50">Masuk</button>
+            <button type="submit" className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform shadow-xl shadow-brand-orange/20">Masuk</button>
           </form>
           <button onClick={onBack} className="mt-8 text-zinc-600 hover:text-zinc-400 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 mx-auto"><ArrowLeft className="w-3 h-3" /> Kembali</button>
         </motion.div>
