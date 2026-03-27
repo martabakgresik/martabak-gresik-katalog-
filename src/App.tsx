@@ -225,6 +225,13 @@ export default function App() {
   const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
 
+  const closeAddonModal = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('item');
+    window.history.replaceState({}, '', url.toString());
+    setSelectedItemForAddon(null);
+  };
+
   // Deep Linking Effect
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1611,7 +1618,7 @@ export default function App() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setSelectedItemForAddon(null)}
+              onClick={closeAddonModal}
               className="fixed inset-0 bg-brand-black/60 backdrop-blur-sm z-[80]"
             />
             <motion.div
@@ -1661,7 +1668,7 @@ export default function App() {
                       {copied ? <Check className="w-5 h-5 text-green-500" /> : <Share2 className="w-5 h-5" />}
                     </button>
                     <button
-                      onClick={() => setSelectedItemForAddon(null)}
+                      onClick={closeAddonModal}
                       className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white"
                     >
                       <X className="w-5 h-5" />
@@ -1756,7 +1763,7 @@ export default function App() {
               <button
                 onClick={() => {
                   addToCart({ ...selectedItemForAddon, addons: selectedAddons });
-                  setSelectedItemForAddon(null);
+                  closeAddonModal();
                 }}
                 className="w-full bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black py-4 px-6 rounded-xl font-black uppercase italic flex items-center justify-between hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
               >
