@@ -23,7 +23,6 @@ import {
   Sparkles,
   CircleSlash
 } from 'lucide-react';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { supabase } from '../lib/supabase';
 import { 
   MENU_SWEET as INITIAL_SWEET, 
@@ -150,7 +149,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   // --- STATS CALCULATION ---
   const stats = useMemo(() => {
@@ -187,27 +185,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [showForgotHint, setShowForgotHint] = useState(false);
+  const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Server-side verification of Turnstile token
-    try {
-      const verifyRes = await fetch('/api/verify-turnstile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: turnstileToken })
-      });
-      const verifyData = await verifyRes.json();
-      
-      if (!verifyData.success) {
-        alert("Gagal verifikasi keamanan (Bot detected). Silakan coba lagi.");
-        setTurnstileToken(null);
-        return;
-      }
-    } catch (err) {
-      console.error("Turnstile verification failed:", err);
-      // Fallback: strictly block if API fails
+
+    // Check Lockout
+    const lockoutUntil = localStorage.getItem('martabak_lockout_until');
+    if (lockoutUntil && Date.now() < parseInt(lockoutUntil)) {
+      const remainingMin = Math.ceil((parseInt(lockoutUntil) - Date.now()) / 60000);
+      setLockoutMessage(`Terlalu banyak percobaan. Silakan tunggu ${remainingMin} menit.`);
+      setTimeout(() => setLockoutMessage(null), 5000);
       return;
     }
 
@@ -220,10 +208,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     if (settings && loginUsername === settings.admin_username && loginPassword === settings.admin_password) {
       setIsAuthenticated(true);
       setPinError(false);
+      localStorage.removeItem('martabak_failed_attempts');
+      localStorage.removeItem('martabak_lockout_until');
     } else {
       setPinError(true);
       setLoginPassword("");
-      setTimeout(() => setPinError(false), 2000);
+      
+      // Update failed attempts
+      const currentAttempts = parseInt(localStorage.getItem('martabak_failed_attempts') || "0") + 1;
+      localStorage.setItem('martabak_failed_attempts', currentAttempts.toString());
+      
+      if (currentAttempts >= 5) {
+        const lockoutTime = Date.now() + 15 * 60 * 1000; // 15 minutes
+        localStorage.setItem('martabak_lockout_until', lockoutTime.toString());
+        setLockoutMessage("Akun terkunci sementara selama 15 menit karena terlalu banyak kesalahan.");
+      }
+
+      setTimeout(() => {
+        setPinError(false);
+        setLockoutMessage(null);
+      }, 5000);
     }
   };
 
@@ -418,22 +422,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             </div>
 
             {pinError && <p className="text-red-500 text-[10px] font-black uppercase animate-pulse">Username atau Password salah!</p>}
+            {lockoutMessage && <p className="text-orange-500 text-[10px] font-black uppercase animate-pulse">{lockoutMessage}</p>}
             
-            <div className="flex justify-center mb-4">
-              <Turnstile 
-                siteKey={TURNSTILE_SITE_KEY} 
-                onSuccess={(token) => setTurnstileToken(token)} 
-                onError={() => setTurnstileToken(null)}
-                onExpire={() => setTurnstileToken(null)}
-                options={{ theme: 'dark' }}
-              />
-            </div>
-
             <div className="pt-2">
               <button 
                 type="submit"
-                disabled={!turnstileToken}
-                className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-brand-orange/20 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+                className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-brand-orange/20"
               >
                 Masuk ke Panel Kontrol
               </button>
