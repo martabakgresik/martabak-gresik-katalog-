@@ -199,13 +199,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       return;
     }
 
-    const { data: settings } = await supabase
+    const { data: settings, error } = await supabase
       .from('store_settings')
       .select('admin_username, admin_password')
       .eq('id', 'main_config')
       .single();
 
-    if (settings && loginUsername === settings.admin_username && loginPassword === settings.admin_password) {
+    if (error) {
+      console.error("Supabase Login Error:", error);
+      alert("Gagal terhubung ke Database: " + error.message);
+      return;
+    }
+
+    const cleanUsername = loginUsername.trim();
+    const cleanPassword = loginPassword.trim();
+
+    if (settings && cleanUsername === settings.admin_username && cleanPassword === settings.admin_password) {
       setIsAuthenticated(true);
       setPinError(false);
       localStorage.removeItem('martabak_failed_attempts');
