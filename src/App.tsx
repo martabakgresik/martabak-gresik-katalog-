@@ -438,6 +438,7 @@ export default function App() {
   })).filter(section => section.variants.length > 0), [searchQuery, menuSavory]);
 
   const isPromoScheduledActive = useMemo(() => {
+    if (isHoliday || isEmergencyClosed) return false;
     if (!promoStartAt && !promoEndAt) return true;
     const now = new Date();
     const start = promoStartAt ? new Date(promoStartAt) : null;
@@ -445,7 +446,7 @@ export default function App() {
     if (start && now < start) return false;
     if (end && now > end) return false;
     return true;
-  }, [promoStartAt, promoEndAt]);
+  }, [promoStartAt, promoEndAt, isHoliday, isEmergencyClosed]);
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
@@ -1264,20 +1265,20 @@ export default function App() {
                                       setIsAiProcessing(true);
                                       const result = await processAddressWithAI(customerAddress);
                                       setIsAiProcessing(false);
-                                      if (result) {
-                                        if (result.success && result.googleMapsLink) {
-                                          const beautified = result.beautifiedAddress || customerAddress;
-                                          setCustomerAddress(`${beautified}\n\n📍 Link Lokasi (Auto-AI):\n${result.googleMapsLink}`);
-                                          
-                                          // Update distance slider automatically if provided by AI
-                                          if (result.distance !== undefined && result.distance !== null) {
-                                            const dist = Number(result.distance);
-                                            setDistance(dist);
-                                            setIsDistanceAiVerified(true);
-                                          }
-                                        } else if (result.error) {
-                                          alert(result.error);
+                                      if (result?.success && result.googleMapsLink) {
+                                        const beautified = result.beautifiedAddress || customerAddress;
+                                        setCustomerAddress(`${beautified}\n\n📍 Link Lokasi (Auto-AI):\n${result.googleMapsLink}`);
+                                        
+                                        // Update distance slider automatically if provided by AI
+                                        if (result.distance !== undefined && result.distance !== null) {
+                                          const dist = Number(result.distance);
+                                          setDistance(dist);
+                                          setIsDistanceAiVerified(true);
                                         }
+                                      } else if (result?.error) {
+                                        alert(`❌ ${result.error}`);
+                                      } else {
+                                        alert('❌ Gagal memproses alamat. Coba lagi.');
                                       }
                                     }}
                                     disabled={customerAddress.length < 5 || isAiProcessing}
@@ -1296,7 +1297,10 @@ export default function App() {
                         <div className="space-y-4">
                           <div className="flex gap-2 p-1.5 bg-brand-black/5 dark:bg-white/10 rounded-2xl border-2 border-brand-black/5 shadow-inner">
                             <button
-                              onClick={() => setDeliveryMethod('delivery')}
+                              onClick={() => {
+                                setDeliveryMethod('delivery');
+                                setIsDistanceAiVerified(false);
+                              }}
                               className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${deliveryMethod === 'delivery'
                                 ? 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg scale-[1.02]'
                                 : 'opacity-40 hover:opacity-100 dark:text-white'
@@ -1306,7 +1310,10 @@ export default function App() {
                               Kirim ke Alamat
                             </button>
                             <button
-                              onClick={() => setDeliveryMethod('pickup')}
+                              onClick={() => {
+                                setDeliveryMethod('pickup');
+                                setIsDistanceAiVerified(false);
+                              }}
                               className={`flex-1 py-3 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2 ${deliveryMethod === 'pickup'
                                 ? 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg scale-[1.02]'
                                 : 'opacity-40 hover:opacity-100 dark:text-white'

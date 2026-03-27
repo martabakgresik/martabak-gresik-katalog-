@@ -135,7 +135,9 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
   };
 
   const processAddressWithAI = async (address: string) => {
-    if (!address || address.length < 5) return null;
+    if (!address || address.length < 5) {
+      return { success: false, error: "Alamat minimal 5 karakter" };
+    }
 
     try {
       const response = await fetch('/api/chat', {
@@ -161,7 +163,15 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
         })
       });
 
+      if (!response.ok) {
+        return { success: false, error: "Gagal terhubung ke AI service. Coba lagi." };
+      }
+
       const data = await response.json();
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        return { success: false, error: "Format respons AI tidak valid. Coba lagi." };
+      }
+      
       const aiContent = data.choices[0].message.content.trim();
       
       // Attempt to parse JSON
@@ -174,11 +184,11 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
         if (isGoogleMapsLink(aiContent)) {
           return { success: true, googleMapsLink: aiContent };
         }
-        return null;
+        return { success: false, error: "Format respons AI tidak valid. Coba lagi atau hubungi admin." };
       }
     } catch (error) {
       console.error("AI Address Processing Error:", error);
-      return null;
+      return { success: false, error: "Terjadi kesalahan saat memproses alamat. Coba lagi atau hubungi admin." };
     }
   };
 

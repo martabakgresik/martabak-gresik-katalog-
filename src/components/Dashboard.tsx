@@ -42,11 +42,8 @@ interface DashboardProps {
   onBack: () => void;
 }
 
-const INITIAL_PIN = "1234"; // Default PIN
-
 export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pinInput, setPinInput] = useState("");
   const [pinError, setPinError] = useState(false);
   
   const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'settings'>('overview');
@@ -67,7 +64,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     shippingRate: 2500,
     maxDist: 10,
     adminUsername: 'admin',
-    adminPassword: INITIAL_PIN,
+    adminPassword: '1234',
     isEmergencyClosed: false,
     promoStartAt: '',
     promoEndAt: ''
