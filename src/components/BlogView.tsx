@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check } from 'lucide-react';
+import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check, Search, Filter } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getBlogPostsFromSupabase, getBlogPosts, type BlogPost } from '../data/blogUtils';
@@ -15,6 +15,8 @@ export function BlogView({ onClose }: BlogViewProps) {
   const [copied, setCopied] = useState(false);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [displayLimit, setDisplayLimit] = useState(6);
 
   // Fetch posts: Supabase AND local merge
   useEffect(() => {
@@ -54,6 +56,26 @@ export function BlogView({ onClose }: BlogViewProps) {
     }
     loadPosts();
   }, []);
+
+  // Filter and Pagination Logic
+  const filteredPosts = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return posts.filter(post => 
+      post.title.toLowerCase().includes(q) ||
+      post.excerpt.toLowerCase().includes(q) ||
+      post.content.toLowerCase().includes(q)
+    );
+  }, [posts, searchQuery]);
+
+  const visiblePosts = useMemo(() => {
+    return filteredPosts.slice(0, displayLimit);
+  }, [filteredPosts, displayLimit]);
+
+  const hasMore = displayLimit < filteredPosts.length;
+
+  const handleLoadMore = () => {
+    setDisplayLimit(prev => prev + 6);
+  };
 
   const blogContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -235,11 +257,26 @@ export function BlogView({ onClose }: BlogViewProps) {
                   Cerita, Tips, dan Promo Menarik dari Martabak Gresik
                 </p>
               </div>
+
+              {/* Search Bar */}
+              <div className="max-w-md mx-auto w-full relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-black/30 group-focus-within:text-brand-orange transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Cari artikel menarik..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setDisplayLimit(6); // Reset limit when searching
+                  }}
+                  className="w-full bg-white/40 dark:bg-white/5 backdrop-blur-md border-2 border-brand-black/5 dark:border-white/10 rounded-2xl py-3 pl-12 pr-4 font-bold text-sm focus:border-brand-orange outline-none transition-all placeholder:text-brand-black/30 shadow-lg"
+                />
+              </div>
             </div>
 
               <div className="grid gap-8">
-                {posts.length > 0 ? (
-                  posts.map((post) => (
+                {visiblePosts.length > 0 ? (
+                  visiblePosts.map((post) => (
                     <motion.article
                       key={post.slug}
                       whileHover={{ scale: 1.02 }}
@@ -278,13 +315,44 @@ export function BlogView({ onClose }: BlogViewProps) {
                       </div>
                     </motion.article>
                   ))
-                ) : (
+                ) : posts.length === 0 ? (
                   <div className="text-center py-20 bg-white/10 rounded-3xl border-2 border-dashed border-brand-black/10 dark:border-white/10">
                     <p className="text-2xl font-bold opacity-50">Belum ada artikel blog.</p>
-                    <p className="text-sm opacity-40 mt-2">Pastikan file .md sudah ada di src/content/blog/</p>
+                    <p className="text-sm opacity-40 mt-2 font-medium">Pastikan file .md sudah ada di src/content/blog/</p>
                   </div>
-                )}
+                ) : null}
               </div>
+
+              {/* Load More Button */}
+              {hasMore && (
+                <div className="flex justify-center pt-8">
+                  <button
+                    onClick={handleLoadMore}
+                    className="group flex items-center gap-3 bg-white dark:bg-zinc-900 border-2 border-brand-orange text-brand-orange px-8 py-3 rounded-2xl font-black uppercase italic tracking-wider hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95"
+                  >
+                    Muat Lebih Banyak <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              )}
+
+              {/* No Results Found */}
+              {filteredPosts.length === 0 && posts.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-center py-20 bg-white/10 rounded-3xl border-2 border-dashed border-brand-black/10 dark:border-white/10"
+                >
+                  <Search className="w-12 h-12 mx-auto mb-4 text-brand-black/20" />
+                  <p className="text-xl font-bold opacity-50 italic uppercase tracking-tighter">Yah, Artikelnya Tidak Ketemu...</p>
+                  <p className="text-sm opacity-40 mt-2 font-medium">Coba cari dengan kata kunci lain ya Kak!</p>
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="mt-6 text-brand-orange font-black text-xs uppercase tracking-widest hover:underline"
+                  >
+                    Reset Pencarian
+                  </button>
+                </motion.div>
+              )}
             </motion.div>
           ) : (
             <motion.div
