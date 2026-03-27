@@ -296,7 +296,7 @@ CREATE POLICY "Anon full access" ON blog_posts FOR ALL USING (true) WITH CHECK (
               <img
                 src={post.thumbnail}
                 alt={post.title}
-                className="w-14 h-14 rounded-xl object-cover flex-shrink-0 bg-zinc-100"
+                className="w-10 h-10 rounded-xl object-cover flex-shrink-0 bg-zinc-100"
                 onError={e => { e.currentTarget.src = '/logo.webp'; }}
               />
               <div className="flex-1 min-w-0">
@@ -420,14 +420,19 @@ CREATE POLICY "Anon full access" ON blog_posts FOR ALL USING (true) WITH CHECK (
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-black uppercase text-zinc-400 flex items-center gap-1"><Image className="w-3 h-3" /> URL Thumbnail</label>
-                    <input
-                      type="text"
-                      value={form.thumbnail}
-                      onChange={e => setForm({ ...form, thumbnail: e.target.value })}
-                      placeholder="/logo.webp atau https://..."
-                      className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-200 dark:border-zinc-800 p-3 rounded-xl font-bold text-sm focus:border-brand-orange outline-none"
-                    />
+                    <label className="text-[10px] font-black uppercase text-zinc-400 flex items-center gap-1"><Image className="w-3 h-3" /> Thumbnail</label>
+                    <div className="flex gap-2">
+                      <div className="w-11 h-11 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex-shrink-0 overflow-hidden border border-zinc-200 dark:border-zinc-800">
+                        <img src={form.thumbnail || '/logo.webp'} alt="Preview" className="w-full h-full object-cover" onError={e => e.currentTarget.src = '/logo.webp'} />
+                      </div>
+                      <input
+                        type="text"
+                        value={form.thumbnail}
+                        onChange={e => setForm({ ...form, thumbnail: e.target.value })}
+                        placeholder="URL gambar..."
+                        className="flex-1 bg-zinc-50 dark:bg-black border-2 border-zinc-200 dark:border-zinc-800 p-2.5 rounded-xl font-bold text-xs focus:border-brand-orange outline-none"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-zinc-400">Penulis</label>
@@ -439,6 +444,7 @@ CREATE POLICY "Anon full access" ON blog_posts FOR ALL USING (true) WITH CHECK (
                     />
                   </div>
                 </div>
+
 
                 {/* Markdown Editor / Preview */}
                 <div className="space-y-1">
