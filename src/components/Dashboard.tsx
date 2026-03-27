@@ -94,7 +94,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             shippingRate: settings.shipping_rate_per_km || 2500,
             maxDist: settings.max_shipping_distance || 10,
             adminUsername: settings.admin_username || 'admin',
-            adminPassword: settings.admin_password || INITIAL_PIN,
+            adminPassword: settings.admin_password || '•••••',
             isEmergencyClosed: settings.is_emergency_closed || false,
             promoStartAt: settings.promo_start_at ? new Date(settings.promo_start_at).toISOString().slice(0, 16) : '',
             promoEndAt: settings.promo_end_at ? new Date(settings.promo_end_at).toISOString().slice(0, 16) : ''

@@ -36,10 +36,10 @@ export const MAX_SHIPPING_DISTANCE = 10;
 export const SCROLL_SPACING = "mt-2"; 
 
 // 🔑 KEAMANAN (Security)
-// Ganti kode di bawah ini dengan kata rahasia Anda sendiri.
-// Dashboard hanya bisa diakses via URL: ?access=KATA_RAHASIA
-export const ADMIN_ACCESS_KEY = "gresik-admin-login";
-export const TURNSTILE_SITE_KEY = "0x4AAAAAACwdrus7K-Tn9Gd-";
+// Dashboard sekarang menggunakan password authentication dengan SHA-256 hashing
+// Lihat: src/lib/auth.ts dan .env.example untuk setup
+// ADMIN_ACCESS_KEY sudah dihapus dari sini untuk keamanan lebih baik!
+export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAACwdrus7K-Tn9Gd-";
 
 // 🖼️ ASSETS
 const ASSET_BASE_URL = "/images";

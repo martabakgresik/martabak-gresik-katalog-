@@ -20,11 +20,11 @@ import {
   HOLIDAYS, 
   SCROLL_SPACING,
   SHIPPING_RATE_PER_KM,
-  MAX_SHIPPING_DISTANCE,
-  ADMIN_ACCESS_KEY 
+  MAX_SHIPPING_DISTANCE
 } from "./data/config";
 import { AiAssistant } from "./components/AiAssistant";
 import { Dashboard } from "./components/Dashboard";
+import { AdminLogin } from "./components/AdminLogin";
 import { LegalPages } from "./components/LegalPages";
 import { AboutMe } from "./components/AboutMe";
 import { CookieConsent } from "./components/CookieConsent";
@@ -32,6 +32,7 @@ import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
 import { supabase } from "./lib/supabase";
+import { isDashboardAccessGranted, revokeDashboardAccess } from "./lib/auth";
 
 interface FavoriteItem {
   id: string;
@@ -187,6 +188,10 @@ export default function App() {
   const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | 'faq' | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
   const [currentView, setCurrentView] = useState<'catalog' | 'blog' | 'dashboard'>('catalog');
+  
+  // Admin Authentication State
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => isDashboardAccessGranted());
 
   useEffect(() => {
     const consent = localStorage.getItem('martabak_cookie_consent');
@@ -243,9 +248,15 @@ export default function App() {
       return;
     }
 
-    if (params.get('access') === ADMIN_ACCESS_KEY) {
-      setCurrentView('dashboard');
-      window.history.replaceState({}, '', window.location.pathname);
+    // Check if dashboard access is requested and user is authenticated
+    if (params.get('admin') === 'true') {
+      if (isAdminAuthenticated) {
+        setCurrentView('dashboard');
+        window.history.replaceState({}, '', window.location.pathname);
+      } else {
+        setShowAdminLogin(true);
+        window.history.replaceState({}, '', window.location.pathname);
+      }
       return;
     }
 
@@ -276,7 +287,7 @@ export default function App() {
         }
       }
     }
-  }, [menuSweet, menuSavory, selectedItemForAddon]);
+  }, [menuSweet, menuSavory, selectedItemForAddon, isAdminAuthenticated]);
 
   // Sync URL with Selected Item
   useEffect(() => {
@@ -726,7 +737,11 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05 }}
           >
-            <Dashboard onBack={() => setCurrentView('catalog')} />
+            <Dashboard onBack={() => {
+              revokeDashboardAccess();
+              setIsAdminAuthenticated(false);
+              setCurrentView('catalog');
+            }} />
           </motion.div>
         ) : currentView === 'catalog' ? (
           <motion.main 
@@ -781,7 +796,7 @@ export default function App() {
                                 className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all relative"
                                 onClick={() => setZoomedImage({src: (item as any).image, alt: item.name})}
                               >
-                                <img src={(item as any).image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                <img src={(item as any).image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.style.setProperty('display', 'none'); }} />
                                 {(item as any).isBestSeller && (
                                   <div className="absolute top-0 left-0 bg-yellow-400 text-yellow-900 text-[6px] font-black px-1 py-0.5 rounded-br shadow-sm uppercase z-10 flex items-center gap-0.5">
                                     <Trophy className="w-1.5 h-1.5" /> 
@@ -889,7 +904,7 @@ export default function App() {
                                     className="w-10 h-10 rounded-lg bg-black/20 overflow-hidden flex-shrink-0 animate-pulse-once cursor-pointer ring-2 ring-transparent hover:ring-brand-orange transition-all relative"
                                     onClick={() => setZoomedImage({src: (p as any).image, alt: `${section.title} ${variant.type}`})}
                                   >
-                                    <img src={(p as any).image} alt={`${p.qty} Telor`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                    <img src={(p as any).image} alt={`${p.qty} Telor`} className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.style.setProperty('display', 'none'); }} />
                                     {(p as any).isBestSeller && (
                                       <div className="absolute top-0 left-0 bg-yellow-400 text-yellow-900 text-[6px] font-black px-1 py-0.5 rounded-br shadow-sm uppercase z-10 flex items-center gap-0.5">
                                         <Trophy className="w-1.5 h-1.5" /> 
@@ -1463,7 +1478,7 @@ export default function App() {
                           <div className="flex items-start gap-3">
                             {item.image && (
                               <div className="w-16 h-16 rounded-2xl bg-black/5 dark:bg-white/5 overflow-hidden flex-shrink-0 cursor-pointer hover:ring-4 hover:ring-brand-orange/30 transition-all ring-transparent shadow-md" onClick={() => setZoomedImage({src: item.image!, alt: item.name})}>
-                                <img src={item.image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.style.display = 'none'; }} />
+                                <img src={item.image} alt={item.name} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" loading="lazy" decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement?.style.setProperty('display', 'none'); }} />
                               </div>
                             )}
                             <div>
@@ -2094,6 +2109,36 @@ export default function App() {
                </div>
              </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Admin Login Modal */}
+      <AnimatePresence>
+        {showAdminLogin && (
+          <motion.div
+            key="admin-login"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="absolute inset-0"
+              onClick={() => setShowAdminLogin(false)}
+            />
+            <div className="relative z-10">
+              <AdminLogin 
+                onLoginSuccess={() => {
+                  setIsAdminAuthenticated(true);
+                  setShowAdminLogin(false);
+                  setCurrentView('dashboard');
+                }}
+              />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
