@@ -122,17 +122,17 @@ export const AiAssistant = ({
   };
 
   const renderMessage = (content: string) => {
-    // 1. Bersihkan gangguan markdown dasar yang sering membungkus tag (Backticks)
-    const cleanContent = content.replace(/[\x60]/g, '');
+    // 1. Bersihkan backticks
+    let cleanContent = content.replace(/`/g, '');
 
-    // 2. Regex untuk menangkap semua pola tag internal (Mendukung spasi dalam payload)
+    // 2. Regex untuk menangkap semua pola tag internal dan markdown
     const tagRegex = /(#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog|show-qris)[^#\n]*|!\[[^\]]*\]\s*\([^)]+\)|\[[^\]]+\]\s*\([^)]+\))/g;
 
     // 3. Pecah konten berdasarkan tag
     const parts = cleanContent.split(tagRegex);
 
     return parts.map((part, index) => {
-      if (!part) return null;
+      if (!part || !part.trim()) return null;
 
       // IDENTIFIKASI DAN RENDERING
 
@@ -142,7 +142,6 @@ export const AiAssistant = ({
         const imgMatch = trimmedPart.match(/!\[([^\]]*)\]\s*\(([^)]+)\)/);
         if (imgMatch) {
           let imgSrc = imgMatch[2].trim();
-          // Pastikan path gambar valid (tambahkan / jika tidak ada)
           if (!imgSrc.startsWith('http') && !imgSrc.startsWith('/')) {
             imgSrc = '/' + imgSrc;
           }
@@ -154,20 +153,22 @@ export const AiAssistant = ({
             </div>
           );
         }
+        return null;
       }
 
       // CASE: Link Markdown
-      if (part.startsWith('[') && part.includes('](')) {
-        const linkMatch = part.match(/\[([^\]]+)\]\s*\(([^)]+)\)/);
+      if (trimmedPart.startsWith('[') && trimmedPart.includes('](')) {
+        const linkMatch = trimmedPart.match(/\[([^\]]+)\]\s*\(([^)]+)\)/);
         if (linkMatch) {
           return <a key={index} href={linkMatch[2].trim()} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 mb-1 px-4 py-2 bg-brand-black text-white rounded-xl shadow-md font-bold text-[11px] no-underline">{linkMatch[1]}</a>;
         }
+        return null;
       }
 
       // CASE: Tag Internal (#)
-      if (part.startsWith('#')) {
-        const tag = part.split('|')[0];
-        const payload = part.split('|');
+      if (trimmedPart.startsWith('#')) {
+        const tag = trimmedPart.split('|')[0];
+        const payload = trimmedPart.split('|');
 
         if (tag === '#add-to-cart') {
           const [_, category, name, priceStr] = payload;
@@ -269,16 +270,23 @@ export const AiAssistant = ({
             </motion.div>
           );
         }
+
+        // Jika tag tidak dikenali, jangan tampilkan
+        return null;
       }
 
-      // CASE: Text Biasa (Pastikan sisa-sisa tag and prefix teknis dibersihkan)
+      // CASE: Text Biasa - Hapus semua kode mentah yang tersisa
       const sanitizedPart = part
-        .replace(/#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog|show-qris)[^#\n]*/g, '')
-        .replace(/PENGGUNA KLIK SHORTCUT:\s*/gi, '')
-        .replace(/[\x60#|]/g, '') // Hapus sisa backticks, pagar, atau separator yang bocor
+        .replace(/#[a-zA-Z-]+\|[^#]*/g, '')  // Hapus semua tag format #tag|payload
+        .replace(/\[.+?\]\(.+?\)/g, '')      // Hapus markdown links
+        .replace(/!\[.+?\]\(.+?\)/g, '')     // Hapus markdown images
+        .replace(/PENGGUNA KLIK SHORTCUT:\s*/gi, '')  // Hapus prefix khusus
+        .replace(/^#+\s*/gm, '')              // Hapus heading markdown
+        .replace(/\*\*/g, '')                 // Hapus bold markdown
+        .replace(/\*/g, '')                   // Hapus italic/list markdown
         .trim();
         
-      return sanitizedPart ? <span key={index}>{sanitizedPart} </span> : null;
+      return sanitizedPart ? <span key={index} className="whitespace-pre-wrap">{sanitizedPart} </span> : null;
     });
   };
 
