@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X,
+  Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, CircleSlash,
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock, ChevronDown,
@@ -93,7 +93,11 @@ export default function App() {
     async function initDb() {
       try {
         const { data: settings } = await supabase.from('store_settings').select('*').eq('id', 'main_config').single();
-        const { data: categories } = await supabase.from('categories').select('*, menu_items(*)').order('display_order');
+        const { data: categories } = await supabase
+          .from('categories')
+          .select('*, menu_items(*)')
+          .order('display_order')
+          .order('display_order', { foreignTable: 'menu_items' });
 
         if (settings) {
           setOpenHour(settings.open_hour);
@@ -131,6 +135,7 @@ export default function App() {
               prices: c.menu_items.filter((i: any) => i.variant_type === vType).map((i: any) => ({
                 qty: i.qty,
                 price: i.price,
+                image: i.image,
                 isBestSeller: i.is_best_seller,
                 isAvailable: i.is_available ?? true
               }))
@@ -448,7 +453,7 @@ export default function App() {
       />
       {/* Promo Banner */}
       <AnimatePresence>
-        {(showPromo && isPromoScheduledActive) && (
+        {(showPromo && isPromoScheduledActive && currentView !== 'dashboard') && (
           <motion.div
             initial={{ y: -50 }}
             animate={{ y: 0 }}
@@ -467,7 +472,8 @@ export default function App() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
+      {currentView !== 'dashboard' && (
+        <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
         {/* Share Button (Left) */}
         <div className="absolute top-6 left-6 z-20">
           <motion.button
@@ -701,6 +707,7 @@ export default function App() {
           </motion.div>
         </div>
       </header>
+    )}
 
       {/* Main Content */}
       <AnimatePresence mode="wait">
@@ -758,7 +765,7 @@ export default function App() {
                   </h3>
                   <div className="space-y-3">
                     {section.items.map((item) => (
-                      <div key={item.name} className="flex flex-col gap-2 group">
+                      <div key={item.name} className="flex flex-col gap-2 group relative">
                          <div className="flex justify-between items-center gap-2">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             {('image' in item) && (
@@ -804,18 +811,18 @@ export default function App() {
                                 <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
                               </button>
                               <button
-                                onClick={() => item.isAvailable !== false && handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
-                                disabled={item.isAvailable === false}
-                                className={`p-1.5 rounded-full transition-colors active:scale-90 ${item.isAvailable === false 
+                                onClick={() => (item as any).isAvailable !== false && handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
+                                disabled={(item as any).isAvailable === false}
+                                className={`p-1.5 rounded-full transition-colors active:scale-90 ${(item as any).isAvailable === false 
                                   ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
                                   : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black hover:bg-brand-orange hover:text-white'}`}
                               >
-                                {item.isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                {(item as any).isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                               </button>
                             </div>
                           </div>
                         </div>
-                        {item.isAvailable === false && (
+                        {(item as any).isAvailable === false && (
                           <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[1px] flex items-center justify-center rounded-2xl pointer-events-none z-[5]">
                              <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase italic tracking-widest shadow-lg shadow-red-500/20">Stok Habis</span>
                           </div>
@@ -867,7 +874,7 @@ export default function App() {
                         </h4>
                         <div className="space-y-3">
                           {variant.prices.map((p) => (
-                             <div key={p.qty} className="flex justify-between items-center gap-2 bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors shadow-sm">
+                             <div key={p.qty} className="flex justify-between items-center gap-2 bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors shadow-sm relative">
                               <div className="flex items-center gap-2 min-w-0 flex-1">
                                 {('image' in p) && (
                                   <div 
@@ -917,22 +924,22 @@ export default function App() {
                                     <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`) ? 'fill-current' : ''}`} />
                                   </button>
                                   <button
-                                    onClick={() => p.isAvailable !== false && handleOpenAddonModal({
+                                    onClick={() => (p as any).isAvailable !== false && handleOpenAddonModal({
                                       name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
                                       price: p.price,
                                       image: (p as any).image,
                                       description: (variant as any).description
                                     }, 'savory')}
-                                    disabled={p.isAvailable === false}
-                                    className={`p-1.5 rounded-full transition-colors active:scale-90 ${p.isAvailable === false 
+                                    disabled={(p as any).isAvailable === false}
+                                    className={`p-1.5 rounded-full transition-colors active:scale-90 ${(p as any).isAvailable === false 
                                       ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
                                       : 'bg-brand-yellow text-brand-black hover:bg-brand-orange hover:text-white'}`}
                                   >
-                                    {p.isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                    {(p as any).isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                   </button>
                                 </div>
                               </div>
-                              {p.isAvailable === false && (
+                              {(p as any).isAvailable === false && (
                                 <div className="absolute inset-0 bg-white/20 dark:bg-black/60 backdrop-blur-[1px] flex items-center justify-center rounded-xl pointer-events-none z-[5]">
                                   <span className="text-[10px] font-black text-red-500 tracking-[0.2em] italic uppercase bg-white/90 dark:bg-zinc-950 px-2 py-0.5 rounded shadow-sm border border-red-500/20 underline decoration-red-500">HABIS</span>
                                 </div>
