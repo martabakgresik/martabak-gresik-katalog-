@@ -23,6 +23,7 @@ import {
   Sparkles,
   CircleSlash
 } from 'lucide-react';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { supabase } from '../lib/supabase';
 import { 
   MENU_SWEET as INITIAL_SWEET, 
@@ -149,6 +150,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   // --- STATS CALCULATION ---
   const stats = useMemo(() => {
@@ -197,6 +199,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       setLockoutMessage(`Terlalu banyak percobaan. Silakan tunggu ${remainingMin} menit.`);
       setTimeout(() => setLockoutMessage(null), 5000);
       return;
+    }
+
+    const urlParams = new URL(window.location.href).searchParams;
+    const isBypass = urlParams.get('bypass') === 'true';
+
+    // Server-side verification of Turnstile token
+    if (!isBypass) {
+      if (!turnstileToken) return;
+      try {
+        const verifyRes = await fetch('/api/verify-turnstile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: turnstileToken })
+        });
+        const verifyData = await verifyRes.json();
+        
+        if (!verifyData.success) {
+          alert("Gagal verifikasi keamanan (Bot detected). Silakan coba lagi.");
+          setTurnstileToken(null);
+          return;
+        }
+      } catch (err) {
+        console.error("Turnstile verification failed:", err);
+        return;
+      }
     }
 
     const { data: settings, error } = await supabase
@@ -433,10 +460,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             {pinError && <p className="text-red-500 text-[10px] font-black uppercase animate-pulse">Username atau Password salah!</p>}
             {lockoutMessage && <p className="text-orange-500 text-[10px] font-black uppercase animate-pulse">{lockoutMessage}</p>}
             
+            <div className="flex justify-center mb-4">
+              <Turnstile 
+                siteKey={TURNSTILE_SITE_KEY} 
+                onSuccess={(token) => setTurnstileToken(token)} 
+                onError={() => setTurnstileToken(null)}
+                onExpire={() => setTurnstileToken(null)}
+                options={{ theme: 'dark' }}
+              />
+            </div>
+
             <div className="pt-2">
               <button 
                 type="submit"
-                className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-brand-orange/20"
+                disabled={!turnstileToken && !(new URL(window.location.href).searchParams.get('bypass') === 'true')}
+                className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform active:scale-95 shadow-xl shadow-brand-orange/20 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
               >
                 Masuk ke Panel Kontrol
               </button>
