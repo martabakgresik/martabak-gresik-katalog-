@@ -41,7 +41,7 @@ export const AiAssistant = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: `Halo Kak! Selamat datang di ${STORE_NAME} 🌙✨\n\nSaya "Si Ahli Martabak", asisten virtual yang super senang bantu Kakak nemuin martabak impian! 🍕 Dari yang gurih sampe yang manis lumer, saya siap-siap aja kasih rekomendasi terbaik.\n\n✨ Apa yang bisa saya bantu:\n📑 Lihat katalog lengkap & menu\n💬 Rekomendasi menu favorit\n💳 Cara order & pembayaran\n🎁 Promo terbaru (spoiler: ada diskon nih!)\n🛵 Cek ongkos kirim\n📦 Pesan dalam jumlah besar\n⏰ Jam operasional\n\nYuk, cerita apa yang Kakak cari hari ini! 😊` }
+    { role: 'assistant', content: `Halo Kak! Saya "Asisten Virtual" dari ${STORE_NAME}. 🌙✨\n\nSenang banget bisa bantu Kakak! Saya bukan cuma jago kasih rekomendasi martabak lumer, tapi Kakak juga bisa tanya apa saja ke saya—mulai dari info menu, promo, sampai hal-hal umum lainnya. Saya siap jawab!\n\n✨ Apa yang bisa saya bantu:\n📑 Lihat katalog lengkap\n🍕 Rekomendasi menu favorit\n💳 Cara order & pembayaran\n🎁 Promo terbaru\n⏰ Jam operasional\n\nKira-kira Kakak mau tanya apa atau lagi pengen jajan apa hari ini? 😊` }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiTimer, setAiTimer] = useState(0);
@@ -96,7 +96,7 @@ export const AiAssistant = ({
       const currentHour = now.getHours();
       const isStoreOpen = currentHour >= OPEN_HOUR && currentHour < CLOSE_HOUR;
 
-       const systemPrompt = `Anda adalah "Si Ahli Martabak", asisten virtual ${STORE_NAME} yang cerdas, asik, ramah, dan berpengetahuan luas. Anda bisa menjawab APAPUN yang ditanyakan pelanggan — mulai dari pengetahuan umum, cuaca, tips hidup, lelucon, sampai topik sehari-hari.
+       const systemPrompt = `Anda adalah "Asisten Virtual", asisten virtual ${STORE_NAME} yang cerdas, asik, ramah, dan berpengetahuan luas. Anda bisa menjawab APAPUN yang ditanyakan pelanggan — mulai dari pengetahuan umum, cuaca, tips hidup, lelucon, sampai topik sehari-hari.
 
 PENTING: Anda boleh menjawab topik apa saja, TAPI selalu hubungkan kembali ke ${STORE_NAME} secara natural dan kreatif di akhir jawaban. Contoh:
 - Ditanya soal cuaca → jawab, lalu: "Cuaca dingin gini paling enak makan martabak hangat lho Kak! 🍕"
@@ -153,7 +153,7 @@ FITUR KHUSUS:
 
 TEKNIK UPSELL: Soft upsell natural. Setiap rekomendasi menu pakai #product-card. Highlight rasa dan keunggulan.
 
-KARAKTER: "Si Ahli Martabak" — passionate, cerdas, bisa ngobrol apa saja tapi selalu kembali ke martabak. Jangan promise di luar kemampuan toko.
+KARAKTER: "Asisten Virtual" — passionate, cerdas, bisa ngobrol apa saja tapi selalu kembali ke martabak. Jangan promise di luar kemampuan toko.
 
 RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri dengan pertanyaan engagement atau rekomendasi menu.`;
 
@@ -481,7 +481,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </button>
                 <button
-                  onClick={() => setAiMessages([{ role: 'assistant', content: `Halo Kak! Selamat datang di Martabak Gresik 🌙✨\n\nSaya "Si Ahli Martabak", asisten virtual yang super senang bantu Kakak nemuin martabak impian! 🍕 Dari yang gurih sampe yang manis lumer, saya siap-siap aja kasih rekomendasi terbaik.\n\n✨ Apa yang bisa saya bantu:\n📑 Lihat katalog lengkap & menu\n💬 Rekomendasi menu favorit\n💳 Cara order & pembayaran\n🎁 Promo terbaru (spoiler: ada diskon nih!)\n🛵 Cek ongkos kirim\n📦 Pesan dalam jumlah besar\n⏰ Jam operasional\n\nYuk, cerita apa yang Kakak cari hari ini! 😊` }])}
+                  onClick={() => setAiMessages([{ role: 'assistant', content: `Halo Kak! Saya "Asisten Virtual". 🌙✨\n\nSenang banget bisa ngobrol lagi! Kakak bisa tanya apa saja ke saya—mulai dari rekomendasi martabak lumer, info promo, sampai tanya hal-hal umum lainnya. Saya siap bantu!\n\n✨ Menu cepat:\n📑 Katalog Lengkap\n🍕 Rekomendasi Menu\n💳 Cara Order\n🎁 Promo Hari Ini\n\nKira-kira Kakak mau tanya apa atau lagi pengen jajan apa hari ini? 😊` }])}
                   title="Mulai Ulang Chat"
                   className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
                 >
