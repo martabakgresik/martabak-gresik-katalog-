@@ -125,6 +125,7 @@ export default function App() {
             items: c.menu_items.map((i: any) => ({
               name: i.name,
               price: i.price,
+              original_price: i.original_price,
               image: i.image,
               description: i.description,
               isBestSeller: i.is_best_seller,
@@ -140,6 +141,7 @@ export default function App() {
               prices: c.menu_items.filter((i: any) => i.variant_type === vType).map((i: any) => ({
                 qty: i.qty,
                 price: i.price,
+                original_price: i.original_price,
                 image: i.image,
                 isBestSeller: i.is_best_seller,
                 isAvailable: i.is_available ?? true
@@ -823,10 +825,17 @@ export default function App() {
                              </span>
                           </div>
                           <div className="hidden sm:block flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-2 group-hover:border-brand-orange/50 transition-colors" />
-                          <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto mr-1">
-                            <span className="font-bold tabular-nums dark:text-brand-yellow text-sm md:text-base">
-                              {formatPrice(item.price)}
-                            </span>
+                          <div className="flex flex-col items-end flex-shrink-0 ml-auto mr-1">
+                            <div className="flex items-center gap-1.5">
+                              {(item as any).original_price && (item as any).original_price > item.price && (
+                                <span className="text-[10px] md:text-xs text-zinc-600 dark:text-zinc-400 line-through decoration-red-600 decoration-2">
+                                  {formatPrice((item as any).original_price)}
+                                </span>
+                              )}
+                              <span className="font-bold tabular-nums dark:text-brand-yellow text-sm md:text-base">
+                                {formatPrice(item.price)}
+                              </span>
+                            </div>
                             <div className="flex items-center gap-1.5 ml-2">
                               <button
                                 onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
@@ -935,8 +944,15 @@ export default function App() {
                                   </button>
                                 </span>
                               </div>
-                              <div className="flex items-center gap-1.5 flex-shrink-0 ml-auto">
-                                <span className="font-bold text-brand-yellow text-sm">{formatPrice(p.price)}</span>
+                              <div className="flex flex-col items-end flex-shrink-0 ml-auto">
+                                <div className="flex items-center gap-1.5">
+                                  {(p as any).original_price && (p as any).original_price > p.price && (
+                                    <span className="text-[9px] text-zinc-500 dark:text-zinc-400 line-through decoration-red-600 decoration-2">
+                                      {formatPrice((p as any).original_price)}
+                                    </span>
+                                  )}
+                                  <span className="font-bold text-brand-yellow text-sm">{formatPrice(p.price)}</span>
+                                </div>
                                 <div className="flex items-center gap-1.5 ml-1">
                                   <button
                                     onClick={() => toggleFavorite({

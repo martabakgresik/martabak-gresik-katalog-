@@ -28,7 +28,8 @@ import {
   BookOpen,
   CalendarDays,
   CalendarOff,
-  CalendarPlus
+  CalendarPlus,
+  Percent
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -121,6 +122,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               id: i.id,
               name: i.name,
               price: i.price,
+              original_price: i.original_price,
               image: i.image,
               description: i.description,
               isBestSeller: i.is_best_seller,
@@ -138,6 +140,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                 id: i.id,
                 qty: i.qty,
                 price: i.price,
+                original_price: i.original_price,
                 image: i.image,
                 isBestSeller: i.is_best_seller,
                 isAvailable: i.is_available ?? true
@@ -172,6 +175,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showSettingsPassword, setShowSettingsPassword] = useState(false);
   const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [calcDiscountType, setCalcDiscountType] = useState<'percent' | 'nominal'>('percent');
+  const [calcDiscountValue, setCalcDiscountValue] = useState<number>(0);
 
   // --- STATS CALCULATION ---
   const stats = useMemo(() => {
@@ -359,6 +364,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     const { error } = await supabase.from('menu_items').update({
         name: newData.name || "",
         price: newData.price,
+        original_price: newData.original_price || null,
         is_best_seller: newData.isBestSeller,
         description: newData.description,
         qty: newData.qty
@@ -387,6 +393,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         category_id: catId,
         name: data.name || (type === 'savory' ? 'Savory Variant' : 'New Item'),
         price: data.price,
+        original_price: data.original_price || null,
         qty: data.qty,
         variant_type: data.variant_type || (type === 'savory' ? 'Daging Sapi' : null),
         image: data.image,
@@ -855,15 +862,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                    <div className="space-y-2">
-                     <label className="text-[10px] font-black uppercase opacity-40 px-1">Harga</label>
+                     <label className="text-[10px] font-black uppercase opacity-40 px-1">Harga Aktif</label>
                      <input type="number" value={editingItem.data.price} onChange={(e) => setEditingItem({...editingItem, data: {...editingItem.data, price: parseInt(e.target.value)}})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
                    </div>
-                   <div className="flex items-end pb-3">
-                     <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" checked={editingItem.data.isBestSeller} onChange={(e) => setEditingItem({...editingItem, data: {...editingItem.data, isBestSeller: e.target.checked}})} className="w-5 h-5 accent-brand-orange" />
-                        <span className="text-xs font-bold uppercase tracking-wider">Best Seller?</span>
-                     </label>
+                   <div className="space-y-2">
+                     <label className="text-[10px] font-black uppercase opacity-40 px-1">Harga Asli (Coret)</label>
+                     <input type="number" value={editingItem.data.original_price || ""} onChange={(e) => setEditingItem({...editingItem, data: {...editingItem.data, original_price: e.target.value ? parseInt(e.target.value) : null}})} placeholder="Kosongkan jika tidak ada" className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
                    </div>
+                </div>
+                <div className="flex items-center gap-6 py-2">
+                   <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="checkbox" checked={editingItem.data.isBestSeller} onChange={(e) => setEditingItem({...editingItem, data: {...editingItem.data, isBestSeller: e.target.checked}})} className="w-5 h-5 accent-brand-orange" />
+                      <span className="text-xs font-bold uppercase tracking-wider">Best Seller?</span>
+                   </label>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -871,6 +882,54 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                     <button onClick={async () => { const aiText = await generateAIDescription(editingItem.data.name); setEditingItem({ ...editingItem, data: { ...editingItem.data, description: aiText } }); }} disabled={isAiGenerating} className="text-[10px] font-black text-brand-orange uppercase flex items-center gap-1 transition-opacity disabled:opacity-30"><Sparkles className="w-3 h-3" /> Bantu via AI</button>
                   </div>
                   <textarea value={editingItem.data.description || ""} onChange={(e) => setEditingItem({...editingItem, data: {...editingItem.data, description: e.target.value}})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none h-24 resize-none" />
+                </div>
+
+                {/* 🧮 KALKULATOR DISKON */}
+                <div className="p-5 bg-brand-orange/5 dark:bg-brand-orange/10 rounded-3xl border-2 border-brand-orange/20 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-[10px] font-black uppercase text-brand-orange tracking-widest flex items-center gap-2">
+                      <Percent className="w-3 h-3" /> Kalkulator Diskon Otomatis
+                    </h4>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl">
+                      <button 
+                        onClick={() => setCalcDiscountType('percent')}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${calcDiscountType === 'percent' ? 'bg-brand-orange text-white shadow-sm' : 'text-zinc-500'}`}
+                      >
+                        %
+                      </button>
+                      <button 
+                        onClick={() => setCalcDiscountType('nominal')}
+                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black transition-all ${calcDiscountType === 'nominal' ? 'bg-brand-orange text-white shadow-sm' : 'text-zinc-500'}`}
+                      >
+                        Rp
+                      </button>
+                    </div>
+                    <input 
+                      type="number" 
+                      placeholder={calcDiscountType === 'percent' ? "Diskon %" : "Potongan Rp"} 
+                      value={calcDiscountValue || ""}
+                      onChange={(e) => setCalcDiscountValue(parseInt(e.target.value) || 0)}
+                      className="flex-1 bg-white dark:bg-black border-2 border-zinc-200 dark:border-zinc-800 px-4 py-2 rounded-xl text-xs font-bold focus:border-brand-orange outline-none"
+                    />
+                    <button 
+                      onClick={() => {
+                        const original = editingItem.data.original_price;
+                        if (!original) { alert("Masukkan 'Harga Asli' terlebih dahulu!"); return; }
+                        let newPrice = original;
+                        if (calcDiscountType === 'percent') {
+                          newPrice = Math.round(original - (original * calcDiscountValue / 100));
+                        } else {
+                          newPrice = original - calcDiscountValue;
+                        }
+                        setEditingItem({ ...editingItem, data: { ...editingItem.data, price: newPrice } });
+                      }}
+                      className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider hover:scale-105 transition-transform"
+                    >
+                      Hitung
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="p-6 bg-zinc-50 dark:bg-black/50 border-t border-zinc-200 dark:border-zinc-800 flex gap-3">
@@ -888,11 +947,35 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               <h3 className="text-2xl font-black uppercase italic tracking-tighter mb-6">Tambah Menu Baru</h3>
               <div className="space-y-4">
                 <input id="add-name" type="text" placeholder="Nama Menu..." className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
-                <input id="add-price" type="number" placeholder="Harga (Rp)..." className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
+                <div className="grid grid-cols-2 gap-3">
+                  <input id="add-price" type="number" placeholder="Harga Jual..." className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
+                  <input id="add-original-price" type="number" placeholder="Harga Coret..." className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
+                </div>
+                <div id="add-modal-calc" className="p-4 bg-brand-orange/5 rounded-2xl border-2 border-brand-orange/10 space-y-3">
+                  <p className="text-[9px] font-black uppercase text-brand-orange tracking-widest">Bantu Hitung Diskon</p>
+                  <div className="flex gap-2">
+                    <input id="calc-val" type="number" placeholder="Nilai Diskon (% / Rp)..." className="flex-1 bg-white dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-3 rounded-xl text-xs font-bold outline-none" />
+                    <button onClick={() => {
+                       const original = parseInt((document.getElementById('add-original-price') as HTMLInputElement).value);
+                       const val = parseInt((document.getElementById('calc-val') as HTMLInputElement).value);
+                       if (!original || !val) return;
+                       // Simple auto-detect: if val < 100 assume percent
+                       const priceInput = (document.getElementById('add-price') as HTMLInputElement);
+                       if (val <= 100) {
+                        priceInput.value = Math.round(original - (original * val / 100)).toString();
+                       } else {
+                        priceInput.value = (original - val).toString();
+                       }
+                    }} className="bg-brand-orange text-white px-4 rounded-xl text-[9px] font-black uppercase tracking-tighter shadow-md">Hitung</button>
+                  </div>
+                </div>
+
                 <button onClick={() => {
                   const name = (document.getElementById('add-name') as HTMLInputElement).value;
                   const price = parseInt((document.getElementById('add-price') as HTMLInputElement).value);
-                  if (name && price) handleAddItem(isAdding, { name, price, description: "", image: "/images/placeholder.webp" });
+                  const originalPriceInput = (document.getElementById('add-original-price') as HTMLInputElement).value;
+                  const original_price = originalPriceInput ? parseInt(originalPriceInput) : null;
+                  if (name && price) handleAddItem(isAdding, { name, price, original_price, description: "", image: "/images/placeholder.webp" });
                 }} className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic shadow-lg shadow-brand-orange/20 active:scale-95 transition-transform">Tambah Sekarang</button>
               </div>
             </motion.div>

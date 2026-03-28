@@ -49,6 +49,41 @@ export const AiAssistant = ({
   const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // --- HELPER: GENERATE MENU CONTEXT FOR AI ---
+  const getMenuContext = () => {
+    let context = "DAFTAR MENU REAL-TIME (STOK & PROMO AKTIF):\n\n";
+    
+    context += "=== TERANG BULAN (SWEET) ===\n";
+    menuSweet.forEach(cat => {
+      context += `\nKategori: ${cat.category}\n`;
+      cat.items.forEach((item: any) => {
+        const promoInfo = item.original_price && item.original_price > item.price 
+          ? ` (PROMO! Harga asli: ${item.original_price}, Harga sekarang: ${item.price})` 
+          : ` (Harga: ${item.price})`;
+        const availability = item.isAvailable === false ? " [STOK HABIS]" : "";
+        context += `- ${item.name}: ${promoInfo}${availability}\n  Deskripsi: ${item.description || "N/A"}\n  Gambar: ${item.image}\n`;
+      });
+    });
+
+    context += "\n=== MARTABAK TELOR (SAVORY) ===\n";
+    menuSavory.forEach(cat => {
+      context += `\nKategori: ${cat.title}\n`;
+      cat.variants.forEach((v: any) => {
+        context += `- Varian: ${v.type}\n`;
+        v.prices.forEach((p: any) => {
+          const promoInfo = p.original_price && p.original_price > p.price 
+            ? ` (PROMO! Harga asli: ${p.original_price}, Harga sekarang: ${p.price})` 
+            : ` (Harga: ${p.price})`;
+          const availability = p.isAvailable === false ? " [STOK HABIS]" : "";
+          const desc = p.desc || `${p.qty} Telor`;
+          context += `  * ${desc}: ${promoInfo}${availability}\n    Gambar: ${p.image}\n`;
+        });
+      });
+    });
+
+    return context;
+  };
+
   const scrollAiToBottom = () => {
     aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -114,6 +149,14 @@ INFORMASI TOKO:
 - Jam Buka: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
 - Ongkir: Rp${SHIPPING_RATE_PER_KM}/km (maks ${MAX_SHIPPING_DISTANCE} km)
 - Promo: Diskon ${promoPercent}% dengan kode "${promoCode}"
+
+DATA MENU AKTIF:
+${getMenuContext()}
+
+PANDUAN PROMOSI:
+- Sebutkan item yang "PROMO" jika user tanya rekomendasi atau promo.
+- Sebutkan harga asli (yang dicoret) dan harga baru jika menonjolkan diskon. Contoh: "Lagi murah Kak, dari 25k jadi cuma 20k aja!".
+- Jangan arahkan ke item yang "[STOK HABIS]".
 
 STATUS TOKO SAAT INI: ${isHoliday ? "Toko sedang LIBUR hari ini." : (isStoreOpen ? `Toko sedang BUKA (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).` : `Toko sedang TUTUP (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).`)}
 Waktu sekarang: ${currentTime} WIB
