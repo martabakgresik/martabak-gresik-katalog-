@@ -16,7 +16,8 @@ const AI_SUGGESTIONS = [
   "Promo Hari Ini 🎁",
   "Cek Ongkir 🛵",
   "Pesan Skala Besar 📦",
-  "Jam Buka ⏰"
+  "Jam Buka ⏰",
+  "Kontak Admin 📞"
 ];
 
 interface AiAssistantProps {
@@ -99,7 +100,11 @@ export const AiAssistant = ({
 
 STATUS TOKO SAAT INI: ${isHoliday ? "Toko sedang LIBUR hari ini." : (isStoreOpen ? `Toko sedang BUKA (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).` : `Toko sedang TUTUP (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).`)}
 
-Jika pelanggan ingin memesan dan toko sedang libur atau tutup, beritahukan dengan sangat ramah dan sopan. dan jika memungkinkan berikan beberapa rekomendasi menu yang bisa dipesan nanti jika buka atau jika mendesak berikan nomor whatsapp toko: ${STORE_PHONE} untuk order.
+Jika pelanggan ingin memesan dan toko sedang libur atau tutup, beritahukan dengan sangat ramah dan sopan. dan jika memungkinkan berikan beberapa rekomendasi menu yang bisa dipesan nanti jika buka atau jika mendesak arahkan untuk menghubungi via WhatsApp.
+
+NOMOR WHATSAPP TOKO: ${STORE_PHONE}
+Saat perlu menampilkan nomor WhatsApp toko, SELALU gunakan format tag berikut (JANGAN tulis nomor mentah):
+#whatsapp|${STORE_PHONE}|Pesan teks opsional
 
 GAYA KOMUNIKASI: Gunakan "Kak", "Kakak", "yuk", "gurih poll","coba deh", "lumer parah", "mantap". Natural lokal, short sentences, reaction positif.
 
@@ -271,11 +276,31 @@ RULES: Respon singkat, friendly. FORMAT TAG HARUS BENAR. Selalu akhiri dengan pe
           );
         }
 
+        if (tag === '#whatsapp') {
+          const phone = payload[1]?.replace(/\D/g, '') || STORE_PHONE.replace(/\D/g, '');
+          const waPhone = phone.startsWith('0') ? '62' + phone.slice(1) : phone;
+          const waText = payload[2] || 'Halo, saya ingin bertanya tentang menu Martabak Gresik';
+          return (
+            <motion.a 
+              key={index}
+              initial={{ opacity: 0, y: 10 }} 
+              animate={{ opacity: 1, y: 0 }}
+              href={`https://wa.me/${waPhone}?text=${encodeURIComponent(waText)}`} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-3 w-full py-4 bg-[#25D366] hover:bg-[#1ebe5b] text-white rounded-2xl font-black text-[11px] uppercase tracking-wider shadow-xl hover:shadow-[#25D366]/30 active:scale-95 transition-all no-underline my-4 max-w-[280px] border-2 border-[#1ebe5b]"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span>Hubungi via WhatsApp</span>
+            </motion.a>
+          );
+        }
+
         if (tag === '#handover') {
           return (
             <div key={index} className="bg-red-500/10 border-2 border-red-500/30 p-4 rounded-2xl my-4">
               <p className="text-[10px] font-black uppercase text-red-500 mb-2">Butuh Bantuan?</p>
-              <a href={`https://wa.me/6281330763633?text=Bantuan%20Admin`} className="flex items-center justify-center gap-2 py-3 bg-brand-black text-white rounded-xl font-black text-[10px] uppercase no-underline"><MessageCircle className="w-4 h-4" /> Tanya Admin</a>
+              <a href={`https://wa.me/62${STORE_PHONE.replace(/^0/, '')}?text=Bantuan%20Admin`} className="flex items-center justify-center gap-2 py-3 bg-brand-black text-white rounded-xl font-black text-[10px] uppercase no-underline"><MessageCircle className="w-4 h-4" /> Tanya Admin</a>
             </div>
           );
         }
@@ -343,8 +368,42 @@ RULES: Respon singkat, friendly. FORMAT TAG HARUS BENAR. Selalu akhiri dengan pe
         .replace(/\*\*/g, '')                 // Hapus bold markdown
         .replace(/\*/g, '')                   // Hapus italic/list markdown
         .trim();
+      
+      if (!sanitizedPart) return null;
+
+      // Post-processing: deteksi nomor telepon mentah dan ubah jadi tombol WhatsApp
+      const phoneRegex = /((?:0|\+?62)8[1-9][0-9]{6,10})/g;
+      if (phoneRegex.test(sanitizedPart)) {
+        const phoneParts = sanitizedPart.split(phoneRegex);
+        return (
+          <span key={index} className="whitespace-pre-wrap">
+            {phoneParts.map((pp, pi) => {
+              if (phoneRegex.test(pp)) {
+                // Reset regex lastIndex
+                phoneRegex.lastIndex = 0;
+                const rawPhone = pp.replace(/\D/g, '');
+                const waPhone = rawPhone.startsWith('0') ? '62' + rawPhone.slice(1) : rawPhone;
+                return (
+                  <a 
+                    key={pi}
+                    href={`https://wa.me/${waPhone}?text=${encodeURIComponent('Halo, saya ingin order Martabak Gresik')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 mx-1 px-3 py-1.5 bg-[#25D366] text-white rounded-xl font-bold text-[10px] no-underline shadow-md hover:brightness-110 active:scale-95 transition-all"
+                  >
+                    <MessageCircle className="w-3 h-3" /> {pp}
+                  </a>
+                );
+              }
+              // Reset regex lastIndex for non-matching parts
+              phoneRegex.lastIndex = 0;
+              return pp;
+            })}
+          </span>
+        );
+      }
         
-      return sanitizedPart ? <span key={index} className="whitespace-pre-wrap">{sanitizedPart} </span> : null;
+      return <span key={index} className="whitespace-pre-wrap">{sanitizedPart} </span>;
     });
   };
 
