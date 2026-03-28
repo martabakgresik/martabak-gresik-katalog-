@@ -18,7 +18,8 @@ export const HOLIDAYS = [
   "2026-03-19", 
   "2026-03-20",
   "2026-03-21",
-  "2026-03-23"
+  "2026-03-23",
+  "2026-03-28"
 ];
 
 // 📱 INFORMASI TOKO (Untuk AI Assistant)
