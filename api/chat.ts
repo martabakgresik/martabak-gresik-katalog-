@@ -34,7 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       body: JSON.stringify({
         messages: apiMessages,
-        model: model || 'openai'
+        model: model || 'deepseek'
       })
     });
 
