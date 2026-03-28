@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
+import { cloudflare } from "@cloudflare/vite-plugin";
+
 // Test secret keys resmi dari Cloudflare
 const CLOUDFLARE_TEST_SECRET_KEYS = [
   '1x0000000000000000000000000000000AA',
@@ -34,7 +36,8 @@ export default defineConfig(({ mode }) => {
             }
           });
         }
-      }
+      },
+      cloudflare()
     ],
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
