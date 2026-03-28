@@ -25,7 +25,10 @@ import {
   Sparkles,
   CircleSlash,
   ChevronDown,
-  BookOpen
+  BookOpen,
+  CalendarDays,
+  CalendarOff,
+  CalendarPlus
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -36,7 +39,8 @@ import {
   CLOSE_HOUR as INITIAL_CLOSE,
   PROMO_CODE as INITIAL_PROMO,
   PROMO_PERCENT as INITIAL_PROMO_PCT,
-  TURNSTILE_SITE_KEY
+  TURNSTILE_SITE_KEY,
+  HOLIDAYS as INITIAL_HOLIDAYS
 } from '../data/config';
 import { formatPrice } from '../hooks/useCart';
 
@@ -72,6 +76,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     promoEndAt: ''
   });
   const [loading, setLoading] = useState(true);
+  const [holidays, setHolidays] = useState<string[]>(INITIAL_HOLIDAYS);
+  const [newHolidayDate, setNewHolidayDate] = useState('');
 
   // --- FETCH DATA ON MOUNT ---
   useEffect(() => {
@@ -101,6 +107,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             promoStartAt: settings.promo_start_at ? new Date(settings.promo_start_at).toISOString().slice(0, 16) : '',
             promoEndAt: settings.promo_end_at ? new Date(settings.promo_end_at).toISOString().slice(0, 16) : ''
           });
+          // Load holidays from DB (JSON array stored in store_settings)
+          if (settings.holidays && Array.isArray(settings.holidays)) {
+            setHolidays(settings.holidays);
+          }
         }
 
         if (categories) {
@@ -432,7 +442,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         store_phone: storeSettings.phone,
         is_emergency_closed: storeSettings.isEmergencyClosed,
         promo_start_at: storeSettings.promoStartAt || null,
-        promo_end_at: storeSettings.promoEndAt || null
+        promo_end_at: storeSettings.promoEndAt || null,
+        holidays: holidays
       }).eq('id', 'main_config');
 
     if (error) alert("Gagal update pengaturan: " + error.message);
@@ -697,6 +708,115 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                          <input type={showSettingsPassword ? "text" : "password"} value={storeSettings.adminPassword} onChange={(e) => setStoreSettings({...storeSettings, adminPassword: e.target.value})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" placeholder="Password" />
                          <button type="button" onClick={() => setShowSettingsPassword(!showSettingsPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">{showSettingsPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 🗓️ PENGATURAN HARI LIBUR */}
+              <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm col-span-1 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400 flex items-center gap-2">
+                    <CalendarDays className="w-4 h-4" /> Pengaturan Hari Libur
+                  </h3>
+                  <span className="text-[10px] font-bold text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-3 py-1 rounded-full">
+                    {holidays.length} hari libur
+                  </span>
+                </div>
+
+                {/* Add New Holiday */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 relative">
+                    <CalendarPlus className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                    <input 
+                      type="date" 
+                      value={newHolidayDate}
+                      onChange={(e) => setNewHolidayDate(e.target.value)}
+                      className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 pl-12 rounded-2xl font-bold focus:border-brand-orange outline-none transition-colors"
+                    />
+                  </div>
+                  <button 
+                    onClick={() => {
+                      if (newHolidayDate && !holidays.includes(newHolidayDate)) {
+                        setHolidays(prev => [...prev, newHolidayDate].sort());
+                        setNewHolidayDate('');
+                      }
+                    }}
+                    disabled={!newHolidayDate || holidays.includes(newHolidayDate)}
+                    className="flex items-center justify-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-4 rounded-2xl font-black uppercase italic text-sm shadow-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    <Plus className="w-4 h-4" /> Tambah Libur
+                  </button>
+                </div>
+
+                {/* Holiday List */}
+                {holidays.length > 0 ? (
+                  <div className="space-y-3">
+                    <AnimatePresence mode="popLayout">
+                      {holidays.map((date) => {
+                        const dateObj = new Date(date + 'T00:00:00');
+                        const dayName = dateObj.toLocaleDateString('id-ID', { weekday: 'long' });
+                        const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                        const isPast = new Date(date) < new Date(new Date().toISOString().split('T')[0]);
+                        const isToday = date === new Date().toISOString().split('T')[0];
+                        return (
+                          <motion.div 
+                            key={date}
+                            layout
+                            initial={{ opacity: 0, x: -20, scale: 0.95 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+                            className={`flex items-center justify-between p-4 rounded-2xl border-2 transition-all group ${
+                              isToday 
+                                ? 'bg-orange-500/10 border-orange-500/30 dark:bg-orange-500/5' 
+                                : isPast 
+                                  ? 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-100 dark:border-zinc-800 opacity-50' 
+                                  : 'bg-zinc-50 dark:bg-zinc-800/50 border-zinc-100 dark:border-zinc-800 hover:border-brand-orange/30'
+                            }`}
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center ${
+                                isToday ? 'bg-orange-500 text-white' : isPast ? 'bg-zinc-200 dark:bg-zinc-700 text-zinc-400' : 'bg-brand-orange/10 text-brand-orange'
+                              }`}>
+                                <span className="text-[10px] font-black uppercase leading-none">{dateObj.toLocaleDateString('id-ID', { month: 'short' })}</span>
+                                <span className="text-lg font-black leading-none">{dateObj.getDate()}</span>
+                              </div>
+                              <div>
+                                <p className="font-bold text-sm">{formattedDate}</p>
+                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                                  {dayName}
+                                  {isToday && <span className="ml-2 text-orange-500">• HARI INI</span>}
+                                  {isPast && !isToday && <span className="ml-2">• SUDAH LEWAT</span>}
+                                </p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => setHolidays(prev => prev.filter(h => h !== date))}
+                              className="p-2 rounded-xl text-zinc-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                              title="Hapus hari libur"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </motion.div>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <div className="text-center py-10">
+                    <CalendarOff className="w-12 h-12 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
+                    <p className="text-sm font-bold text-zinc-400">Belum ada hari libur</p>
+                    <p className="text-[10px] text-zinc-300 dark:text-zinc-600 mt-1">Tambahkan tanggal di atas untuk menjadwalkan hari libur</p>
+                  </div>
+                )}
+
+                {/* Quick info */}
+                <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-4 h-4 text-zinc-400 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase">Info</p>
+                      <p className="text-[11px] text-zinc-500">Toko akan otomatis menampilkan status "LIBUR" pada tanggal-tanggal yang ditentukan. Pelanggan tidak bisa memesan saat hari libur. Klik <strong>Update Data</strong> atau <strong>Simpan Perubahan</strong> untuk menyimpan.</p>
                     </div>
                   </div>
                 </div>

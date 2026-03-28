@@ -113,6 +113,10 @@ export default function App() {
           setIsEmergencyClosed(settings.is_emergency_closed || false);
           setPromoStartAt(settings.promo_start_at || null);
           setPromoEndAt(settings.promo_end_at || null);
+          // Load holidays from DB
+          if (settings.holidays && Array.isArray(settings.holidays)) {
+            setHolidays(settings.holidays);
+          }
         }
 
         if (categories && categories.length > 0) {
