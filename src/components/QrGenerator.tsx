@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export const QrGenerator: React.FC = () => {
-  const [text, setText] = useState('https://martabak-gresik.vercel.app');
+  const [text, setText] = useState('https://martabakgresik.my.id');
   const [size, setSize] = useState(300);
   const [bgColor, setBgColor] = useState('#ffffff');
   const [fgColor, setFgColor] = useState('#000000');
