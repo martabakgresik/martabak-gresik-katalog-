@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
+import { QRCode } from 'react-qrcode-logo';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   QrCode, 
@@ -13,8 +13,39 @@ import {
   Share2,
   RefreshCw,
   Palette,
-  ChevronDown
+  ChevronDown,
+  Globe,
+  MapPin,
+  Instagram,
+  MessageCircle
 } from 'lucide-react';
+
+const PRESETS = [
+  { 
+    name: 'Katalog', 
+    url: 'https://martabakgresik.my.id', 
+    icon: Globe,
+    color: 'bg-blue-500/10 text-blue-500'
+  },
+  { 
+    name: 'Maps', 
+    url: 'https://maps.app.goo.gl/hQUez8CW4wTCXYg3A', 
+    icon: MapPin,
+    color: 'bg-red-500/10 text-red-500'
+  },
+  { 
+    name: 'Instagram', 
+    url: 'https://instagram.com/martabakgresik', 
+    icon: Instagram,
+    color: 'bg-pink-500/10 text-pink-500'
+  },
+  { 
+    name: 'WhatsApp', 
+    url: 'https://wa.me/6281330763633?text=Halo%20Martabak%20Gresik!', 
+    icon: MessageCircle,
+    color: 'bg-green-500/10 text-green-500'
+  },
+];
 
 export const QrGenerator: React.FC = () => {
   const [text, setText] = useState('https://martabakgresik.my.id');
@@ -22,16 +53,18 @@ export const QrGenerator: React.FC = () => {
   const [bgColor, setBgColor] = useState('#ffffff');
   const [fgColor, setFgColor] = useState('#000000');
   const [includeImage, setIncludeImage] = useState(true);
-  const [imageSrc, setImageSrc] = useState('/logo.webp');
+  const [imageSrc, setImageSrc] = useState('/metaseo.webp');
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
+  const [qrStyle, setQrStyle] = useState<'squares' | 'dots'>('squares');
+  const [eyeRadius, setEyeRadius] = useState(0);
   
   const qrRef = useRef<HTMLDivElement>(null);
 
   const downloadQRCode = () => {
     setIsDownloading(true);
-    const canvas = qrRef.current?.querySelector('canvas');
+    const canvas = qrRef.current?.querySelector('canvas') as HTMLCanvasElement;
     if (canvas) {
       const url = canvas.toDataURL('image/png');
       const link = document.createElement('a');
@@ -103,7 +136,19 @@ export const QrGenerator: React.FC = () => {
               placeholder="Masukkan URL atau Teks di sini..."
               className="w-full max-w-md bg-white/50 dark:bg-black/50 border-2 border-brand-black/10 dark:border-white/10 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none transition-all h-24 resize-none text-sm"
             />
-            <div className="flex justify-end mt-4">
+            <div className="flex flex-wrap items-center justify-between mt-4 gap-4">
+              <div className="flex flex-wrap gap-2">
+                {PRESETS.map((preset) => (
+                  <button
+                    key={preset.name}
+                    onClick={() => setText(preset.url)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all hover:scale-105 active:scale-95 ${preset.color}`}
+                  >
+                    <preset.icon className="w-3 h-3" />
+                    {preset.name}
+                  </button>
+                ))}
+              </div>
               <button 
                 onClick={copyToClipboard}
                 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity"
@@ -143,6 +188,38 @@ export const QrGenerator: React.FC = () => {
                     transition={{ type: "spring", damping: 25, stiffness: 200 }}
                     className="space-y-4"
                   >
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase opacity-60">Gaya QR</label>
+                      <div className="flex gap-2 p-1 bg-black/5 dark:bg-white/5 rounded-lg">
+                        <button 
+                          onClick={() => setQrStyle('squares')}
+                          className={`px-3 py-1 text-[9px] font-black uppercase rounded-md transition-all ${qrStyle === 'squares' ? 'bg-brand-orange text-white shadow-md' : 'opacity-40'}`}
+                        >
+                          Kotak
+                        </button>
+                        <button 
+                          onClick={() => setQrStyle('dots')}
+                          className={`px-3 py-1 text-[9px] font-black uppercase rounded-md transition-all ${qrStyle === 'dots' ? 'bg-brand-orange text-white shadow-md' : 'opacity-40'}`}
+                        >
+                          Bulat
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                       <div className="flex justify-between">
+                        <label className="text-[10px] font-black uppercase opacity-60">Kelengkungan Mata</label>
+                        <span className="text-[10px] font-bold">{eyeRadius}px</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="24" 
+                        step="4"
+                        value={eyeRadius} 
+                        onChange={(e) => setEyeRadius(parseInt(e.target.value))}
+                        className="w-full accent-brand-orange h-1 bg-brand-black/10 dark:bg-white/10 rounded-full appearance-none cursor-pointer"
+                      />
+                    </div>
                     <div className="flex items-center justify-between">
                       <label className="text-[10px] font-black uppercase opacity-60">Warna Utama</label>
                       <input 
@@ -212,7 +289,7 @@ export const QrGenerator: React.FC = () => {
                       <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={!includeImage} />
                     </label>
                     <button 
-                      onClick={() => setImageSrc('/logo.webp')}
+                      onClick={() => setImageSrc('/metaseo.webp')}
                       className="w-full mt-2 text-[9px] font-black uppercase opacity-40 hover:opacity-100 transition-opacity"
                     >
                       Reset Ke Default
@@ -243,21 +320,19 @@ export const QrGenerator: React.FC = () => {
               className="p-8 bg-white rounded-[3rem] shadow-2xl relative group"
               style={{ backgroundColor: bgColor }}
             >
-              <QRCodeCanvas
+              <QRCode
                 value={text}
                 size={size}
                 bgColor={bgColor}
                 fgColor={fgColor}
-                level="H"
-                includeMargin={true}
-                imageSettings={includeImage ? {
-                  src: imageSrc,
-                  x: undefined,
-                  y: undefined,
-                  height: size * 0.2,
-                  width: size * 0.2,
-                  excavate: true,
-                } : undefined}
+                qrStyle={qrStyle}
+                eyeRadius={eyeRadius}
+                quietZone={20}
+                logoImage={includeImage ? imageSrc : undefined}
+                logoWidth={size * 0.2}
+                logoHeight={size * 0.2}
+                logoOpacity={1}
+                removeQrCodeBehindLogo={true}
               />
               
               {/* Decorative Corner */}
