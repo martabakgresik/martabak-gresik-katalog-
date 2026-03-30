@@ -1085,9 +1085,18 @@ export default function App() {
               <p className="italic font-medium">catatan: *Harga dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.</p>
             </div>
             
-            <p className="font-bold">
-              Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity cursor-pointer">Arif Tirtana</a>
-            </p>
+            <div className="flex flex-col items-center md:items-end gap-2">
+              <p className="font-bold">
+                Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity cursor-pointer">Arif Tirtana</a>
+              </p>
+              <a 
+                href="/qr" 
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-orange/20 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+              >
+                <QrCode className="w-3 h-3 text-brand-orange" />
+                QR Generator
+              </a>
+            </div>
             
             <div className="flex flex-wrap justify-center gap-6 mt-4 md:mt-0 font-bold uppercase tracking-widest text-[9px] md:text-[10px]">
               <button 
