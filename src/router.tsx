@@ -24,20 +24,17 @@ function RootLayout() {
   return <Outlet />;
 }
 
+import { QrGenerator } from './components/QrGenerator';
+
 /**
  * 🔀 Router Configuration
  * 
  * Routes:
  *   /              → Home/Catalog Page
  *   /blog          → Blog Page
+ *   /qr            → QR Generator Page (Public)
  *   /admin         → Admin Dashboard (Protected)
  *   /?item=NAME    → Item Detail Modal (query param di home page)
- * 
- * Untuk development:
- *   npm run dev (Vite sudah auto-reload)
- * 
- * Untuk production:
- *   npm run build
  */
 export const router = createBrowserRouter([
   {
@@ -51,7 +48,11 @@ export const router = createBrowserRouter([
       },
       {
         path: 'blog',
-        element: <App />,  // App masih handle blog view untuk backward compatibility
+        element: <App />,
+      },
+      {
+        path: 'qr',
+        element: <QrGenerator />,
       },
       {
         path: 'admin',
