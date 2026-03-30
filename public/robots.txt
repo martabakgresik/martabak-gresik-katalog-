@@ -54,4 +54,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://martabakgresik.com/sitemap.xml
+Sitemap: https://martabakgresik.my.id/sitemap.xml
