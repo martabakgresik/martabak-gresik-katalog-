@@ -12,7 +12,8 @@ import {
   Settings2,
   Share2,
   RefreshCw,
-  Palette
+  Palette,
+  ChevronDown
 } from 'lucide-react';
 
 export const QrGenerator: React.FC = () => {
@@ -24,6 +25,7 @@ export const QrGenerator: React.FC = () => {
   const [imageSrc, setImageSrc] = useState('/logo.webp');
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
   
   const qrRef = useRef<HTMLDivElement>(null);
 
@@ -99,7 +101,7 @@ export const QrGenerator: React.FC = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Masukkan URL atau Teks di sini..."
-              className="w-full bg-white/50 dark:bg-black/50 border-2 border-brand-black/10 dark:border-white/10 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none transition-all h-32 resize-none"
+              className="w-full max-w-md bg-white/50 dark:bg-black/50 border-2 border-brand-black/10 dark:border-white/10 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none transition-all h-24 resize-none text-sm"
             />
             <div className="flex justify-end mt-4">
               <button 
@@ -115,46 +117,68 @@ export const QrGenerator: React.FC = () => {
           {/* Settings Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Appearance */}
-            <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl border border-brand-black/5 dark:border-white/10 p-6 rounded-[2.5rem] shadow-xl">
-              <div className="flex items-center gap-2 mb-6 text-brand-orange">
-                <Palette className="w-5 h-5" />
-                <h2 className="font-black uppercase italic tracking-wider text-sm">Tampilan</h2>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black uppercase opacity-60">Warna Utama</label>
-                  <input 
-                    type="color" 
-                    value={fgColor} 
-                    onChange={(e) => setFgColor(e.target.value)}
-                    className="w-8 h-8 rounded-lg bg-transparent cursor-pointer overflow-hidden border-none"
-                  />
+            <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl border border-brand-black/5 dark:border-white/10 p-6 rounded-[2.5rem] shadow-xl overflow-hidden">
+              <button 
+                onClick={() => setIsAppearanceOpen(!isAppearanceOpen)}
+                className="w-full flex items-center justify-between text-brand-orange group"
+              >
+                <div className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  <h2 className="font-black uppercase italic tracking-wider text-sm">Tampilan</h2>
                 </div>
-                <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black uppercase opacity-60">Background</label>
-                  <input 
-                    type="color" 
-                    value={bgColor} 
-                    onChange={(e) => setBgColor(e.target.value)}
-                    className="w-8 h-8 rounded-lg bg-transparent cursor-pointer overflow-hidden border-none"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <label className="text-[10px] font-black uppercase opacity-60">Ukuran</label>
-                    <span className="text-[10px] font-bold">{size}px</span>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="128" 
-                    max="512" 
-                    step="8"
-                    value={size} 
-                    onChange={(e) => setSize(parseInt(e.target.value))}
-                    className="w-full accent-brand-orange h-1 bg-brand-black/10 dark:bg-white/10 rounded-full appearance-none cursor-pointer"
-                  />
-                </div>
-              </div>
+                <motion.div
+                  animate={{ rotate: isAppearanceOpen ? 180 : 0 }}
+                  className="p-1 rounded-full bg-brand-orange/10 group-hover:bg-brand-orange/20 transition-colors"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </motion.div>
+              </button>
+              
+              <AnimatePresence>
+                {isAppearanceOpen && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                    animate={{ height: "auto", opacity: 1, marginTop: 24 }}
+                    exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase opacity-60">Warna Utama</label>
+                      <input 
+                        type="color" 
+                        value={fgColor} 
+                        onChange={(e) => setFgColor(e.target.value)}
+                        className="w-8 h-8 rounded-lg bg-transparent cursor-pointer overflow-hidden border-none"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase opacity-60">Background</label>
+                      <input 
+                        type="color" 
+                        value={bgColor} 
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="w-8 h-8 rounded-lg bg-transparent cursor-pointer overflow-hidden border-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <label className="text-[10px] font-black uppercase opacity-60">Ukuran</label>
+                        <span className="text-[10px] font-bold">{size}px</span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="128" 
+                        max="512" 
+                        step="8"
+                        value={size} 
+                        onChange={(e) => setSize(parseInt(e.target.value))}
+                        className="w-full accent-brand-orange h-1 bg-brand-black/10 dark:bg-white/10 rounded-full appearance-none cursor-pointer"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Logo Customization */}
