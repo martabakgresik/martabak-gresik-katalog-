@@ -186,6 +186,7 @@ export default function App() {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [showPromo, setShowPromo] = useState(true);
   const [zoomedImage, setZoomedImage] = useState<{src: string, alt: string} | null>(null);
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isHoliday, setIsHoliday] = useState(false);
@@ -585,15 +586,13 @@ export default function App() {
             transition={{ delay: 0.3 }}
             className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-sm md:text-base opacity-80 w-full"
           >
-            <a 
-              href="https://maps.app.goo.gl/hQUez8CW4wTCXYg3A" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer"
+            <button 
+              onClick={() => setIsMapOpen(true)}
+              className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer group"
             >
-              <MapPin className="w-4 h-4 text-brand-orange" />
+              <MapPin className="w-4 h-4 text-brand-orange group-hover:scale-110 transition-transform" />
               <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storeAddress}</span>
-            </a>
+            </button>
             <a href={`tel:${storePhone.replace(/\s/g, '')}`} className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
               <Phone className="w-4 h-4 text-brand-orange" />
               <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storePhone}</span>
@@ -2170,6 +2169,69 @@ export default function App() {
               />
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Map Modal */}
+      <AnimatePresence>
+        {isMapOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMapOpen(false)}
+              className="fixed inset-0 bg-brand-black/60 backdrop-blur-md z-[1300]"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-4xl bg-white dark:bg-brand-black rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow z-[1310] overflow-hidden shadow-2xl flex flex-col h-[80vh] md:h-[70vh]"
+            >
+              <div className="p-6 bg-brand-black dark:bg-black text-white flex justify-between items-center shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-brand-orange rounded-xl">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Lokasi Toko</h3>
+                    <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest dark:text-white/40">{storeAddress}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsMapOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="flex-grow bg-zinc-100 dark:bg-zinc-900 relative">
+                <iframe
+                  title="Martabak Gresik Map"
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  style={{ border: 0 }}
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(storeAddress + " Martabak Gresik")}&output=embed`}
+                  allowFullScreen
+                ></iframe>
+              </div>
+
+              <div className="p-4 bg-white dark:bg-brand-black border-t-2 border-brand-black/10 dark:border-brand-yellow/10 flex justify-center shrink-0">
+                <a
+                  href="https://maps.app.goo.gl/hQUez8CW4wTCXYg3A"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-8 py-3 rounded-2xl font-black uppercase italic text-sm flex items-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Buka di Google Maps
+                </a>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
