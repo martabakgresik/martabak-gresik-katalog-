@@ -10,6 +10,7 @@ interface SEOProps {
   price?: number;
   category?: string;
   noindex?: boolean;
+  phone?: string;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -20,7 +21,8 @@ export const SEO: React.FC<SEOProps> = ({
   type = "website",
   price,
   category,
-  noindex = false
+  noindex = false,
+  phone = "+6281330763633"
 }) => {
   const siteTitle = title.includes("Martabak Gresik") ? title : `${title} | Martabak Gresik`;
 
@@ -31,7 +33,7 @@ export const SEO: React.FC<SEOProps> = ({
     "name": "Martabak Gresik",
     "image": image,
     "url": url,
-    "telephone": "+6281330763633",
+    "telephone": phone,
     "priceRange": "Rp",
     "servesCuisine": "Indonesian, Martabak, Terang Bulan",
     "address": {
@@ -93,6 +95,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
+      {phone && <meta property="og:phone_number" content={phone} />}
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />

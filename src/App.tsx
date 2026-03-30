@@ -370,7 +370,7 @@ export default function App() {
   const shareToWhatsApp = (item: { name: string; price: number; category?: string }) => {
     const message = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${item.name}*\n${item.category ? `(${item.category})\n` : ""}Harga: *${formatPrice(item.price)}*\n\nCek katalog lengkapnya di sini: ${APP_URL}`;
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/6281330763633?text=${encodedMessage}`, "_blank");
+    window.open(`https://wa.me/${storePhone.replace(/\s/g, '').replace('+', '')}?text=${encodedMessage}`, "_blank");
   };
 
   const shareGeneral = async (platform: string) => {
@@ -475,6 +475,7 @@ export default function App() {
         url={selectedItemForAddon ? `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}` : undefined}
         price={selectedItemForAddon?.price}
         category={selectedItemForAddon?.category}
+        phone={storePhone}
         noindex={currentView === 'dashboard'}
       />
       {/* Promo Banner */}
