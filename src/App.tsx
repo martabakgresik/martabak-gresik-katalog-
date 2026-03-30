@@ -513,18 +513,8 @@ export default function App() {
           </motion.button>
         </div>
 
-        {/* QR & Theme Toggle Buttons */}
-        <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
-          <motion.a
-            href="/qr"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
-            title="QR Generator"
-          >
-            <QrCode className="w-5 h-5" />
-          </motion.a>
-
+        {/* Theme Toggle Button */}
+        <div className="absolute top-6 right-6 z-20">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
