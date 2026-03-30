@@ -5,7 +5,8 @@ import {
   MessageCircle, Heart, Share2, Copy, Check,
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock, ChevronDown,
-  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2, Settings
+  MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2, Settings,
+  QrCode
 } from "lucide-react";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
 import { 
@@ -512,8 +513,18 @@ export default function App() {
           </motion.button>
         </div>
 
-        {/* Theme Toggle Button */}
-        <div className="absolute top-6 right-6 z-20">
+        {/* QR & Theme Toggle Buttons */}
+        <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
+          <motion.a
+            href="/qr"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
+            title="QR Generator"
+          >
+            <QrCode className="w-5 h-5" />
+          </motion.a>
+
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}

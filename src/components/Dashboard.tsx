@@ -29,7 +29,8 @@ import {
   CalendarDays,
   CalendarOff,
   CalendarPlus,
-  Percent
+  Percent,
+  QrCode
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -555,10 +556,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             </AnimatePresence>
           </div>
 
-          <button onClick={handleUpdateSettings} className="flex items-center gap-2 bg-brand-orange text-white px-4 py-2 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
-             {copied ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-             <span className="hidden sm:inline">{copied ? 'Terupdate!' : 'Update Data'}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <a 
+              href="/qr" 
+              className="hidden sm:flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 px-4 py-2 rounded-xl font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <QrCode className="w-4 h-4" />
+              QR Generator
+            </a>
+            <button onClick={handleUpdateSettings} className="flex items-center gap-2 bg-brand-orange text-white px-4 py-2 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
+               {copied ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+               <span className="hidden sm:inline">{copied ? 'Terupdate!' : 'Update Data'}</span>
+            </button>
+          </div>
         </div>
       </nav>
 
