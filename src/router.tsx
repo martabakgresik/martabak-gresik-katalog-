@@ -2,7 +2,8 @@ import React from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import App from './App';
 import { Dashboard } from './components/Dashboard';
-import { BlogView } from './components/BlogView';
+import { QrGenerator } from './components/QrGenerator';
+import { Gallery } from './components/Gallery';
 import { isDashboardAccessGranted } from './lib/auth';
 
 /**
@@ -16,15 +17,9 @@ function AdminRoute() {
   return <Dashboard onBack={() => window.history.back()} />;
 }
 
-/**
- * 🎨 Root Layout - komponen yang membungkus semua pages
- * Gunakan <Outlet /> untuk render page content
- */
 function RootLayout() {
   return <Outlet />;
 }
-
-import { QrGenerator } from './components/QrGenerator';
 
 /**
  * 🔀 Router Configuration
@@ -53,6 +48,10 @@ export const router = createBrowserRouter([
       {
         path: 'qr',
         element: <QrGenerator />,
+      },
+      {
+        path: 'gallery',
+        element: <Gallery />,
       },
       {
         path: 'admin',
