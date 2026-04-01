@@ -1,5 +1,5 @@
 // Last Sync: 2026-03-29 - Testing push functionality
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, User, Heart, Sparkles, AlertCircle, Box, CookingPot, Download } from "lucide-react";
 import {
@@ -9,6 +9,7 @@ import {
   SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, HOLIDAYS
 } from "../data/config";
 import { formatPrice, type CartItem } from "../hooks/useCart";
+import { debounce } from "../lib/debounce";
 
 const AI_SUGGESTIONS = [
   "Katalog Menu 📑",
@@ -50,8 +51,17 @@ export const AiAssistant = ({
   const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // --- HELPER: GENERATE MENU CONTEXT FOR AI ---
-  const getMenuContext = () => {
+  // Debounced function for AI input - prevents excessive API calls
+  const debouncedGetAiResponse = useMemo(
+    () => debounce((userMessage: string) => {
+      if (!userMessage.trim()) return;
+      getAiResponse(userMessage);
+    }, 300),
+    []
+  );
+
+  // --- HELPER: GENERATE MENU CONTEXT FOR AI (MEMOIZED) ---
+  const getMenuContext = useCallback(() => {
     let context = "DAFTAR MENU REAL-TIME (STOK & PROMO AKTIF):\n\n";
     
     context += "=== TERANG BULAN (SWEET) ===\n";
@@ -83,7 +93,7 @@ export const AiAssistant = ({
     });
 
     return context;
-  };
+  }, [menuSweet, menuSavory]);
 
   const scrollAiToBottom = () => {
     aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
