@@ -34,6 +34,7 @@ const GALLERY_ITEMS: GalleryItem[] = [
   { id: 'p1', src: '/iklan-martabak.png', alt: 'Promo Martabak Gresik', category: 'promo', title: 'Banner Promo Utama' },
   { id: 'p2', src: '/katalog.webp', alt: 'Katalog Visual', category: 'promo', title: 'Katalog Lengkap' },
   { id: 'p3', src: '/metaseo.webp', alt: 'SEO Visual', category: 'promo', title: 'Asset SEO' },
+  { id: 'p4', src: '/iklan-martabak-2.png', alt: 'Promo Baru Martabak Gresik', category: 'promo', title: 'Banner Promo 2' },
   
   // STICKERS
   { id: 'st1', src: '/stiker-martabak.png', alt: 'Stiker Maskot', category: 'sticker', title: 'Mascot Sticker' },
