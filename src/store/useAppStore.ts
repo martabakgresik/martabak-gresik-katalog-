@@ -29,7 +29,7 @@ interface UIState {
   activeTab: 'cart' | 'favorites';
   showPromo: boolean;
   isCheckoutPhase: boolean;
-  currentView: 'catalog' | 'blog' | 'dashboard';
+  currentView: 'catalog' | 'blog' | 'dashboard' | 'lab';
   isOpen: boolean;
   isHoliday: boolean;
   showBackToTop: boolean;
