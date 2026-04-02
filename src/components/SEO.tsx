@@ -95,6 +95,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />
+      <meta property="og:site_name" content="Martabak Gresik" />
       {phone && <meta property="og:phone_number" content={phone} />}
 
       {/* Twitter */}
