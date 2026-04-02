@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+// Test push to trigger Vercel redeploy - Reverting to stable commit 46293c0
 import { motion, AnimatePresence } from "motion/react";
 import {
   Phone, MapPin, Search, ShoppingBag, Plus, Minus, Trash2, X, CircleSlash,
