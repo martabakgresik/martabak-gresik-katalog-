@@ -33,7 +33,8 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         onLoginSuccess();
       } else {
         const data = await response.json().catch(() => ({}));
-        setError(data.message || 'Password tidak sesuai. Coba lagi.');
+        const errorMessage = data.error || (response.status >= 500 ? 'Kesalahan server. Silakan coba lagi nanti.' : 'Password tidak sesuai. Coba lagi.');
+        setError(errorMessage);
         setPassword('');
       }
     } catch (err) {

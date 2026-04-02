@@ -11,8 +11,10 @@
  * Install: npm install jsonwebtoken bcrypt
  */
 
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import { createClient } from '@supabase/supabase-js';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import * as jwt from 'jsonwebtoken';
+import * as bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
 // Initialize Supabase dengan SERVICE ROLE KEY
@@ -147,7 +149,7 @@ export default async function handler(
         username,
         ip_address: ipAddress,
         success: false,
-      }).catch(() => {});
+      });
 
       return res.status(401).json({ 
         error: 'Username atau password salah' 
