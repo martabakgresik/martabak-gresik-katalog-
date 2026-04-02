@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { Lock, AlertCircle, Loader } from 'lucide-react';
 import { verifyAdminPassword, grantDashboardAccess } from '../lib/auth';
+import { TURNSTILE_SITE_KEY } from '../data/config';
+
+declare global {
+  interface Window {
+    onloadTurnstileCallback: () => void;
+    turnstile: any;
+  }
+}
 
 interface AdminLoginProps {
   onLoginSuccess: () => void;
@@ -8,8 +16,16 @@ interface AdminLoginProps {
 
 export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
   const [password, setPassword] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  React.useEffect(() => {
+    // @ts-ignore
+    window.onTurnstileSuccess = (token: string) => {
+      setTurnstileToken(token);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +41,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         body: JSON.stringify({
           username: 'admin',
           password,
+          turnstileToken,
         }),
       });
 
@@ -72,7 +89,7 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           )}
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label htmlFor="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Password
             </label>
             <input
@@ -82,14 +99,24 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Masukkan password admin"
               disabled={isLoading}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-gray-700 dark:text-white disabled:opacity-50"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-gray-700 dark:text-white disabled:opacity-50"
               autoFocus
             />
           </div>
 
+          {/* Turnstile Widget */}
+          <div className="flex justify-center py-2">
+            <div 
+              className="cf-turnstile" 
+              data-sitekey={TURNSTILE_SITE_KEY}
+              data-callback="onTurnstileSuccess"
+              data-theme="light"
+            ></div>
+          </div>
+
           <button
             type="submit"
-            disabled={isLoading || !password.trim()}
+            disabled={isLoading || !password.trim() || !turnstileToken}
             className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             {isLoading ? (

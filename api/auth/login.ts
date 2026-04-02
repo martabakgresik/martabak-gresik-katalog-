@@ -26,6 +26,7 @@ const supabase = createClient(
 interface LoginRequestBody {
   username: string;
   password: string;
+  turnstileToken?: string;
 }
 
 interface LoginResponseBody {
@@ -73,12 +74,34 @@ export default async function handler(
   }
 
   try {
-    const { username, password } = req.body as LoginRequestBody;
+    const { username, password, turnstileToken } = req.body as LoginRequestBody;
     const ipAddress = 
       (req.headers['x-forwarded-for'] as string) || 
       (req.headers['x-real-ip'] as string) ||
       req.socket.remoteAddress ||
       'unknown';
+
+    // 🛡️ Verify Cloudflare Turnstile
+    const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
+    if (!turnstileToken) {
+      return res.status(400).json({ error: 'Turnstile verification missing' });
+    }
+
+    if (turnstileSecret && !turnstileSecret.startsWith('1x000')) { // Skip for test keys
+      try {
+        const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `secret=${encodeURIComponent(turnstileSecret)}&response=${encodeURIComponent(turnstileToken)}`,
+        });
+        const verifyData = await verifyResponse.json();
+        if (!verifyData.success) {
+          return res.status(403).json({ error: 'Robot detection failed. Please try again.' });
+        }
+      } catch (err) {
+        console.error('Turnstile error:', err);
+      }
+    }
 
     // Validate input
     if (!username || !password) {
