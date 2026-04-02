@@ -32,6 +32,7 @@ import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
 import { supabase } from "./lib/supabase";
+import { isDashboardAccessGranted } from "./lib/auth";
 
 interface FavoriteItem {
   id: string;
@@ -550,6 +551,9 @@ export default function App() {
               <img
                 src="/logo.webp"
                 alt="Martabak Gresik Logo"
+                width="192"
+                height="192"
+                fetchPriority="high"
                 className={`w-24 md:w-48 h-auto shrink-0 transition-opacity duration-500 ${imagesLoaded['/logo.webp'] ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => handleImageLoad('/logo.webp')}
                 referrerPolicy="no-referrer"

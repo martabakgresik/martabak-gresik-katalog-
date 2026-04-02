@@ -15,8 +15,35 @@
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     
     <!-- Critical Assets Preload -->
-    <link rel="preload" as="image" href="/logo.webp" />
-    <link rel="preload" as="image" href="/metaseo.webp" />
+    <link rel="preload" as="image" href="/logo.webp" fetchpriority="high" />
+    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/outfit/v11/QGYsz_MV7Be5pqZpq-5T.woff2" type="font/woff2" crossorigin />
+    
+    <!-- Critical Hero CSS -->
+    <style id="critical-hero">
+      :root { --brand-yellow: #FFD700; --brand-orange: #FF8C00; --brand-black: #1A1A1A; }
+      body { margin: 0; background-color: var(--brand-black); font-family: "Outfit", sans-serif; }
+      #root:not(:empty) .hero-static { display: none !important; }
+      .hero-static { 
+        min-height: 400px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: var(--brand-black); color: white; padding: 3rem 1.5rem; text-align: center; overflow: hidden;
+      }
+      .hero-container { max-width: 72rem; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+      .hero-row { display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 1rem; width: 100%; }
+      .hero-logo { width: 6rem; height: auto; }
+      .hero-text { text-align: left; }
+      .hero-h1 { font-size: 1.875rem; font-weight: 900; text-transform: uppercase; line-height: 0.85; letter-spacing: -0.05em; margin: 0; }
+      .hero-h1 span { color: var(--brand-yellow); }
+      .hero-p { font-size: 0.75rem; font-weight: 500; font-style: italic; color: var(--brand-orange); margin-top: 0.25rem; }
+      
+      @media (min-width: 768px) {
+        .hero-static { padding: 5rem 1.5rem; }
+        .hero-row { gap: 2.5rem; }
+        .hero-logo { width: 12rem; }
+        .hero-h1 { font-size: 3.75rem; }
+        .hero-p { font-size: 1.5rem; margin-top: 0.5rem; }
+      }
+    </style>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CZTTHF8Z1N"></script>
     <script>
@@ -88,20 +115,17 @@
   </head>
   <body>
     <div id="root">
-      <!-- Premium Loading Overlay -->
-      <div id="initial-loader" style="position: fixed; inset: 0; background: #1E1E1E; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; font-family: system-ui, -apple-system, sans-serif;">
-        <div style="position: relative; width: 80px; height: 80px;">
-          <div style="position: absolute; inset: 0; border: 4px solid rgba(244, 117, 33, 0.1); border-radius: 50%;"></div>
-          <div style="position: absolute; inset: 0; border: 4px solid transparent; border-top-color: #F47521; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+      <!-- Static Hero for LCP -->
+      <div class="hero-static">
+        <div class="hero-container">
+          <div class="hero-row">
+            <img src="/logo.webp" alt="" class="hero-logo" width="192" height="192" fetchpriority="high">
+            <div class="hero-text">
+              <h1 class="hero-h1">Martabak<br><span>Gresik</span></h1>
+              <p class="hero-p">Terang Bulan dan Martabak Telor</p>
+            </div>
+          </div>
         </div>
-        <div style="margin-top: 24px; color: #F47521; font-weight: 900; letter-spacing: 0.2em; text-transform: uppercase; font-size: 12px; animation: pulse 2s ease-in-out infinite;">
-          Martabak Gresik
-        </div>
-        <style>
-          @keyframes spin { to { transform: rotate(360deg); } }
-          @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
-          #root:not(:empty) #initial-loader { display: none !important; }
-        </style>
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
