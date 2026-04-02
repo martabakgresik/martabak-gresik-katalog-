@@ -7,7 +7,7 @@
  */
 
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 interface VerifyResponse {
   valid: boolean;

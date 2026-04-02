@@ -47,8 +47,11 @@ export const MenuCard = memo(({
         <img
           src={image}
           alt={name}
+          width="400"
+          height="300"
           loading="lazy"
           decoding="async"
+          fetchPriority={name.toLowerCase().includes('kacang') || name.toLowerCase().includes('coklat') ? "high" : "auto"}
           onLoad={() => onImageLoad?.(image)}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />

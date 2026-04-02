@@ -14,7 +14,7 @@ export async function isDashboardAccessGranted(): Promise<boolean> {
     const response = await fetch('/api/auth/verify');
     if (response.ok) {
       const data = await response.json();
-      return data.authenticated === true;
+      return data.valid === true;
     }
     
     // Fallback ke sessionStorage jika API tidak tersedia (optional, tapi permintaan user adalah validasi API)

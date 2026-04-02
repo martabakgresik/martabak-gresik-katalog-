@@ -11,10 +11,9 @@
  * Install: npm install jsonwebtoken bcrypt
  */
 
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
-import * as jwt from 'jsonwebtoken';
-import * as bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 
 // Initialize Supabase dengan SERVICE ROLE KEY
 const supabase = createClient(
@@ -127,7 +126,6 @@ export default async function handler(
     if (queryError || !adminUser) {
       const adminHash = process.env.VITE_ADMIN_PASSWORD_HASH;
       if (adminHash && username === 'admin') {
-        const crypto = await import('crypto');
         const inputHash = crypto.createHash('sha256').update(password).digest('hex');
         
         if (inputHash === adminHash) {
@@ -157,6 +155,14 @@ export default async function handler(
     }
 
     // Verify password menggunakan bcrypt (Standard Flow)
+    const isPasswordValid = await bcrypt.compare(password, adminUser.password_hash);
+    if (!isPasswordValid) {
+      console.warn(`[Auth] Failed login attempt for user: ${username} (Invalid password)`);
+      return res.status(401).json({ 
+        error: 'Username atau password salah' 
+      } as LoginResponseBody);
+    }
+
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       console.error('[Auth] JWT_SECRET not configured');

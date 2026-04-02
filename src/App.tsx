@@ -25,8 +25,6 @@ import {
   MAX_SHIPPING_DISTANCE
 } from "./data/config";
 import { AiAssistant } from "./components/AiAssistant";
-import { Dashboard } from "./components/Dashboard";
-import { AdminLogin } from "./components/AdminLogin";
 import { LegalPages } from "./components/LegalPages";
 import { AboutMe } from "./components/AboutMe";
 import { CookieConsent } from "./components/CookieConsent";
@@ -34,7 +32,6 @@ import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
 import { supabase } from "./lib/supabase";
-import { isDashboardAccessGranted, revokeDashboardAccess } from "./lib/auth";
 
 interface FavoriteItem {
   id: string;
@@ -196,10 +193,9 @@ export default function App() {
   // Legal & Privacy State
   const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | 'faq' | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
-  const [currentView, setCurrentView] = useState<'catalog' | 'blog' | 'dashboard'>('catalog');
+  const [currentView, setCurrentView] = useState<'catalog' | 'blog'>('catalog');
   
   // Admin Authentication State
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
@@ -267,14 +263,10 @@ export default function App() {
       return;
     }
 
-    // Check if dashboard access is requested and user is authenticated
+    // Check if dashboard access is requested
     if (params.get('admin') === 'true' && !isCheckingAuth) {
-      if (isAdminAuthenticated) {
-        setCurrentView('dashboard');
-        window.history.replaceState({}, '', window.location.pathname);
-      } else {
-        setShowAdminLogin(true);
-        window.history.replaceState({}, '', window.location.pathname);
+      if (!isAdminAuthenticated) {
+        window.location.href = '/admin';
       }
       return;
     }
@@ -488,11 +480,11 @@ export default function App() {
         price={selectedItemForAddon?.price}
         category={selectedItemForAddon?.category}
         phone={storePhone}
-        noindex={currentView === 'dashboard'}
+        noindex={false}
       />
       {/* Promo Banner */}
       <AnimatePresence>
-        {(showPromo && isPromoScheduledActive && currentView !== 'dashboard') && (
+        {(showPromo && isPromoScheduledActive) && (
           <motion.div
             initial={{ y: -50 }}
             animate={{ y: 0 }}
@@ -511,7 +503,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      {currentView !== 'dashboard' && (
+      {true && (
         <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
         {/* Share Button (Left) */}
         <div className="absolute top-6 left-6 z-20">
@@ -758,20 +750,7 @@ export default function App() {
 
       {/* Main Content */}
       <AnimatePresence mode="wait">
-        {currentView === 'dashboard' ? (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-          >
-            <Dashboard onBack={() => {
-              revokeDashboardAccess();
-              setIsAdminAuthenticated(false);
-              setCurrentView('catalog');
-            }} />
-          </motion.div>
-        ) : currentView === 'catalog' ? (
+        {currentView === 'catalog' ? (
           <motion.main 
             key="catalog"
             initial={{ opacity: 0, x: -20 }}
@@ -2172,35 +2151,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Admin Login Modal */}
-      <AnimatePresence>
-        {showAdminLogin && (
-          <motion.div
-            key="admin-login"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="absolute inset-0"
-              onClick={() => setShowAdminLogin(false)}
-            />
-            <div className="relative z-10">
-              <AdminLogin 
-                onLoginSuccess={() => {
-                  setIsAdminAuthenticated(true);
-                  setShowAdminLogin(false);
-                  setCurrentView('dashboard');
-                }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       
       {/* Map Modal */}
       <AnimatePresence>

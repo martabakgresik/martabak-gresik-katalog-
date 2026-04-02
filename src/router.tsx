@@ -1,10 +1,24 @@
 import React from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import App from './App';
-import { Dashboard } from './components/Dashboard';
-import { QrGenerator } from './components/QrGenerator';
-import { Gallery } from './components/Gallery';
 import { isDashboardAccessGranted } from './lib/auth';
+import { AdminLogin } from './components/AdminLogin';
+
+// Lazy load heavy components
+const Dashboard = React.lazy(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })));
+const QrGenerator = React.lazy(() => import('./components/QrGenerator').then(m => ({ default: m.QrGenerator })));
+const Gallery = React.lazy(() => import('./components/Gallery').then(m => ({ default: m.Gallery })));
+
+/**
+ * 🌀 Loading Fallback for Suspense
+ */
+function PageLoader() {
+  return (
+    <div className="min-h-screen bg-amber-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+    </div>
+  );
+}
 
 /**
  * 🔐 Protected Route Component untuk Admin Dashboard
@@ -30,10 +44,14 @@ function AdminRoute() {
   }
 
   if (!isAuth) {
-    return <Navigate to="/" replace />;
+    return <AdminLogin onLoginSuccess={() => setIsAuth(true)} />;
   }
   
-  return <Dashboard onBack={() => window.location.href = '/'} />;
+  return (
+    <React.Suspense fallback={<PageLoader />}>
+      <Dashboard onBack={() => window.location.href = '/'} />
+    </React.Suspense>
+  );
 }
 
 function RootLayout() {
@@ -66,11 +84,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'qr',
-        element: <QrGenerator />,
+        element: (
+          <React.Suspense fallback={<PageLoader />}>
+            <QrGenerator />
+          </React.Suspense>
+        ),
       },
       {
         path: 'gallery',
-        element: <Gallery />,
+        element: (
+          <React.Suspense fallback={<PageLoader />}>
+            <Gallery />
+          </React.Suspense>
+        ),
       },
       {
         path: 'admin',
