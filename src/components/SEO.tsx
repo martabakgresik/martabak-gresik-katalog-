@@ -92,6 +92,7 @@ export const SEO: React.FC<SEOProps> = ({
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
       <meta property="og:url" content={url} />
+      <meta property="og:site_name" content="Martabak Gresik - Resep Legendaris Sejak 2020" />
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={image} />

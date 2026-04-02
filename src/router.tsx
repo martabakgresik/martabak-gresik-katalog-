@@ -11,10 +11,29 @@ import { isDashboardAccessGranted } from './lib/auth';
  * Hanya mengizinkan akses jika user sudah login/authenticated
  */
 function AdminRoute() {
-  if (!isDashboardAccessGranted()) {
+  const [isAuth, setIsAuth] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    async function check() {
+      const granted = await isDashboardAccessGranted();
+      setIsAuth(granted);
+    }
+    check();
+  }, []);
+
+  if (isAuth === null) {
+    return (
+      <div className="min-h-screen bg-amber-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+      </div>
+    );
+  }
+
+  if (!isAuth) {
     return <Navigate to="/" replace />;
   }
-  return <Dashboard onBack={() => window.history.back()} />;
+  
+  return <Dashboard onBack={() => window.location.href = '/'} />;
 }
 
 function RootLayout() {

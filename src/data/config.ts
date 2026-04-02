@@ -36,9 +36,8 @@ export const MAX_SHIPPING_DISTANCE = 10;
 export const SCROLL_SPACING = "mt-2"; 
 
 // 🔑 KEAMANAN (Security)
-// Dashboard sekarang menggunakan password authentication dengan SHA-256 hashing
-// Lihat: src/lib/auth.ts dan .env.example untuk setup
-// ADMIN_ACCESS_KEY sudah dihapus dari sini untuk keamanan lebih baik!
+// Dashboard menggunakan session-based authentication via backend API.
+// Konfigurasi Cloudflare Turnstile untuk proteksi form order.
 export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAACwdrus7K-Tn9Gd-";
 
 // 🖼️ ASSETS

@@ -17,17 +17,27 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     setIsLoading(true);
 
     try {
-      const isValid = await verifyAdminPassword(password);
-      
-      if (isValid) {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'admin',
+          password,
+        }),
+      });
+
+      if (response.ok) {
         grantDashboardAccess();
         onLoginSuccess();
       } else {
-        setError('Password tidak sesuai. Coba lagi.');
+        const data = await response.json().catch(() => ({}));
+        setError(data.message || 'Password tidak sesuai. Coba lagi.');
         setPassword('');
       }
     } catch (err) {
-      setError('Terjadi kesalahan. Coba lagi nanti.');
+      setError('Terjadi kesalahan koneksi. Coba lagi nanti.');
       console.error('Login error:', err);
     } finally {
       setIsLoading(false);

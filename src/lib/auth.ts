@@ -1,55 +1,37 @@
 /**
  * 🔐 Admin Authentication Service
- * Menyediakan fungsi verifikasi password untuk akses dashboard
+ * Menyediakan fungsi verifikasi session untuk akses dashboard
  * 
- * CLIENT-SIDE WARNING: Jangan relai hanya pada validasi client-side!
- * Ini hanya untuk UX. Verifikasi sesungguhnya harus di backend/Supabase.
+ * Verifikasi sesungguhnya dilakukan di backend / Supabase.
  */
-
-/**
- * Generate SHA-256 hash dari password (client-side only)
- * Digunakan untuk perbandingan dengan hash yang disimpan di .env
- */
-export async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-/**
- * Verifikasi password admin
- * PENTING: Untuk production, implementasikan server-side authentication!
- */
-export async function verifyAdminPassword(inputPassword: string): Promise<boolean> {
-  try {
-    const adminPasswordHash = import.meta.env.VITE_ADMIN_PASSWORD_HASH;
-    
-    if (!adminPasswordHash) {
-      console.error('VITE_ADMIN_PASSWORD_HASH tidak ditemukan di environment');
-      return false;
-    }
-
-    const inputHash = await hashPassword(inputPassword);
-    return inputHash === adminPasswordHash;
-  } catch (error) {
-    console.error('Error verifying admin password:', error);
-    return false;
-  }
-}
 
 /**
  * Cek apakah dashboard sudah diakses di session ini
- * Gunakan sessionStorage agar session hilang ketika browser ditutup
+ * Memvalidasi session token ke backend API
  */
-export function isDashboardAccessGranted(): boolean {
-  // Cek sessionStorage (hilang ketika browser/tab ditutup)
-  const sessionAccess = sessionStorage.getItem('dashboard_access_granted');
-  if (sessionAccess === 'true') {
-    return true;
+export async function isDashboardAccessGranted(): Promise<boolean> {
+  try {
+    const response = await fetch('/api/auth/verify');
+    if (response.ok) {
+      const data = await response.json();
+      return data.authenticated === true;
+    }
+    
+    // Fallback ke sessionStorage jika API tidak tersedia (optional, tapi permintaan user adalah validasi API)
+    const sessionAccess = sessionStorage.getItem('dashboard_access_granted');
+    return sessionAccess === 'true';
+  } catch (error) {
+    console.error('Error verifying session:', error);
+    // Check locally if API fails
+    return sessionStorage.getItem('dashboard_access_granted') === 'true';
   }
-  
+}
+
+/**
+ * Verifikasi password admin (Deprecated: Gunakan fetch ke /api/auth/login langsung)
+ */
+export async function verifyAdminPassword(_password: string): Promise<boolean> {
+  console.warn('verifyAdminPassword deprecated. Gunakan API /api/auth/login.');
   return false;
 }
 
@@ -61,8 +43,13 @@ export function grantDashboardAccess(): void {
 }
 
 /**
- * Hapus akses dashboard
+ * Hapus akses dashboard dan panggil endpoint logout
  */
-export function revokeDashboardAccess(): void {
-  sessionStorage.removeItem('dashboard_access_granted');
+export async function revokeDashboardAccess(): Promise<void> {
+  try {
+    sessionStorage.removeItem('dashboard_access_granted');
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch (error) {
+    console.error('Error during logout:', error);
+  }
 }

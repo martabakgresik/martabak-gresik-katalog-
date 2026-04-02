@@ -200,7 +200,17 @@ export default function App() {
   
   // Admin Authentication State
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => isDashboardAccessGranted());
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const authenticated = await isDashboardAccessGranted();
+      setIsAdminAuthenticated(authenticated);
+      setIsCheckingAuth(false);
+    }
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     const consent = localStorage.getItem('martabak_cookie_consent');
@@ -258,7 +268,7 @@ export default function App() {
     }
 
     // Check if dashboard access is requested and user is authenticated
-    if (params.get('admin') === 'true') {
+    if (params.get('admin') === 'true' && !isCheckingAuth) {
       if (isAdminAuthenticated) {
         setCurrentView('dashboard');
         window.history.replaceState({}, '', window.location.pathname);
