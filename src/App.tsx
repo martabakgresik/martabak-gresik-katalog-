@@ -547,15 +547,14 @@ export default function App() {
                 window.history.pushState({}, '', '/');
               }}
             >
-              {!imagesLoaded['/logo.webp'] && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />}
               <img
                 src="/logo.webp"
                 alt="Martabak Gresik Logo"
                 width="192"
                 height="192"
+                loading="eager"
                 fetchPriority="high"
-                className={`w-24 md:w-48 h-auto shrink-0 transition-opacity duration-500 ${imagesLoaded['/logo.webp'] ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => handleImageLoad('/logo.webp')}
+                className="w-24 md:w-48 h-auto shrink-0"
                 referrerPolicy="no-referrer"
               />
             </motion.div>
