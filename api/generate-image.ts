@@ -6,9 +6,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const apiKey = process.env.POLLINATIONS_API_KEY || process.env.VITE_POLLINATIONS_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: "API Key not configured on server" });
-  }
 
   const { prompt, model = "flux", size = "1024x1024" } = req.body || {};
   if (!prompt || typeof prompt !== "string") {
@@ -18,6 +15,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const [width = "1024", height = "1024"] = String(size).split("x");
 
   const generateViaOpenAICompat = async (modelId: string) => {
+    if (!apiKey) return null;
+
     const response = await fetch("https://gen.pollinations.ai/v1/images/generations", {
       method: "POST",
       headers: {
@@ -39,18 +38,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   };
 
   try {
-    let { response, data } = await generateViaOpenAICompat(model);
+    const initialResult = await generateViaOpenAICompat(model);
+    let response = initialResult?.response;
+    let data = initialResult?.data;
     let selectedModel = model;
 
     // fallback ke model gratis paling stabil bila model pilihan gagal/berbayar
-    if (!response.ok && model !== "flux") {
+    if (response && !response.ok && model !== "flux") {
       const retry = await generateViaOpenAICompat("flux");
-      response = retry.response;
-      data = retry.data;
-      selectedModel = "flux";
+      if (retry) {
+        response = retry.response;
+        data = retry.data;
+        selectedModel = "flux";
+      }
     }
 
-    if (response.ok) {
+    if (response?.ok) {
       return res.status(200).json({
         ...data,
         meta: { source: "openai-compatible", model: selectedModel }
@@ -63,12 +66,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `?model=${encodeURIComponent(selectedModel)}` +
       `&width=${encodeURIComponent(width)}` +
       `&height=${encodeURIComponent(height)}` +
-      `&seed=-1&enhance=true&nologo=true&key=${encodeURIComponent(apiKey)}`;
+      `&seed=-1&enhance=true&nologo=true` +
+      (apiKey ? `&key=${encodeURIComponent(apiKey)}` : "");
 
     return res.status(200).json({
       data: [{ url: imageUrl }],
       meta: { source: "direct-url", model: selectedModel },
-      warning: data?.error?.message || data?.error || "Using direct URL fallback"
+      warning:
+        data?.error?.message ||
+        data?.error ||
+        (!apiKey
+          ? "API key not configured, using anonymous direct URL fallback"
+          : "Using direct URL fallback")
     });
   } catch (error) {
     console.error("Error in image proxy:", error);
