@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Share2, Copy, Plus, Minus, Trash2, X } from 'lucide-react';
-import { type CartItem, type Addon, formatPrice } from '../hooks/useCart';
+import { type CartItem, type Addon, formatPrice } from '../../hooks/useCart';
 
 interface CartSidebarProps {
   isOpen: boolean;

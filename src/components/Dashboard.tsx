@@ -337,12 +337,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       console.warn('Gagal panggil /api/sync-config:', error);
     }
   };
-codex/fix-database-connection-with-dashboard-wnltw1
+
+ main
   const notifyCatalogUpdated = () => {
     window.dispatchEvent(new Event('martabak:data-updated'));
   };
 
-=======
+
 main
   const handleToggleAvailability = async (type: 'sweet' | 'savory', catIdx: number, itemIdx: number, vIdx?: number, pIdx?: number) => {
     let itemId: string;
@@ -498,10 +499,8 @@ main
     if (error) alert("Gagal update pengaturan: " + error.message);
     else {
       await syncConfigTs({ storeSettings, holidays });
- codex/fix-database-connection-with-dashboard-wnltw1
-      notifyCatalogUpdated();
-=======
-  main
+
+      main
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
