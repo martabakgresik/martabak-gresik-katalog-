@@ -83,6 +83,8 @@ export const AiAssistant = ({
   menuSweet = MENU_SWEET,
   menuSavory = MENU_SAVORY
 }: AiAssistantProps) => {
+  const PUBLIC_POLLINATIONS_KEY = import.meta.env.VITE_POLLINATIONS_API_KEY as string | undefined;
+
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
@@ -438,7 +440,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
     }
   };
 
-  const buildDirectImageUrl = (prompt: string, model?: string, size?: string) => {
+  const buildDirectImageUrl = (prompt: string, model?: string, size?: string, apiKey?: string) => {
     const [width = "1024", height = "1024"] = String(size || "1024x1024").split("x");
     const params = new URLSearchParams({
       width,
@@ -452,6 +454,9 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       params.set("model", model);
     } else {
       params.set("model", "flux");
+    }
+    if (apiKey) {
+      params.set("key", apiKey);
     }
 
     return `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?${params.toString()}`;
@@ -544,8 +549,11 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       }
 
       if (!imageUrl) {
+        if (!PUBLIC_POLLINATIONS_KEY) {
+          throw new Error("API key Pollinations tidak tersedia. Set VITE_POLLINATIONS_API_KEY atau POLLINATIONS_API_KEY.");
+        }
         modelUsed = "flux";
-        imageUrl = buildDirectImageUrl(config.prompt, modelUsed, config.size);
+        imageUrl = buildDirectImageUrl(config.prompt, modelUsed, config.size, PUBLIC_POLLINATIONS_KEY);
       }
 
       const safeName = config.prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 48) || "generated-image";

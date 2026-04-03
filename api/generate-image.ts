@@ -6,6 +6,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const apiKey = process.env.POLLINATIONS_API_KEY || process.env.VITE_POLLINATIONS_API_KEY;
+  if (!apiKey) {
+    return res.status(401).json({
+      error: {
+        code: "missing_api_key",
+        message: "Pollinations API key belum dikonfigurasi di server"
+      }
+    });
+  }
 
   const { prompt, model = "flux", size = "1024x1024" } = req.body || {};
   if (!prompt || typeof prompt !== "string") {
@@ -15,8 +23,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const [width = "1024", height = "1024"] = String(size).split("x");
 
   const generateViaOpenAICompat = async (modelId: string) => {
-    if (!apiKey) return null;
-
     const response = await fetch("https://gen.pollinations.ai/v1/images/generations", {
       method: "POST",
       headers: {
@@ -39,9 +45,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const initialResult = await generateViaOpenAICompat(model);
-    let response = initialResult?.response;
-    let data = initialResult?.data;
-    let selectedModel = apiKey ? model : "flux";
+    let response = initialResult.response;
+    let data = initialResult.data;
+    let selectedModel = model;
 
     // fallback ke model gratis paling stabil bila model pilihan gagal/berbayar
     if (response && !response.ok && model !== "flux") {
@@ -65,9 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // fallback terakhir: direct URL mode mengikuti format docs Pollinations
-    // https://gen.pollinations.ai/image/<prompt>
-    // Hindari bearer/query-key karena browser <img> tidak mengirim Authorization header.
+    // fallback terakhir: direct URL mode mengikuti docs Pollinations + key via query param
     const directParams = new URLSearchParams();
     if (selectedModel && selectedModel !== "flux") {
       directParams.set("model", selectedModel);
@@ -79,6 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     directParams.set("seed", "-1");
     directParams.set("enhance", "true");
     directParams.set("nologo", "true");
+    directParams.set("key", apiKey);
 
     const imageUrl =
       `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}` +
@@ -90,9 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       warning:
         data?.error?.message ||
         data?.error ||
-        (!apiKey
-          ? "API key not configured, using anonymous direct URL fallback"
-          : "Using direct URL fallback")
+        "Using direct URL fallback"
     });
   } catch (error) {
     console.error("Error in image proxy:", error);
