@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check, Search, Filter } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { getBlogPostsFromSupabase, getBlogPosts, type BlogPost } from '../data/blogUtils';
+import { getBlogPosts, type BlogPost } from '../data/blogUtils';
 
 interface BlogViewProps {
   onClose: () => void;
@@ -18,43 +18,14 @@ export function BlogView({ onClose }: BlogViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [displayLimit, setDisplayLimit] = useState(6);
 
-  // Fetch posts: Supabase AND local merge
+  // Fetch posts dari file markdown lokal
   useEffect(() => {
-    async function loadPosts() {
-      setPostsLoading(true);
-      try {
-        const supabasePosts = await getBlogPostsFromSupabase();
-        const localPosts = getBlogPosts(); // Dari folder content/blog
-
-        // Gabungkan keduanya
-        const allPosts = [...supabasePosts, ...localPosts];
-
-        // Unique by slug (Supabase takes priority if duplicate)
-        const postMap = new Map();
-        allPosts.forEach(post => {
-          if (!postMap.has(post.slug)) {
-            postMap.set(post.slug, post);
-          }
-        });
-
-        const mergedPosts = Array.from(postMap.values());
-
-        // Sort by date descending
-        const sortedPosts = mergedPosts.sort((a, b) => {
-          const dateA = new Date(a.date).getTime() || 0;
-          const dateB = new Date(b.date).getTime() || 0;
-          return dateB - dateA;
-        });
-
-        setPosts(sortedPosts);
-      } catch (err) {
-        console.error('Error merging blog posts:', err);
-        setPosts(getBlogPosts());
-      } finally {
-        setPostsLoading(false);
-      }
+    setPostsLoading(true);
+    try {
+      setPosts(getBlogPosts());
+    } finally {
+      setPostsLoading(false);
     }
-    loadPosts();
   }, []);
 
   // Filter and Pagination Logic

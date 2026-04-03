@@ -60,7 +60,7 @@ Pernahkah Anda melihat produk di sebuah website, lalu iklan produk tersebut "men
 | **Sumber Trafik** | Hanya orang yang tahu link langsung. | Menarik pelanggan baru dari Google & Iklan. |
 | **Kesan Brand** | Terlihat kurang profesional/tidak terurus. | Membangun kepercayaan (*trust*) pelanggan. |
 | **Fungsi Bisnis** | Sekadar brosur digital statis. | Menjadi salesman otomatis 24 jam. |
-| **Data Pelanggan** | Tidak memiliki data pengunjung. | Memiliki database untuk promosi berulang. |
+| **Data Pelanggan** | Tidak memiliki data pengunjung. | Memiliki data pelanggan untuk promosi berulang. |
 
 ## Kesimpulan
 

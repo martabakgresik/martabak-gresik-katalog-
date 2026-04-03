@@ -22,19 +22,18 @@ import {
   HOLIDAYS, 
   SCROLL_SPACING,
   SHIPPING_RATE_PER_KM,
-  MAX_SHIPPING_DISTANCE
+  MAX_SHIPPING_DISTANCE,
+  STORE_NAME,
+  STORE_ADDRESS,
+  STORE_PHONE
 } from "./data/config";
 import { AiAssistant } from "./components/AiAssistant";
-import { Dashboard } from "./components/Dashboard";
-import { AdminLogin } from "./components/AdminLogin";
 import { LegalPages } from "./components/LegalPages";
 import { AboutMe } from "./components/AboutMe";
 import { CookieConsent } from "./components/CookieConsent";
 import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
-import { supabase } from "./lib/supabase";
-import { isDashboardAccessGranted, revokeDashboardAccess } from "./lib/auth";
 
 interface FavoriteItem {
   id: string;
@@ -54,13 +53,12 @@ export default function App() {
   const [activePromoCode, setActivePromoCode] = useState(PROMO_CODE);
   const [activePromoPercent, setActivePromoPercent] = useState(PROMO_PERCENT);
   const [holidays, setHolidays] = useState(HOLIDAYS);
-  const [storeName, setStoreName] = useState("Martabak Gresik");
-  const [storeAddress, setStoreAddress] = useState("Jl. Usman Sadar No 10, Gresik");
-  const [storePhone, setStorePhone] = useState("081330763633");
+  const [storeName] = useState(STORE_NAME);
+  const [storeAddress] = useState(STORE_ADDRESS);
+  const [storePhone] = useState(STORE_PHONE);
   const [shippingRate, setShippingRate] = useState(SHIPPING_RATE_PER_KM);
   const [maxDistance, setMaxDistance] = useState(MAX_SHIPPING_DISTANCE);
   const [isEmergencyClosed, setIsEmergencyClosed] = useState(false);
-  const [dbLoading, setDbLoading] = useState(true);
   const [promoStartAt, setPromoStartAt] = useState<string | null>(null);
   const [promoEndAt, setPromoEndAt] = useState<string | null>(null);
 
@@ -90,87 +88,6 @@ export default function App() {
     isGoogleMapsLink,
     processAddressWithAI
   } = useCart(shippingRate, maxDistance);
-
-  // 1. Fetch from Supabase
-  useEffect(() => {
-    async function initDb() {
-      try {
-        const { data: settings } = await supabase.from('store_settings').select('*').eq('id', 'main_config').single();
-        const { data: categories } = await supabase
-          .from('categories')
-          .select('*, menu_items(*)')
-          .order('display_order')
-          .order('display_order', { foreignTable: 'menu_items' });
-
-        if (settings) {
-          setOpenHour(settings.open_hour);
-          setCloseHour(settings.close_hour);
-          setActivePromoCode(settings.promo_code);
-          setActivePromoPercent(settings.promo_percent);
-          setStoreName(settings.store_name);
-          setStoreAddress(settings.store_address);
-          setStorePhone(settings.store_phone);
-          setShippingRate(settings.shipping_rate_per_km || SHIPPING_RATE_PER_KM);
-          setMaxDistance(settings.max_shipping_distance || MAX_SHIPPING_DISTANCE);
-          setIsEmergencyClosed(settings.is_emergency_closed || false);
-          setPromoStartAt(settings.promo_start_at || null);
-          setPromoEndAt(settings.promo_end_at || null);
-          // Load holidays from DB
-          if (settings.holidays && Array.isArray(settings.holidays)) {
-            setHolidays(settings.holidays);
-          }
-        }
-
-        if (categories && categories.length > 0) {
-          const sweet = categories.filter(c => c.type === 'sweet').map(c => ({
-            category: c.name,
-            items: c.menu_items.map((i: any) => ({
-              name: i.name,
-              price: i.price,
-              original_price: i.original_price,
-              image: i.image,
-              description: i.description,
-              isBestSeller: i.is_best_seller,
-              isAvailable: i.is_available ?? true
-            }))
-          }));
-
-          const savory = categories.filter(c => c.type === 'savory').map(c => ({
-            title: c.name,
-            variants: Array.from(new Set(c.menu_items.map((i: any) => i.variant_type))).map(vType => ({
-              type: vType,
-              description: c.menu_items.find((i: any) => i.variant_type === vType)?.description || "",
-              prices: c.menu_items.filter((i: any) => i.variant_type === vType).map((i: any) => ({
-                qty: i.qty,
-                price: i.price,
-                original_price: i.original_price,
-                image: i.image,
-                isBestSeller: i.is_best_seller,
-                isAvailable: i.is_available ?? true
-              }))
-            }))
-          }));
-
-          setMenuSweet(sweet as any);
-          setMenuSavory(savory as any);
-        }
-      } catch (e) {
-        console.error("Supabase load error:", e);
-      } finally {
-        setDbLoading(false);
-      }
-    }
-    initDb();
-
-    const handleDashboardDataUpdate = () => {
-      initDb();
-    };
-
-    window.addEventListener('martabak:data-updated', handleDashboardDataUpdate);
-    return () => {
-      window.removeEventListener('martabak:data-updated', handleDashboardDataUpdate);
-    };
-  }, []);
 
   const [locationStatus, setLocationStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
   const [isAiProcessing, setIsAiProcessing] = useState(false);
@@ -205,11 +122,8 @@ export default function App() {
   // Legal & Privacy State
   const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | 'faq' | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
-  const [currentView, setCurrentView] = useState<'catalog' | 'blog' | 'dashboard'>('catalog');
+  const [currentView, setCurrentView] = useState<'catalog' | 'blog'>('catalog');
   
-  // Admin Authentication State
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => isDashboardAccessGranted());
 
   useEffect(() => {
     const consent = localStorage.getItem('martabak_cookie_consent');
@@ -266,18 +180,6 @@ export default function App() {
       return;
     }
 
-    // Check if dashboard access is requested and user is authenticated
-    if (params.get('admin') === 'true') {
-      if (isAdminAuthenticated) {
-        setCurrentView('dashboard');
-        window.history.replaceState({}, '', window.location.pathname);
-      } else {
-        setShowAdminLogin(true);
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-      return;
-    }
-
     if (itemName && !selectedItemForAddon) {
       // Find item in sweet menu
       for (const section of menuSweet) {
@@ -305,7 +207,7 @@ export default function App() {
         }
       }
     }
-  }, [menuSweet, menuSavory, selectedItemForAddon, isAdminAuthenticated]);
+  }, [menuSweet, menuSavory, selectedItemForAddon]);
 
   // Sync URL with Selected Item
   useEffect(() => {
@@ -487,11 +389,11 @@ export default function App() {
         price={selectedItemForAddon?.price}
         category={selectedItemForAddon?.category}
         phone={storePhone}
-        noindex={currentView === 'dashboard'}
+        noindex={false}
       />
       {/* Promo Banner */}
       <AnimatePresence>
-        {(showPromo && isPromoScheduledActive && currentView !== 'dashboard') && (
+        {(showPromo && isPromoScheduledActive) && (
           <motion.div
             initial={{ y: -50 }}
             animate={{ y: 0 }}
@@ -510,8 +412,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      {currentView !== 'dashboard' && (
-        <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
+      <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
         {/* Share Button (Left) */}
         <div className="absolute top-6 left-6 z-20">
           <motion.button
@@ -753,24 +654,11 @@ export default function App() {
           </motion.div>
         </div>
       </header>
-    )}
+
 
       {/* Main Content */}
       <AnimatePresence mode="wait">
-        {currentView === 'dashboard' ? (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-          >
-            <Dashboard onBack={() => {
-              revokeDashboardAccess();
-              setIsAdminAuthenticated(false);
-              setCurrentView('catalog');
-            }} />
-          </motion.div>
-        ) : currentView === 'catalog' ? (
+        {currentView === 'catalog' ? (
           <motion.main 
             key="catalog"
             initial={{ opacity: 0, x: -20 }}
@@ -2171,36 +2059,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Admin Login Modal */}
-      <AnimatePresence>
-        {showAdminLogin && (
-          <motion.div
-            key="admin-login"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="absolute inset-0"
-              onClick={() => setShowAdminLogin(false)}
-            />
-            <div className="relative z-10">
-              <AdminLogin 
-                onLoginSuccess={() => {
-                  setIsAdminAuthenticated(true);
-                  setShowAdminLogin(false);
-                  setCurrentView('dashboard');
-                }}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
       {/* Map Modal */}
       <AnimatePresence>
         {isMapOpen && (
