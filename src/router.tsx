@@ -4,7 +4,7 @@ import App from './App';
 import { Dashboard } from './components/Dashboard';
 import { QrGenerator } from './components/QrGenerator';
 import { Gallery } from './components/Gallery';
-import { isDashboardAccessGranted } from './lib/auth';
+import { isDashboardAccessGranted, revokeDashboardAccess } from './lib/auth';
 
 /**
  * 🔐 Protected Route Component untuk Admin Dashboard
@@ -14,7 +14,10 @@ function AdminRoute() {
   if (!isDashboardAccessGranted()) {
     return <Navigate to="/" replace />;
   }
-  return <Dashboard onBack={() => window.history.back()} />;
+  return <Dashboard onBack={() => {
+    revokeDashboardAccess();
+    window.location.href = '/';
+  }} />;
 }
 
 function RootLayout() {

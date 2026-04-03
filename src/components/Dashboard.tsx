@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { BlogManager } from './BlogManager';
 import { 
   BarChart3, 
@@ -30,7 +29,9 @@ import {
   CalendarOff,
   CalendarPlus,
   Percent,
-  QrCode
+  QrCode,
+  Loader,
+  LogOut
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { 
@@ -41,7 +42,6 @@ import {
   CLOSE_HOUR as INITIAL_CLOSE,
   PROMO_CODE as INITIAL_PROMO,
   PROMO_PERCENT as INITIAL_PROMO_PCT,
-  TURNSTILE_SITE_KEY,
   HOLIDAYS as INITIAL_HOLIDAYS
 } from '../data/config';
 import { formatPrice } from '../hooks/useCart';
@@ -51,9 +51,6 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [pinError, setPinError] = useState(false);
-  
   const [activeTab, setActiveTab] = useState<'overview' | 'menu' | 'settings' | 'blog'>('overview');
   const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -106,8 +103,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             adminUsername: settings.admin_username || 'admin',
             adminPassword: settings.admin_password || '•••••',
             isEmergencyClosed: settings.is_emergency_closed || false,
-            promoStartAt: settings.promo_start_at ? new Date(settings.promo_start_at).toISOString().slice(0, 16) : '',
-            promoEndAt: settings.promo_end_at ? new Date(settings.promo_end_at).toISOString().slice(0, 16) : ''
+            promoStartAt: (settings.promo_start_at && !isNaN(new Date(settings.promo_start_at).getTime())) ? new Date(settings.promo_start_at).toISOString().slice(0, 16) : '',
+            promoEndAt: (settings.promo_end_at && !isNaN(new Date(settings.promo_end_at).getTime())) ? new Date(settings.promo_end_at).toISOString().slice(0, 16) : ''
           });
           // Load holidays from DB (JSON array stored in store_settings)
           if (settings.holidays && Array.isArray(settings.holidays)) {
@@ -119,7 +116,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
           const sweet = categories.filter(c => c.type === 'sweet').map(c => ({
             id: c.id,
             category: c.name,
-            items: c.menu_items.map((i: any) => ({
+            items: c.menu_items?.map((i: any) => ({
               id: i.id,
               name: i.name,
               price: i.price,
@@ -134,10 +131,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
           const savory = categories.filter(c => c.type === 'savory').map(c => ({
             id: c.id,
             title: c.name,
-            variants: Array.from(new Set(c.menu_items.map((i: any) => i.variant_type))).map(vType => ({
+            variants: Array.from(new Set(c.menu_items?.map((i: any) => i.variant_type))).map(vType => ({
               type: vType,
-              description: c.menu_items.find((i: any) => i.variant_type === vType)?.description || "",
-              prices: c.menu_items.filter((i: any) => i.variant_type === vType).map((i: any) => ({
+              description: c.menu_items?.find((i: any) => i.variant_type === vType)?.description || "",
+              prices: c.menu_items?.filter((i: any) => i.variant_type === vType).map((i: any) => ({
                 id: i.id,
                 qty: i.qty,
                 price: i.price,
@@ -210,91 +207,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     };
   }, [menuSweet, menuSavory]);
 
-  // --- LOGIN LOGIC ---
-  const [loginUsername, setLoginUsername] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
-  const [lockoutMessage, setLockoutMessage] = useState<string | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-  const turnstileRef = useRef<any>(null);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Check Turnstile Token
-    if (!turnstileToken) {
-      alert("Silakan verifikasi Turnstile terlebih dahulu!");
-      return;
-    }
-
-    // Check Lockout
-    const lockoutUntil = localStorage.getItem('martabak_lockout_until');
-    if (lockoutUntil && Date.now() < parseInt(lockoutUntil)) {
-      const remainingMin = Math.ceil((parseInt(lockoutUntil) - Date.now()) / 60000);
-      setLockoutMessage(`Terlalu banyak percobaan. Silakan tunggu ${remainingMin} menit.`);
-      setTimeout(() => setLockoutMessage(null), 5000);
-      return;
-    }
-
-    // Verify Turnstile on Backend
-    try {
-      const verifyResponse = await fetch('/api/verify-turnstile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: turnstileToken })
-      });
-
-      const verifyData = await verifyResponse.json();
-      if (!verifyData.success) {
-        alert("Verifikasi Turnstile gagal. Silakan coba lagi.");
-        setTurnstileToken(null);
-        if (turnstileRef.current) {
-          turnstileRef.current.reset();
-        }
-        return;
-      }
-    } catch (error) {
-      console.error('Turnstile verification error:', error);
-      alert("Gagal melakukan verifikasi. Silakan coba lagi.");
-      return;
-    }
-
-    const { data: settings, error } = await supabase
-      .from('store_settings')
-      .select('admin_username, admin_password')
-      .eq('id', 'main_config')
-      .single();
-
-    if (error) {
-      alert("Gagal terhubung ke Database: " + error.message);
-      setTurnstileToken(null);
-      if (turnstileRef.current) {
-        turnstileRef.current.reset();
-      }
-      return;
-    }
-
-    if (settings && loginUsername.trim() === settings.admin_username && loginPassword.trim() === settings.admin_password) {
-      setIsAuthenticated(true);
-      setPinError(false);
-      localStorage.removeItem('martabak_failed_attempts');
-      localStorage.removeItem('martabak_lockout_until');
-    } else {
-      setPinError(true);
-      setLoginPassword("");
-      const currentAttempts = parseInt(localStorage.getItem('martabak_failed_attempts') || "0") + 1;
-      localStorage.setItem('martabak_failed_attempts', currentAttempts.toString());
-      if (currentAttempts >= 5) {
-        const lockoutTime = Date.now() + 15 * 60 * 1000;
-        localStorage.setItem('martabak_lockout_until', lockoutTime.toString());
-        setLockoutMessage("Akun terkunci sementara selama 15 menit.");
-      }
-      setTurnstileToken(null);
-      if (turnstileRef.current) {
-        turnstileRef.current.reset();
-      }
-      setTimeout(() => { setPinError(false); setLockoutMessage(null); }, 5000);
-    }
-  };
+  // --- LOGIN LOGIC REMOVED (Handled by AdminLogin.tsx) ---
 
   const generateAIDescription = async (itemName: string) => {
     setIsAiGenerating(true);
@@ -461,51 +374,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     }
   };
 
-  if (!isAuthenticated) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-zinc-900 border-4 border-zinc-800 rounded-[2.5rem] p-10 shadow-2xl text-center">
-          <div className="w-20 h-20 bg-brand-orange/20 rounded-3xl flex items-center justify-center mx-auto mb-8">
-            <Lock className={`w-10 h-10 ${pinError ? 'text-red-500 animate-shake' : 'text-brand-orange'}`} />
-          </div>
-          <h2 className="text-2xl font-black uppercase italic tracking-tighter text-white mb-2">Owner Access</h2>
-          <p className="text-zinc-500 text-sm mb-8">Masukkan kredensial untuk melanjutkan</p>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2 text-left">
-              <label className="text-[10px] font-black uppercase text-zinc-500 px-1 italic">Username</label>
-              <div className="relative">
-                 <Store className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                 <input type="text" value={loginUsername} onChange={(e) => setLoginUsername(e.target.value)} className={`w-full bg-black border-2 ${pinError ? 'border-red-500' : 'border-zinc-800'} rounded-2xl p-4 pl-12 text-white focus:border-brand-orange outline-none transition-all font-bold`} autoFocus />
-              </div>
-            </div>
-            <div className="space-y-2 text-left">
-              <label className="text-[10px] font-black uppercase text-zinc-500 px-1 italic">Password</label>
-              <div className="relative">
-                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                 <input type={showPassword ? "text" : "password"} value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className={`w-full bg-black border-2 ${pinError ? 'border-red-500' : 'border-zinc-800'} rounded-2xl p-4 pl-12 text-white focus:border-brand-orange outline-none transition-all font-bold`} />
-                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white">{showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
-              </div>
-            </div>
-            {pinError && <p className="text-red-500 text-[10px] font-black uppercase">Username atau Password salah!</p>}
-            <div className="flex justify-center my-4">
-              <Turnstile
-                ref={turnstileRef}
-                siteKey={TURNSTILE_SITE_KEY}
-                onSuccess={(token) => setTurnstileToken(token)}
-                onError={() => {
-                  setTurnstileToken(null);
-                  alert("Turnstile verification failed. Silakan coba lagi.");
-                }}
-                onExpire={() => {
-                  setTurnstileToken(null);
-                  alert("Turnstile token expired. Silakan verifikasi ulang.");
-                }}
-              />
-            </div>
-            <button type="submit" className="w-full bg-brand-orange text-white py-4 rounded-2xl font-black uppercase italic hover:scale-[1.02] transition-transform shadow-xl shadow-brand-orange/20">Masuk</button>
-          </form>
-          <button onClick={onBack} className="mt-8 text-zinc-600 hover:text-zinc-400 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 mx-auto"><ArrowLeft className="w-3 h-3" /> Kembali</button>
-        </motion.div>
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <Loader className="w-10 h-10 text-brand-orange animate-spin" />
       </div>
     );
   }
@@ -567,6 +439,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
             <button onClick={handleUpdateSettings} className="flex items-center gap-2 bg-brand-orange text-white px-4 py-2 rounded-xl font-bold text-sm hover:scale-105 transition-transform">
                {copied ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
                <span className="hidden sm:inline">{copied ? 'Terupdate!' : 'Update Data'}</span>
+            </button>
+            <button onClick={onBack} className="flex items-center gap-2 bg-red-500/10 text-red-600 dark:text-red-500 px-4 py-2 rounded-xl font-bold text-sm hover:bg-red-500/20 hover:text-red-700 transition-colors" title="Logout & Kembali ke Katalog">
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>

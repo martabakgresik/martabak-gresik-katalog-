@@ -25,14 +25,14 @@ import {
   SHIPPING_RATE_PER_KM,
   MAX_SHIPPING_DISTANCE
 } from "./data/config";
+import { SEO } from "./components/SEO";
+import { CookieConsent } from "./components/CookieConsent";
 import { AiAssistant } from "./components/AiAssistant";
 import { Dashboard } from "./components/Dashboard";
 import { AdminLogin } from "./components/AdminLogin";
 import { LegalPages } from "./components/LegalPages";
 import { AboutMe } from "./components/AboutMe";
-import { CookieConsent } from "./components/CookieConsent";
 import { BlogView } from "./components/BlogView";
-import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
 import { supabase } from "./lib/supabase";
 import { isDashboardAccessGranted, revokeDashboardAccess } from "./lib/auth";
@@ -203,6 +203,8 @@ export default function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => isDashboardAccessGranted());
 
+
+
   useEffect(() => {
     const consent = localStorage.getItem('martabak_cookie_consent');
     if (!consent) {
@@ -269,6 +271,8 @@ export default function App() {
       }
       return;
     }
+
+
 
     if (itemName && !selectedItemForAddon) {
       // Find item in sweet menu
@@ -545,12 +549,13 @@ export default function App() {
                 window.history.pushState({}, '', '/');
               }}
             >
-              {!imagesLoaded['/logo.webp'] && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />}
               <img
                 src="/logo.webp"
                 alt="Martabak Gresik Logo"
-                className={`w-24 md:w-48 h-auto shrink-0 transition-opacity duration-500 ${imagesLoaded['/logo.webp'] ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => handleImageLoad('/logo.webp')}
+                className="w-24 md:w-48 h-auto shrink-0 drop-shadow-2xl relative z-10"
+                fetchPriority="high"
+                loading="eager"
+                decoding="async"
                 referrerPolicy="no-referrer"
               />
             </motion.div>
@@ -2187,6 +2192,7 @@ export default function App() {
                   setShowAdminLogin(false);
                   setCurrentView('dashboard');
                 }}
+                onBack={() => setShowAdminLogin(false)}
               />
             </div>
           </motion.div>
@@ -2265,6 +2271,9 @@ export default function App() {
           handleAcceptCookies();
         }}
       />
+
+      {/* AI Assistant Chatbot */}
+      <AiAssistant />
     </div>
   );
 }
