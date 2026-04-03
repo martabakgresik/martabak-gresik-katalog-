@@ -1,21 +1,8 @@
 import React from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import App from './App';
-import { Dashboard } from './components/Dashboard';
 import { QrGenerator } from './components/QrGenerator';
 import { Gallery } from './components/Gallery';
-import { isDashboardAccessGranted } from './lib/auth';
-
-/**
- * 🔐 Protected Route Component untuk Admin Dashboard
- * Hanya mengizinkan akses jika user sudah login/authenticated
- */
-function AdminRoute() {
-  if (!isDashboardAccessGranted()) {
-    return <Navigate to="/" replace />;
-  }
-  return <Dashboard onBack={() => window.history.back()} />;
-}
 
 function RootLayout() {
   return <Outlet />;
@@ -23,12 +10,11 @@ function RootLayout() {
 
 /**
  * 🔀 Router Configuration
- * 
+ *
  * Routes:
  *   /              → Home/Catalog Page
  *   /blog          → Blog Page
  *   /qr            → QR Generator Page (Public)
- *   /admin         → Admin Dashboard (Protected)
  *   /?item=NAME    → Item Detail Modal (query param di home page)
  */
 export const router = createBrowserRouter([
@@ -54,10 +40,6 @@ export const router = createBrowserRouter([
         element: <Gallery />,
       },
       {
-        path: 'admin',
-        element: <AdminRoute />,
-      },
-      {
         path: '*',
         element: <Navigate to="/" replace />
       }
@@ -65,9 +47,6 @@ export const router = createBrowserRouter([
   }
 ]);
 
-/**
- * 📄 Error Page untuk 404 atau errors lainnya
- */
 function ErrorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">

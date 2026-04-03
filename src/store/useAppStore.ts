@@ -20,7 +20,6 @@ interface StoreSettings {
 interface MenuState {
   menuSweet: any[];
   menuSavory: any[];
-  dbLoading: boolean;
 }
 
 interface UIState {
@@ -29,13 +28,11 @@ interface UIState {
   activeTab: 'cart' | 'favorites';
   showPromo: boolean;
   isCheckoutPhase: boolean;
-  currentView: 'catalog' | 'blog' | 'dashboard';
+  currentView: 'catalog' | 'blog';
   isOpen: boolean;
   isHoliday: boolean;
   showBackToTop: boolean;
   showCookieConsent: boolean;
-  showAdminLogin: boolean;
-  isAdminAuthenticated: boolean;
 }
 
 interface AppState {
@@ -52,7 +49,7 @@ interface AppState {
   setUiState: (state: Partial<UIState>) => void;
   toggleDarkMode: () => void;
   toggleCartOpen: () => void;
-  setCurrentView: (view: 'catalog' | 'blog' | 'dashboard') => void;
+  setCurrentView: (view: 'catalog' | 'blog') => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -83,7 +80,6 @@ export const useAppStore = create<AppState>()(
         menuState: {
           menuSweet: [],
           menuSavory: [],
-          dbLoading: true,
         },
 
         setMenuState: (state) =>
@@ -102,8 +98,6 @@ export const useAppStore = create<AppState>()(
           isHoliday: false,
           showBackToTop: false,
           showCookieConsent: false,
-          showAdminLogin: false,
-          isAdminAuthenticated: false,
         },
 
         setUiState: (state) =>

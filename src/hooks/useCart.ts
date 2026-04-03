@@ -263,22 +263,6 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
 
     const encodedMessage = encodeURIComponent(message);
     
-    // Log Analytics to Supabase
-    try {
-      import('../lib/supabase').then(({ supabase }) => {
-        supabase.from('analytics').insert([{ 
-          event_type: 'whatsapp_click', 
-          metadata: { 
-            customer: customerName, 
-            total: totalPrice,
-            items_count: cart.length
-          } 
-        }]).then(() => {});
-      });
-    } catch (e) {
-      console.error("Analytics error:", e);
-    }
-
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
   };
 
