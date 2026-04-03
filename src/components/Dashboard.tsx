@@ -311,6 +311,33 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     }
   };
 
+  const syncConfigTs = async (next?: {
+    menuSweet?: any;
+    menuSavory?: any;
+    storeSettings?: typeof storeSettings;
+    holidays?: string[];
+  }) => {
+    try {
+      const response = await fetch('/api/sync-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          menuSweet: next?.menuSweet ?? menuSweet,
+          menuSavory: next?.menuSavory ?? menuSavory,
+          storeSettings: next?.storeSettings ?? storeSettings,
+          holidays: next?.holidays ?? holidays
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.warn('Gagal sinkron config.ts:', errorData?.message || response.statusText);
+      }
+    } catch (error) {
+      console.warn('Gagal panggil /api/sync-config:', error);
+    }
+  };
+
   const handleToggleAvailability = async (type: 'sweet' | 'savory', catIdx: number, itemIdx: number, vIdx?: number, pIdx?: number) => {
     let itemId: string;
     let newValue: boolean;
@@ -340,6 +367,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         items[itemIdx] = { ...items[itemIdx], isAvailable: newValue } as any;
         cat.items = items;
         next[catIdx] = cat as any;
+        void syncConfigTs({ menuSweet: next });
         return next;
       });
     } else {
@@ -354,6 +382,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         variants[vIdx!] = variant;
         cat.variants = variants;
         (next as any)[catIdx] = cat;
+        void syncConfigTs({ menuSavory: next as any });
         return next;
       });
     }
@@ -380,10 +409,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       const newMenu = [...menuSweet];
       newMenu[editingItem.categoryIdx].items[editingItem.itemIdx] = newData;
       setMenuSweet(newMenu);
+      await syncConfigTs({ menuSweet: newMenu });
     } else {
       const newMenu = [...menuSavory];
       newMenu[editingItem.categoryIdx].variants[editingItem.variantIdx!].prices[editingItem.priceIdx!] = newData;
       setMenuSavory(newMenu);
+      await syncConfigTs({ menuSavory: newMenu });
     }
     setEditingItem(null);
   };
@@ -410,10 +441,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       const newMenu = [...menuSweet];
       newMenu[0].items.push({ ...data, id: inserted.id } as any);
       setMenuSweet(newMenu);
+      await syncConfigTs({ menuSweet: newMenu });
     } else {
       const newMenu = [...menuSavory];
       (newMenu as any)[0].variants[0].prices.push({ ...data, id: inserted.id });
       setMenuSavory(newMenu);
+      await syncConfigTs({ menuSavory: newMenu });
     }
     setIsAdding(null);
   };
@@ -427,10 +460,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         const newMenu = [...menuSweet];
         newMenu[catIdx].items.splice(itemIdx, 1);
         setMenuSweet(newMenu);
+        await syncConfigTs({ menuSweet: newMenu });
       } else {
         const newMenu = [...menuSavory];
         newMenu[catIdx].variants[vIdx!].prices.splice(pIdx!, 1);
         setMenuSavory(newMenu);
+        await syncConfigTs({ menuSavory: newMenu });
       }
     }
   };
@@ -456,6 +491,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
 
     if (error) alert("Gagal update pengaturan: " + error.message);
     else {
+      await syncConfigTs({ storeSettings, holidays });
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
