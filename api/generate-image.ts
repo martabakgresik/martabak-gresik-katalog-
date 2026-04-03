@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const initialResult = await generateViaOpenAICompat(model);
     let response = initialResult?.response;
     let data = initialResult?.data;
-    let selectedModel = model;
+    let selectedModel = apiKey ? model : "flux";
 
     // fallback ke model gratis paling stabil bila model pilihan gagal/berbayar
     if (response && !response.ok && model !== "flux") {
@@ -51,6 +51,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         data = retry.data;
         selectedModel = "flux";
       }
+    }
+
+    // Hindari 403 di direct URL fallback saat model berbayar/tidak diizinkan
+    if (response && !response.ok && selectedModel !== "flux") {
+      selectedModel = "flux";
     }
 
     if (response?.ok) {
