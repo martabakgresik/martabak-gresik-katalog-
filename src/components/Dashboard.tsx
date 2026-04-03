@@ -544,11 +544,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
 
   return (
     <div className="min-h-screen bg-neutral-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 pb-20">
-      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-6 py-4">
+      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-zinc-200 dark:border-zinc-800 px-3 sm:px-6 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button onClick={onBack} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full"><ArrowLeft className="w-5 h-5" /></button>
-            <h1 className="text-xl font-bold flex items-center gap-2 uppercase tracking-tighter"><span className="text-brand-orange text-2xl">MG</span> Dashboard</h1>
+            <h1 className="text-sm sm:text-xl font-bold flex items-center gap-1.5 sm:gap-2 uppercase tracking-tighter"><span className="text-brand-orange text-xl sm:text-2xl">MG</span> Dashboard</h1>
           </div>
           
           <div className="hidden md:flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl">
@@ -604,7 +604,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto p-6 md:p-10">
+      <main className="max-w-7xl mx-auto p-3 sm:p-6 md:p-10">
         <AnimatePresence mode="wait">
           {activeTab === 'overview' && (
             <motion.div key="overview" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-8">
@@ -631,8 +631,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
 
           {activeTab === 'menu' && (
             <motion.div key="menu" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold tracking-tighter uppercase italic flex items-center gap-2">Manajemen Menu</h2>
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <h2 className="text-lg sm:text-2xl font-bold tracking-tighter uppercase italic flex items-center gap-2">Manajemen Menu</h2>
                 <button onClick={() => setIsAdding('sweet')} className="flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-xl font-bold text-sm transition-transform active:scale-95"><Plus className="w-4 h-4" /> Menu Baru</button>
               </div>
               <div className="space-y-8">
@@ -641,15 +641,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                     <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 px-2">{cat.category}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {cat.items.map((item, itemIdx) => (
-                        <div key={itemIdx} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between shadow-sm">
-                          <div className="flex items-center gap-4">
+                        <div key={itemIdx} className="bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                             <img src={item.image} className="w-12 h-12 rounded-xl bg-zinc-100 object-cover" alt="" />
-                            <div>
-                               <p className="font-bold text-sm">{item.name}</p>
+                            <div className="min-w-0">
+                               <p className="font-bold text-sm truncate">{item.name}</p>
                                <p className="text-xs text-brand-orange font-bold">{formatPrice(item.price)}</p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 self-end sm:self-auto">
                              <button onClick={() => handleToggleAvailability('sweet', catIdx, itemIdx)} className={`p-2 rounded-lg transition-colors ${(item as any).isAvailable ? 'text-green-500' : 'text-red-500'}`}>{togglingId === (item as any).id ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : (item as any).isAvailable ? <Check className="w-4 h-4" /> : <CircleSlash className="w-4 h-4" />}</button>
                              <button onClick={() => setEditingItem({ type: 'sweet', categoryIdx: catIdx, itemIdx, data: {...item} })} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 transition-colors"><Edit2 className="w-4 h-4" /></button>
                              <button onClick={() => handleDeleteItem('sweet', catIdx, itemIdx)} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
@@ -696,12 +696,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
 
           {activeTab === 'settings' && (
             <motion.div key="settings" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} className="max-w-4xl mx-auto space-y-8">
-              <div className="bg-brand-orange text-white p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+              <div className="bg-brand-orange text-white p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
                 <Store className="absolute top-0 right-0 p-10 opacity-10 rotate-12 scale-150 w-32 h-32" />
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
                   <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-3xl flex items-center justify-center border-2 border-white/30"><Sparkles className="w-10 h-10 text-white" /></div>
                   <div className="text-center md:text-left">
-                    <h2 className="text-4xl font-black italic tracking-tighter mb-2">{storeSettings.name}</h2>
+                    <h2 className="text-2xl sm:text-4xl font-black italic tracking-tighter mb-2 break-words">{storeSettings.name}</h2>
                     <div className="flex flex-wrap justify-center md:justify-start gap-3 text-[10px] font-black uppercase tracking-widest">
                       <span className="bg-black/20 px-3 py-1.5 rounded-xl">{storeSettings.open}:00 - {storeSettings.close}:00</span>
                       <span className="bg-black/20 px-3 py-1.5 rounded-xl">{storeSettings.address.substring(0, 30)}...</span>
@@ -710,29 +710,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-8">
-                  <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8">
+                <div className="space-y-5 sm:space-y-8">
+                  <div className="bg-white dark:bg-zinc-900 p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
                     <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400">Profile Toko</h3>
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase opacity-40">Nama Toko</label>
                         <input type="text" value={storeSettings.name} onChange={(e) => setStoreSettings({...storeSettings, name: e.target.value})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2"><label className="text-[10px] font-black uppercase opacity-40">Buka</label><input type="number" value={storeSettings.open} onChange={(e) => setStoreSettings({...storeSettings, open: parseInt(e.target.value)})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" /></div>
                         <div className="space-y-2"><label className="text-[10px] font-black uppercase opacity-40">Tutup</label><input type="number" value={storeSettings.close} onChange={(e) => setStoreSettings({...storeSettings, close: parseInt(e.target.value)})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" /></div>
                       </div>
                     </div>
                     <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
                       <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400">Promo</h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2"><label className="text-[10px] font-black uppercase opacity-40">Kode</label><input type="text" value={storeSettings.promoCode} onChange={(e) => setStoreSettings({...storeSettings, promoCode: e.target.value.toUpperCase()})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" /></div>
                         <div className="space-y-2"><label className="text-[10px] font-black uppercase opacity-40">Diskon %</label><input type="number" value={storeSettings.promoPct} onChange={(e) => setStoreSettings({...storeSettings, promoPct: parseInt(e.target.value)})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" /></div>
                       </div>
                     </div>
                   </div>
-                   <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
+                   <div className="bg-white dark:bg-zinc-900 p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
                     <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400">Alamat & Kontak</h3>
                     <div className="space-y-4">
                       <div className="space-y-2"><label className="text-[10px] font-black uppercase opacity-40">Alamat</label><textarea value={storeSettings.address} onChange={(e) => setStoreSettings({...storeSettings, address: e.target.value})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold h-24 resize-none" /></div>
@@ -741,15 +741,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                   </div>
                 </div>
 
-                <div className="space-y-8">
-                   <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
+                <div className="space-y-5 sm:space-y-8">
+                   <div className="bg-white dark:bg-zinc-900 p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
                     <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400">Pengiriman</h3>
                     <div className="space-y-4">
                       <div className="space-y-2"><label className="text-[10px] font-black uppercase opacity-40">Ongkir/km</label><input type="number" value={storeSettings.shippingRate} onChange={(e) => setStoreSettings({...storeSettings, shippingRate: parseInt(e.target.value)})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" /></div>
                       <div className="space-y-2"><label className="text-[10px] font-black uppercase opacity-40">Jarak Maks</label><input type="number" value={storeSettings.maxDist} onChange={(e) => setStoreSettings({...storeSettings, maxDist: parseInt(e.target.value)})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" /></div>
                     </div>
                   </div>
-                  <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
+                  <div className="bg-white dark:bg-zinc-900 p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm">
                     <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400">Admin Login</h3>
                     <div className="space-y-4">
                        <input type="text" value={storeSettings.adminUsername} onChange={(e) => setStoreSettings({...storeSettings, adminUsername: e.target.value})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold" placeholder="Username" />
@@ -763,7 +763,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
               </div>
 
               {/* 🗓️ PENGATURAN HARI LIBUR */}
-              <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm col-span-1 md:col-span-2">
+              <div className="bg-white dark:bg-zinc-900 p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-zinc-200 dark:border-zinc-800 space-y-6 shadow-sm col-span-1 md:col-span-2">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-black uppercase tracking-widest text-zinc-400 flex items-center gap-2">
                     <CalendarDays className="w-4 h-4" /> Pengaturan Hari Libur
@@ -841,7 +841,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                             </div>
                             <button 
                               onClick={() => setHolidays(prev => prev.filter(h => h !== date))}
-                              className="p-2 rounded-xl text-zinc-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                              className="p-2 rounded-xl text-zinc-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
                               title="Hapus hari libur"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -871,18 +871,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
                 </div>
               </div>
 
-              <div className={`p-8 rounded-[2.5rem] border-4 transition-all ${storeSettings.isEmergencyClosed ? 'bg-red-500/10 border-red-500/30' : 'bg-zinc-100 dark:bg-white/5 border-transparent'}`}>
+              <div className={`p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border-4 transition-all ${storeSettings.isEmergencyClosed ? 'bg-red-500/10 border-red-500/30' : 'bg-zinc-100 dark:bg-white/5 border-transparent'}`}>
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                   <div className="flex items-center gap-4 text-center md:text-left">
                     <div className={`p-4 rounded-2xl ${storeSettings.isEmergencyClosed ? 'bg-red-500 text-white' : 'bg-black/10 text-zinc-400'}`}><CircleSlash className="w-6 h-6" /></div>
                     <div><h4 className="font-bold uppercase italic">Emergency Closed</h4><p className="text-xs opacity-60">Tutup toko secara instan.</p></div>
                   </div>
-                  <button onClick={() => setStoreSettings({...storeSettings, isEmergencyClosed: !storeSettings.isEmergencyClosed})} className={`px-10 py-4 rounded-2xl font-black uppercase italic shadow-lg shadow-red-500/20 active:scale-95 transition-all ${storeSettings.isEmergencyClosed ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>{storeSettings.isEmergencyClosed ? 'Buka Toko' : 'Tutup Toko'}</button>
+                  <button onClick={() => setStoreSettings({...storeSettings, isEmergencyClosed: !storeSettings.isEmergencyClosed})} className={`w-full md:w-auto px-8 sm:px-10 py-4 rounded-2xl font-black uppercase italic shadow-lg shadow-red-500/20 active:scale-95 transition-all ${storeSettings.isEmergencyClosed ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>{storeSettings.isEmergencyClosed ? 'Buka Toko' : 'Tutup Toko'}</button>
                 </div>
               </div>
 
-              <button onClick={handleUpdateSettings} className="w-full py-10 bg-brand-orange text-white rounded-[2.5rem] font-black uppercase italic text-2xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex flex-col items-center justify-center gap-2">
-                <Save className="w-8 h-8" /> <span>Simpan Perubahan</span>
+              <button onClick={handleUpdateSettings} className="w-full py-6 sm:py-10 bg-brand-orange text-white rounded-[2rem] sm:rounded-[2.5rem] font-black uppercase italic text-lg sm:text-2xl shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex flex-col items-center justify-center gap-2">
+                <Save className="w-6 h-6 sm:w-8 sm:h-8" /> <span>Simpan Perubahan</span>
               </button>
               
               <p className="text-center text-[10px] font-black uppercase opacity-20 tracking-[0.3em]">Dashboard V3.1 • Protected</p>
@@ -895,14 +895,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         {editingItem && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditingItem(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-lg bg-white dark:bg-zinc-900 border-4 border-zinc-800 rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-lg bg-white dark:bg-zinc-900 border-4 border-zinc-800 rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
               <div className="p-6 bg-zinc-950 text-white flex justify-between items-center"><h3 className="font-black uppercase italic tracking-tighter">Edit Menu Item</h3><button onClick={() => setEditingItem(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button></div>
-              <div className="p-8 overflow-y-auto space-y-6">
+              <div className="p-5 sm:p-8 overflow-y-auto space-y-6">
                 <div className="space-y-2">
                    <label className="text-[10px] font-black uppercase opacity-40 px-1">Nama</label>
                    <input type="text" value={editingItem.data.name} onChange={(e) => setEditingItem({...editingItem, data: {...editingItem.data, name: e.target.value}})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    <div className="space-y-2">
                      <label className="text-[10px] font-black uppercase opacity-40 px-1">Harga Aktif</label>
                      <input type="number" value={editingItem.data.price} onChange={(e) => setEditingItem({...editingItem, data: {...editingItem.data, price: parseInt(e.target.value)}})} className="w-full bg-zinc-50 dark:bg-black border-2 border-zinc-100 dark:border-zinc-800 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none" />
