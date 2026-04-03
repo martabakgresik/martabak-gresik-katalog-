@@ -161,6 +161,15 @@ export default function App() {
       }
     }
     initDb();
+
+    const handleDashboardDataUpdate = () => {
+      initDb();
+    };
+
+    window.addEventListener('martabak:data-updated', handleDashboardDataUpdate);
+    return () => {
+      window.removeEventListener('martabak:data-updated', handleDashboardDataUpdate);
+    };
   }, []);
 
   const [locationStatus, setLocationStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
