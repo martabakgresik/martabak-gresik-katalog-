@@ -6,14 +6,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const apiKey = process.env.POLLINATIONS_API_KEY || process.env.VITE_POLLINATIONS_API_KEY;
-  if (!apiKey) {
-    return res.status(401).json({
-      error: {
-        code: "missing_api_key",
-        message: "Pollinations API key belum dikonfigurasi di server"
-      }
-    });
-  }
 
   const { prompt, size = "1024x1024" } = req.body || {};
   // Stabilkan endpoint: pakai flux sebagai model aman/default agar tidak kena scope-key mismatch.
@@ -25,6 +17,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const [width = "1024", height = "1024"] = String(size).split("x");
 
   const generateViaOpenAICompat = async (modelId: string) => {
+    if (!apiKey) return null;
+
     const response = await fetch("https://gen.pollinations.ai/v1/images/generations", {
       method: "POST",
       headers: {
@@ -53,8 +47,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const initialResult = await generateViaOpenAICompat(model);
-    let response = initialResult.response;
-    let data = initialResult.data;
+    let response = initialResult?.response;
+    let data = initialResult?.data;
     let selectedModel = model;
 
     // fallback ke model gratis paling stabil bila model pilihan gagal/berbayar
@@ -91,9 +85,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     directParams.set("nologo", "true");
     const pollinationsUrl =
       `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}` +
-      (directParams.toString() ? `?${directParams.toString()}&key=${encodeURIComponent(apiKey)}` : `?key=${encodeURIComponent(apiKey)}`);
+      (directParams.toString() ? `?${directParams.toString()}` : "");
 
-    const directResponse = await fetch(pollinationsUrl);
+    // 1) Coba dengan key (jika ada), 2) jika forbidden/auth issue, coba tanpa key (public quickstart mode)
+    const withKeyUrl = apiKey ? `${pollinationsUrl}&key=${encodeURIComponent(apiKey)}` : pollinationsUrl;
+    let directResponse = await fetch(withKeyUrl);
+    if (!directResponse.ok && (directResponse.status === 401 || directResponse.status === 403 || directResponse.status === 402)) {
+      directResponse = await fetch(pollinationsUrl);
+    }
     if (!directResponse.ok) {
       const directError = await directResponse.text().catch(() => "");
       return res.status(directResponse.status).json({
