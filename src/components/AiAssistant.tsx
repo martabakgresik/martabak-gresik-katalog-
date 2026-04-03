@@ -1,7 +1,7 @@
 // Last Sync: 2026-03-29 - Testing push functionality
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, Sparkles, CookingPot, Download, ImagePlus, ExternalLink } from "lucide-react";
+import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, Sparkles, CookingPot, Download } from "lucide-react";
 import {
   MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY,
   STORE_NAME, STORE_ADDRESS, STORE_PHONE, SINCE_YEAR,
@@ -15,7 +15,6 @@ const AI_SUGGESTIONS = [
   "Katalog Menu 📑",
   "Cara Order & Bayar 💳",
   "Rekomendasi Menu 🍕",
-  "/gambar neon cyberpunk city --ratio 16:9 🎨",
   "Promo Hari Ini 🎁",
   "Cek Ongkir 🛵",
   "Pesan Skala Besar 📦",
@@ -30,12 +29,6 @@ interface AiAssistantProps {
   promoPercent?: number;
   menuSweet?: any[];
   menuSavory?: any[];
-}
-
-interface ImageModelOption {
-  id: string;
-  name?: string;
-  paid?: boolean;
 }
 
 interface TextModelOption {
@@ -90,19 +83,9 @@ export const AiAssistant = ({
     { role: 'assistant', content: `Halo Kak! Saya "Asisten Virtual" dari ${STORE_NAME}. 🌙✨\n\nSenang banget bisa bantu Kakak! Saya bukan cuma jago kasih rekomendasi martabak lumer, tapi Kakak juga bisa tanya apa saja ke saya—mulai dari info menu, promo, sampai hal-hal umum lainnya. Saya siap jawab!\n\n✨ Apa yang bisa saya bantu:\n📑 Lihat katalog lengkap\n🍕 Rekomendasi menu favorit\n💳 Cara order & pembayaran\n🎁 Promo terbaru\n⏰ Jam operasional\n\nKira-kira Kakak mau tanya apa atau lagi pengen jajan apa hari ini? 😊` }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [isImageModelsLoading, setIsImageModelsLoading] = useState(false);
   const [isTextModelsLoading, setIsTextModelsLoading] = useState(false);
-  const [imageModelsSource, setImageModelsSource] = useState<"api" | "direct" | "fallback">("fallback");
   const [textModelsSource, setTextModelsSource] = useState<"api" | "direct" | "fallback">("api");
-  const [selectedImageModel, setSelectedImageModel] = useState("flux");
   const [selectedTextModel, setSelectedTextModel] = useState("openai");
-  const [selectedRatio, setSelectedRatio] = useState("1:1");
-
-  const ASPECT_RATIOS = ["1:1", "16:9", "9:16", "3:4", "4:3", "2:3", "3:2"];
-  const [imageModelOptions, setImageModelOptions] = useState<ImageModelOption[]>([
-    { id: "flux", name: "Flux Schnell", paid: false }
-  ]);
   const [textModelOptions, setTextModelOptions] = useState<TextModelOption[]>([
     { id: "openai", name: "OpenAI GPT-5 Mini", paid: false }
   ]);
@@ -179,72 +162,14 @@ export const AiAssistant = ({
 
   useEffect(() => {
     let interval: number;
-    if (isAiLoading || isGeneratingImage) {
+    if (isAiLoading) {
       setAiTimer(0);
       interval = window.setInterval(() => {
         setAiTimer((prev) => prev + 10);
       }, 10);
     }
     return () => window.clearInterval(interval);
-  }, [isAiLoading, isGeneratingImage]);
-
-  useEffect(() => {
-    const fetchImageModels = async () => {
-      setIsImageModelsLoading(true);
-      try {
-        let data: any = null;
-        let source: "api" | "direct" | "fallback" = "api";
-        
-        // Coba panggil secara paralel untuk kecepatan dan reliabilitas
-        const apiPath = "/api/image-models";
-        const directPath = "https://gen.pollinations.ai/image/models";
-
-        try {
-          const apiResponse = await fetch(apiPath);
-          if (apiResponse.ok) {
-            data = await apiResponse.json();
-          } else {
-            const directResponse = await fetch(directPath);
-            if (directResponse.ok) {
-              data = await directResponse.json();
-              source = "direct";
-            }
-          }
-        } catch (innerError) {
-          // Cobalah direct sebagai upaya terakhir jika proxy benar-benar mati/CORS
-          const directResponse = await fetch(directPath);
-          if (directResponse.ok) {
-            data = await directResponse.json();
-            source = "direct";
-          }
-        }
-
-        if (!data) throw new Error("No data received from any source");
-
-        const normalized = normalizeModelList(data);
-
-        if (normalized.length > 0) {
-          setImageModelOptions(normalized);
-          setImageModelsSource(source);
-          
-          // Pilih model default jika belum ada/valid
-          const hasCurrent = normalized.some((m: ImageModelOption) => m.id === selectedImageModel);
-          if (!hasCurrent) {
-            const firstFree = normalized.find((m: ImageModelOption) => !m.paid)?.id;
-            const fallbackModel = normalized.find(m => m.id === "flux")?.id || normalized[0].id;
-            setSelectedImageModel(firstFree || fallbackModel);
-          }
-        }
-      } catch (error) {
-        setImageModelsSource("fallback");
-      } finally {
-        setIsImageModelsLoading(false);
-      }
-
-    };
-
-    fetchImageModels();
-  }, []);
+  }, [isAiLoading]);
 
   useEffect(() => {
     const fetchTextModels = async () => {
@@ -418,118 +343,8 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
   };
 
 
-  const buildImageSize = (ratio?: string) => {
-    switch (ratio) {
-      case "16:9":
-        return "1365x768";
-      case "9:16":
-        return "768x1365";
-      case "4:3":
-        return "1152x864";
-      case "3:4":
-        return "864x1152";
-      case "3:2":
-        return "1200x800";
-      case "2:3":
-        return "800x1200";
-      case "1:1":
-      default:
-        return "1024x1024";
-    }
-  };
-
-  const extractImageConfig = (rawInput: string) => {
-    const input = rawInput.trim();
-    const isImageIntent = /^\/(img|gambar)\b/i.test(input) || /(buat|bikin|generate).*(gambar|image|ilustrasi)/i.test(input);
-    if (!isImageIntent) return null;
-
-    const ratioMatch = input.match(/(?:--ratio\s*=?\s*|rasio\s*)(16:9|9:16|1:1|4:3|3:4|3:2|2:3)/i);
-    const modelMatch = input.match(/(?:--model\s*=?\s*)([a-z0-9-]+)/i);
-    const sizeMatch = input.match(/(?:--size\s*=?\s*)(\d{3,4}x\d{3,4})/i);
-    const cleanedPrompt = input
-      .replace(/^\/(img|gambar)\s*/i, "")
-      .replace(/(?:--ratio\s*=?\s*)(16:9|9:16|1:1|4:3|3:4|3:2|2:3)/ig, "")
-      .replace(/(?:rasio\s*)(16:9|9:16|1:1|4:3|3:4|3:2|2:3)/ig, "")
-      .replace(/(?:--model\s*=?\s*)([a-z0-9-]+)/ig, "")
-      .replace(/(?:--size\s*=?\s*)(\d{3,4}x\d{3,4})/ig, "")
-      .replace(/\s{2,}/g, " ")
-      .trim();
-
-    const finalRatio = ratioMatch?.[1] || selectedRatio;
-
-    return {
-      prompt: cleanedPrompt || "Cinematic martabak still life, cozy lighting, food photography",
-      ratio: finalRatio,
-      model: modelMatch?.[1] || selectedImageModel,
-      size: sizeMatch?.[1] || buildImageSize(finalRatio)
-    };
-
-  };
-
-  const handleImageDownload = async (imageUrl: string, fileName: string) => {
-    try {
-      const response = await fetch(imageUrl);
-      if (!response.ok) throw new Error("Download image gagal");
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = objectUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(objectUrl);
-    } catch (error) {
-      console.error("Gagal download gambar:", error);
-      window.open(imageUrl, "_blank", "noopener,noreferrer");
-    }
-  };
-
   const generateImageResponse = async (userMessage: string) => {
-    const config = extractImageConfig(userMessage);
-    if (!config) {
-      await getAiResponse(userMessage);
-      return;
-    }
-
-    const nextMessages = [...aiMessages, { role: "user" as const, content: userMessage }];
-    setAiMessages(nextMessages);
-    setAiInput("");
-    setIsGeneratingImage(true);
-
-    try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config)
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        const providerMessage = data?.error?.message || data?.error || data?.message || "Image generation failed";
-        throw new Error(providerMessage);
-      }
-      const imageUrlRaw =
-        data?.data?.[0]?.url ||
-        data?.data?.[0]?.image_url ||
-        data?.url ||
-        data?.image ||
-        null;
-      const b64ImageRaw = data?.data?.[0]?.b64_json || data?.b64_json || null;
-      const imageUrl = imageUrlRaw
-        ? imageUrlRaw
-        : (b64ImageRaw ? `data:image/jpeg;base64,${b64ImageRaw}` : null);
-      if (!imageUrl) throw new Error("URL gambar tidak ditemukan");
-
-      const safeName = config.prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 48) || "generated-image";
-      const generatedTag = `#generated-image|${imageUrl}|${safeName}.jpg|${config.ratio}|${config.model}|${config.prompt}`;
-      setAiMessages([...nextMessages, { role: "assistant", content: generatedTag }]);
-    } catch (error) {
-      console.error("Image generation error:", error);
-      const msg = error instanceof Error ? error.message : "unknown_error";
-      setAiMessages([...nextMessages, { role: "assistant", content: `Maaf Kak, gambar belum bisa digenerate sekarang.\n\nDetail: ${msg}\n\nCoba: \`/gambar sunset city --ratio 16:9 --model flux\` 🙏` }]);
-    } finally {
-      setIsGeneratingImage(false);
-    }
+    await getAiResponse(userMessage);
   };
 
   const renderMessage = (content: string) => {
@@ -541,7 +356,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
     cleanContent = cleanContent.replace(/<(\w+)[^>]*>.*?<\/\1>/g, '');  // Open-close: <tag>...</tag>
 
     // 3. Regex untuk menangkap semua pola tag internal dan markdown
-    const tagRegex = /(#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog|show-qris|generated-image)[^#\n]*|!\[[^\]]*\]\s*\([^)]+\)|\[[^\]]+\]\s*\([^)]+\))/g;
+    const tagRegex = /(#(?:add-to-cart|product-card|checkout|handover|whatsapp|download-catalog|show-qris)[^#\n]*|!\[[^\]]*\]\s*\([^)]+\)|\[[^\]]+\]\s*\([^)]+\))/g;
 
     // 4. Pecah konten berdasarkan tag
     const parts = cleanContent.split(tagRegex);
@@ -706,45 +521,6 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
           );
         }
 
-        if (tag === '#generated-image') {
-          const [_, imageUrl, fileName, ratio, model, prompt] = payload;
-          return (
-            <motion.div key={index} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-white/10 border border-brand-black/10 dark:border-white/20 rounded-[1.5rem] p-3 my-4 shadow-lg w-full max-w-[280px]">
-              <div className="rounded-2xl overflow-hidden mb-3 border border-brand-black/10 dark:border-white/10">
-                <img src={imageUrl} alt={prompt || "Generated image"} className="w-full h-auto object-cover" loading="lazy" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-brand-black/70 dark:text-white/70">
-                  <ImagePlus className="w-3.5 h-3.5" /> AI Image Generated
-                </div>
-                <p className="text-[10px] font-bold dark:text-white line-clamp-2">{prompt}</p>
-                <div className="flex gap-2">
-                  <span className="text-[9px] bg-brand-yellow/30 dark:bg-brand-yellow/20 rounded-full px-2 py-1 font-black">{ratio}</span>
-                  <span className="text-[9px] bg-brand-black/10 dark:bg-white/10 rounded-full px-2 py-1 font-black uppercase">{model}</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handleImageDownload(imageUrl, fileName || "generated-image.jpg")}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-xl text-[10px] font-black uppercase"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download
-                  </button>
-                  <a
-                    href={imageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 border border-brand-black/20 dark:border-white/20 rounded-xl text-[10px] font-black uppercase no-underline dark:text-white"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Buka
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          );
-        }
-
         // Jika tag tidak dikenali, jangan tampilkan
         return null;
       }
@@ -833,8 +609,8 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
-            className={`bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left ${isExpanded
-              ? 'w-[95vw] md:w-[90vw] max-w-5xl h-[calc(100dvh-120px)] md:h-[calc(100vh-140px)]'
+            className={`bg-white dark:bg-brand-black border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform ${isExpanded
+              ? 'fixed inset-[5px] w-auto h-auto max-w-none max-h-none rounded-[1.75rem] origin-center'
               : 'w-[300px] sm:w-[350px] h-[450px] max-h-[calc(100dvh-120px)]'
               }`}
           >
@@ -892,14 +668,14 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   </div>
                 </div>
               ))}
-              {(isAiLoading || isGeneratingImage) && (
+              {isAiLoading && (
                 <div className="flex justify-start items-end gap-2">
                   <ChatMascot isBusy={true} />
                   <div className="bg-white dark:bg-white/10 p-4 rounded-2xl rounded-tl-none flex flex-col gap-2 min-w-[180px]">
                     <div className="flex items-center gap-3 text-[10px] font-bold dark:text-brand-yellow">
                       <div className="w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin" />
                       <span className="animate-pulse italic">
-                        {isGeneratingImage ? "Sedang membuat gambar..." : "Sedang meracik jawaban lezat..."}
+                        Sedang meracik jawaban lezat...
                       </span>
                     </div>
                     <div className="flex justify-end pr-1">
@@ -921,8 +697,8 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                     key={idx}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => !isAiLoading && !isGeneratingImage && generateImageResponse(`PENGGUNA KLIK SHORTCUT: ${suggestion}`)}
-                    disabled={isAiLoading || isGeneratingImage}
+                    onClick={() => !isAiLoading && generateImageResponse(`PENGGUNA KLIK SHORTCUT: ${suggestion}`)}
+                    disabled={isAiLoading}
                     className="whitespace-nowrap bg-white dark:bg-white/10 border border-brand-black/10 dark:border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold shadow-sm transition-all hover:bg-brand-yellow dark:hover:bg-brand-yellow hover:text-brand-black hover:border-brand-yellow disabled:opacity-50"
                   >
                     {suggestion}
@@ -933,7 +709,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
 
             <form
               onSubmit={(e) => { e.preventDefault(); if (aiInput.trim()) generateImageResponse(aiInput); }}
-              className="p-3 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex items-end gap-2"
+              className="p-3 sm:p-4 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex items-end gap-2 pr-4 sm:pr-5"
             >
               <div className="flex-grow flex flex-col gap-2">
                 <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-brand-black/5 dark:bg-white/10">
@@ -952,40 +728,6 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                     ))}
                   </select>
                 </div>
-                <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-brand-black/5 dark:bg-white/10">
-                  <ImagePlus className="w-3.5 h-3.5 text-brand-orange shrink-0" />
-                  <label className="text-[9px] font-bold uppercase tracking-wide dark:text-white/80">Image</label>
-                  <select
-                    value={selectedImageModel}
-                    onChange={(e) => setSelectedImageModel(e.target.value)}
-                    className="flex-1 bg-transparent text-[10px] font-bold outline-none dark:text-white"
-                    disabled={isImageModelsLoading}
-                    title="Model gambar default"
-                  >
-                    {imageModelOptions.map((model) => (
-                      <option key={model.id} value={model.id}>
-                        {model.name || model.id}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="w-[1px] h-3 bg-brand-black/20 dark:bg-white/20 mx-1" />
-                  <div className="flex items-center gap-1">
-                    <Maximize2 className="w-2.5 h-2.5 opacity-50" />
-                    <select
-                      value={selectedRatio}
-                      onChange={(e) => setSelectedRatio(e.target.value)}
-                      className="bg-transparent text-[10px] font-bold outline-none dark:text-white"
-                      title="Rasio Gambar"
-                    >
-                      {ASPECT_RATIOS.map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-
-
                 <textarea
                   ref={aiTextareaRef}
                   rows={1}
@@ -994,16 +736,16 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
-                      if (aiInput.trim() && !isAiLoading && !isGeneratingImage) generateImageResponse(aiInput);
+                      if (aiInput.trim() && !isAiLoading) generateImageResponse(aiInput);
                     }
                   }}
-                  placeholder="Tanya apa aja atau /gambar prompt --ratio 16:9"
+                  placeholder="Tanya apa aja seputar menu, promo, atau order"
                   className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
                 />
               </div>
               <button
-                disabled={isAiLoading || isGeneratingImage || !aiInput.trim()}
-                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5 group"
+                disabled={isAiLoading || !aiInput.trim()}
+                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5 mr-0.5 group"
                 title="Kirim Pesan"
               >
                 <Send className="w-4 h-4 group-hover:translate-x-0.5 group-active:translate-x-1 transition-transform" />
