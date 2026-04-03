@@ -360,31 +360,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     }
 
     if (type === 'sweet') {
-      setMenuSweet(prev => {
-        const next = [...prev];
-        const cat = { ...next[catIdx] };
-        const items = [...cat.items];
-        items[itemIdx] = { ...items[itemIdx], isAvailable: newValue } as any;
-        cat.items = items;
-        next[catIdx] = cat as any;
-        void syncConfigTs({ menuSweet: next });
-        return next;
-      });
+      const next = [...menuSweet];
+      const cat = { ...next[catIdx] };
+      const items = [...cat.items];
+      items[itemIdx] = { ...items[itemIdx], isAvailable: newValue } as any;
+      cat.items = items;
+      next[catIdx] = cat as any;
+      setMenuSweet(next);
+      await syncConfigTs({ menuSweet: next });
     } else {
-      setMenuSavory(prev => {
-        const next = [...prev];
-        const cat = { ...(next as any)[catIdx] };
-        const variants = [...cat.variants];
-        const variant = { ...variants[vIdx!] };
-        const prices = [...variant.prices];
-        prices[pIdx!] = { ...prices[pIdx!], isAvailable: newValue } as any;
-        variant.prices = prices;
-        variants[vIdx!] = variant;
-        cat.variants = variants;
-        (next as any)[catIdx] = cat;
-        void syncConfigTs({ menuSavory: next as any });
-        return next;
-      });
+      const next = [...menuSavory];
+      const cat = { ...(next as any)[catIdx] };
+      const variants = [...cat.variants];
+      const variant = { ...variants[vIdx!] };
+      const prices = [...variant.prices];
+      prices[pIdx!] = { ...prices[pIdx!], isAvailable: newValue } as any;
+      variant.prices = prices;
+      variants[vIdx!] = variant;
+      cat.variants = variants;
+      (next as any)[catIdx] = cat;
+      setMenuSavory(next as any);
+      await syncConfigTs({ menuSavory: next as any });
     }
     setTogglingId(null);
   };
