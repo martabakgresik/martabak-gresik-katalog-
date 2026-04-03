@@ -337,7 +337,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       console.warn('Gagal panggil /api/sync-config:', error);
     }
   };
+codex/fix-database-connection-with-dashboard-wnltw1
+  const notifyCatalogUpdated = () => {
+    window.dispatchEvent(new Event('martabak:data-updated'));
+  };
 
+=======
+main
   const handleToggleAvailability = async (type: 'sweet' | 'savory', catIdx: number, itemIdx: number, vIdx?: number, pIdx?: number) => {
     let itemId: string;
     let newValue: boolean;
@@ -382,6 +388,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       setMenuSavory(next as any);
       await syncConfigTs({ menuSavory: next as any });
     }
+    notifyCatalogUpdated();
     setTogglingId(null);
   };
 
@@ -412,6 +419,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       setMenuSavory(newMenu);
       await syncConfigTs({ menuSavory: newMenu });
     }
+    notifyCatalogUpdated();
     setEditingItem(null);
   };
 
@@ -444,6 +452,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
       setMenuSavory(newMenu);
       await syncConfigTs({ menuSavory: newMenu });
     }
+    notifyCatalogUpdated();
     setIsAdding(null);
   };
 
@@ -463,6 +472,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
         setMenuSavory(newMenu);
         await syncConfigTs({ menuSavory: newMenu });
       }
+      notifyCatalogUpdated();
     }
   };
 
@@ -488,6 +498,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onBack }) => {
     if (error) alert("Gagal update pengaturan: " + error.message);
     else {
       await syncConfigTs({ storeSettings, holidays });
+ codex/fix-database-connection-with-dashboard-wnltw1
+      notifyCatalogUpdated();
+=======
+  main
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
