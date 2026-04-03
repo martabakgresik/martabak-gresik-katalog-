@@ -58,13 +58,22 @@ const normalizeModelList = (data: any) => {
       : []);
 
   return asArray
-    .filter((item: any) => item?.id || item?.model)
-    .map((item: any) => ({
-      id: item.id || item.model,
-      name: item.name || item.label || item.id || item.model,
-      paid: Boolean(item.paid)
-    }));
+    .map((item: any) => {
+      // Jika item adalah string langsung (Pollinations kadang return ["model1", "model2"])
+      if (typeof item === 'string') {
+        return { id: item, name: item, paid: false };
+      }
+      // Jika item adalah objek
+      return {
+        id: item.id || item.model || item.name,
+        name: item.name || item.label || item.id || item.model,
+        paid: Boolean(item.paid || item.pricing)
+      };
+    })
+    .filter((item: any) => item?.id);
 };
+
+
 
 export const AiAssistant = ({
   onAddToCart,
@@ -85,16 +94,20 @@ export const AiAssistant = ({
   const [isImageModelsLoading, setIsImageModelsLoading] = useState(false);
   const [isTextModelsLoading, setIsTextModelsLoading] = useState(false);
   const [imageModelsSource, setImageModelsSource] = useState<"api" | "direct" | "fallback">("fallback");
-  const [textModelsSource, setTextModelsSource] = useState<"api" | "direct" | "fallback">("fallback");
+  const [textModelsSource, setTextModelsSource] = useState<"api" | "direct" | "fallback">("api");
+  const [selectedImageModel, setSelectedImageModel] = useState("flux");
+  const [selectedTextModel, setSelectedTextModel] = useState("openai");
+  const [selectedRatio, setSelectedRatio] = useState("1:1");
+
+  const ASPECT_RATIOS = ["1:1", "16:9", "9:16", "3:4", "4:3", "2:3", "3:2"];
   const [imageModelOptions, setImageModelOptions] = useState<ImageModelOption[]>([
     { id: "flux", name: "Flux Schnell", paid: false }
   ]);
   const [textModelOptions, setTextModelOptions] = useState<TextModelOption[]>([
     { id: "openai", name: "OpenAI GPT-5 Mini", paid: false }
   ]);
-  const [selectedImageModel, setSelectedImageModel] = useState("flux");
-  const [selectedTextModel, setSelectedTextModel] = useState("openai");
   const [aiTimer, setAiTimer] = useState(0);
+
   const aiMessagesEndRef = useRef<HTMLDivElement>(null);
   const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -180,34 +193,54 @@ export const AiAssistant = ({
       setIsImageModelsLoading(true);
       try {
         let data: any = null;
-        let source: "api" | "direct" = "api";
-        const apiResponse = await fetch("/api/image-models");
-        if (apiResponse.ok) {
-          data = await apiResponse.json();
-        } else {
-          source = "direct";
-          const directResponse = await fetch("https://gen.pollinations.ai/image/models");
-          if (!directResponse.ok) throw new Error("Gagal mengambil model gambar dari provider");
-          data = await directResponse.json();
+        let source: "api" | "direct" | "fallback" = "api";
+        
+        // Coba panggil secara paralel untuk kecepatan dan reliabilitas
+        const apiPath = "/api/image-models";
+        const directPath = "https://gen.pollinations.ai/image/models";
+
+        try {
+          const apiResponse = await fetch(apiPath);
+          if (apiResponse.ok) {
+            data = await apiResponse.json();
+          } else {
+            const directResponse = await fetch(directPath);
+            if (directResponse.ok) {
+              data = await directResponse.json();
+              source = "direct";
+            }
+          }
+        } catch (innerError) {
+          // Cobalah direct sebagai upaya terakhir jika proxy benar-benar mati/CORS
+          const directResponse = await fetch(directPath);
+          if (directResponse.ok) {
+            data = await directResponse.json();
+            source = "direct";
+          }
         }
+
+        if (!data) throw new Error("No data received from any source");
 
         const normalized = normalizeModelList(data);
 
         if (normalized.length > 0) {
           setImageModelOptions(normalized);
           setImageModelsSource(source);
+          
+          // Pilih model default jika belum ada/valid
           const hasCurrent = normalized.some((m: ImageModelOption) => m.id === selectedImageModel);
           if (!hasCurrent) {
             const firstFree = normalized.find((m: ImageModelOption) => !m.paid)?.id;
-            setSelectedImageModel(firstFree || normalized[0].id);
+            const fallbackModel = normalized.find(m => m.id === "flux")?.id || normalized[0].id;
+            setSelectedImageModel(firstFree || fallbackModel);
           }
         }
       } catch (error) {
-        console.error("Gagal load model gambar:", error);
         setImageModelsSource("fallback");
       } finally {
         setIsImageModelsLoading(false);
       }
+
     };
 
     fetchImageModels();
@@ -218,30 +251,48 @@ export const AiAssistant = ({
       setIsTextModelsLoading(true);
       try {
         let data: any = null;
-        let source: "api" | "direct" = "api";
-        const apiResponse = await fetch("/api/text-models");
-        if (apiResponse.ok) {
-          data = await apiResponse.json();
-        } else {
-          source = "direct";
-          const directResponse = await fetch("https://gen.pollinations.ai/text/models");
-          if (!directResponse.ok) throw new Error("Gagal mengambil model chat dari provider");
-          data = await directResponse.json();
+        let source: "api" | "direct" | "fallback" = "api";
+        
+        const apiPath = "/api/text-models";
+        const directPath = "https://gen.pollinations.ai/text/models";
+
+        try {
+          const apiResponse = await fetch(apiPath);
+          if (apiResponse.ok) {
+            data = await apiResponse.json();
+          } else {
+            const directResponse = await fetch(directPath);
+            if (directResponse.ok) {
+              data = await directResponse.json();
+              source = "direct";
+            }
+          }
+        } catch (innerError) {
+          const directResponse = await fetch(directPath);
+          if (directResponse.ok) {
+            data = await directResponse.json();
+            source = "direct";
+          }
         }
+
+        if (!data) throw new Error("No text model data received");
 
         const normalized = normalizeModelList(data);
 
         if (normalized.length > 0) {
+
           setTextModelOptions(normalized);
           setTextModelsSource(source);
+          
           const hasCurrent = normalized.some((m: TextModelOption) => m.id === selectedTextModel);
           if (!hasCurrent) {
             const firstFree = normalized.find((m: TextModelOption) => !m.paid)?.id;
-            setSelectedTextModel(firstFree || normalized[0].id);
+            const fallbackModel = normalized.find(m => m.id === "openai")?.id || normalized[0].id;
+            setSelectedTextModel(firstFree || fallbackModel);
           }
         }
       } catch (error) {
-        console.error("Gagal load model chat:", error);
+        console.error("[AI Debug] Gagal load model chat:", error);
         setTextModelsSource("fallback");
       } finally {
         setIsTextModelsLoading(false);
@@ -250,6 +301,8 @@ export const AiAssistant = ({
 
     fetchTextModels();
   }, []);
+
+
 
   const getAiResponse = async (userMessage: string) => {
     setIsAiLoading(true);
@@ -375,6 +428,10 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
         return "1152x864";
       case "3:4":
         return "864x1152";
+      case "3:2":
+        return "1200x800";
+      case "2:3":
+        return "800x1200";
       case "1:1":
       default:
         return "1024x1024";
@@ -386,24 +443,27 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
     const isImageIntent = /^\/(img|gambar)\b/i.test(input) || /(buat|bikin|generate).*(gambar|image|ilustrasi)/i.test(input);
     if (!isImageIntent) return null;
 
-    const ratioMatch = input.match(/(?:--ratio\s*=?\s*|rasio\s*)(16:9|9:16|1:1|4:3|3:4)/i);
+    const ratioMatch = input.match(/(?:--ratio\s*=?\s*|rasio\s*)(16:9|9:16|1:1|4:3|3:4|3:2|2:3)/i);
     const modelMatch = input.match(/(?:--model\s*=?\s*)([a-z0-9-]+)/i);
     const sizeMatch = input.match(/(?:--size\s*=?\s*)(\d{3,4}x\d{3,4})/i);
     const cleanedPrompt = input
       .replace(/^\/(img|gambar)\s*/i, "")
-      .replace(/(?:--ratio\s*=?\s*)(16:9|9:16|1:1|4:3|3:4)/ig, "")
-      .replace(/(?:rasio\s*)(16:9|9:16|1:1|4:3|3:4)/ig, "")
+      .replace(/(?:--ratio\s*=?\s*)(16:9|9:16|1:1|4:3|3:4|3:2|2:3)/ig, "")
+      .replace(/(?:rasio\s*)(16:9|9:16|1:1|4:3|3:4|3:2|2:3)/ig, "")
       .replace(/(?:--model\s*=?\s*)([a-z0-9-]+)/ig, "")
       .replace(/(?:--size\s*=?\s*)(\d{3,4}x\d{3,4})/ig, "")
       .replace(/\s{2,}/g, " ")
       .trim();
 
+    const finalRatio = ratioMatch?.[1] || selectedRatio;
+
     return {
       prompt: cleanedPrompt || "Cinematic martabak still life, cozy lighting, food photography",
-      ratio: ratioMatch?.[1] || "1:1",
+      ratio: finalRatio,
       model: modelMatch?.[1] || selectedImageModel,
-      size: sizeMatch?.[1] || buildImageSize(ratioMatch?.[1])
+      size: sizeMatch?.[1] || buildImageSize(finalRatio)
     };
+
   };
 
   const handleImageDownload = async (imageUrl: string, fileName: string) => {
@@ -887,13 +947,10 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   >
                     {textModelOptions.map((model) => (
                       <option key={model.id} value={model.id}>
-                        {model.name || model.id}{model.paid ? " (paid)" : ""}
+                        {model.name || model.id}
                       </option>
                     ))}
                   </select>
-                  <span className="text-[8px] font-bold opacity-60 uppercase">
-                    {isTextModelsLoading ? "loading" : textModelsSource}
-                  </span>
                 </div>
                 <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-brand-black/5 dark:bg-white/10">
                   <ImagePlus className="w-3.5 h-3.5 text-brand-orange shrink-0" />
@@ -907,14 +964,28 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   >
                     {imageModelOptions.map((model) => (
                       <option key={model.id} value={model.id}>
-                        {model.name || model.id}{model.paid ? " (paid)" : ""}
+                        {model.name || model.id}
                       </option>
                     ))}
                   </select>
-                  <span className="text-[8px] font-bold opacity-60 uppercase">
-                    {isImageModelsLoading ? "loading" : imageModelsSource}
-                  </span>
+                  <div className="w-[1px] h-3 bg-brand-black/20 dark:bg-white/20 mx-1" />
+                  <div className="flex items-center gap-1">
+                    <Maximize2 className="w-2.5 h-2.5 opacity-50" />
+                    <select
+                      value={selectedRatio}
+                      onChange={(e) => setSelectedRatio(e.target.value)}
+                      className="bg-transparent text-[10px] font-bold outline-none dark:text-white"
+                      title="Rasio Gambar"
+                    >
+                      {ASPECT_RATIOS.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+
+
+
                 <textarea
                   ref={aiTextareaRef}
                   rows={1}
