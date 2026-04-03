@@ -865,9 +865,10 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
   return (
     <div className={`fixed z-50 flex flex-col items-center gap-2 transition-all duration-500 ${
       isAiOpen 
-        ? "inset-[5px]" 
+        ? (isExpanded ? "inset-[5px]" : "bottom-4 left-4 md:bottom-8 md:left-8 w-[300px] sm:w-[350px] h-[450px] max-h-[calc(100dvh-120px)]")
         : "bottom-4 left-4 md:bottom-8 md:left-8"
     }`}>
+
       <AnimatePresence>
         {isAiOpen && (
           <motion.div
