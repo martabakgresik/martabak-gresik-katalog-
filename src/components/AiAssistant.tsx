@@ -211,21 +211,53 @@ KARAKTER: "Asisten Virtual" — passionate, cerdas, bisa ngobrol apa saja tapi s
 
 RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri dengan pertanyaan engagement atau rekomendasi menu.`;
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: userMessage,
-          systemPrompt: systemPrompt
-        })
-      });
+      let assistantMessage = "";
 
-      if (!response.ok) throw new Error('AI Error');
+      // DEV MODE FALLBACK: Jika di localhost (Vite dev server), panggil Pollinations langsung
+      if (import.meta.env.DEV || !window.location.host.includes('.vercel.app')) {
+        console.log("[AI Assistant] Dev Mode detected: Calling Pollinations directly...");
+        
+        const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {})
+          },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userMessage }
+            ],
+            model: 'openai'
+          })
+        });
 
-      const data = await response.json();
-      const assistantMessage = data.choices[0].message.content;
+        if (!response.ok) {
+          const errorData = await response.text();
+          console.error("[AI Assistant] Direct API Error:", errorData);
+          throw new Error('Pollinations Direct API Error: ' + response.status);
+        }
+        const data = await response.json();
+        assistantMessage = data.choices[0].message.content;
+      } else {
+        // PRODUCTION: Pakai Vercel Edge Function (/api/chat)
+        console.log("[AI Assistant] Production Mode: Calling /api/chat...");
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: userMessage,
+            systemPrompt: systemPrompt
+          })
+        });
+
+        if (!response.ok) throw new Error('Vercel API Chat Error');
+        const data = await response.json();
+        assistantMessage = data.choices[0].message.content;
+      }
+
       setAiMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
     } catch (error) {
       console.error("AI Error:", error);
