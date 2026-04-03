@@ -6,7 +6,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const response = await fetch("https://gen.pollinations.ai/text/models");
+    const apiKey = process.env.POLLINATIONS_API_KEY;
+    const headers: HeadersInit = apiKey ? { Authorization: `Bearer ${apiKey}` } : {};
+
+    let response = await fetch("https://gen.pollinations.ai/text/models", { headers });
+    if (!response.ok) {
+      response = await fetch("https://gen.pollinations.ai/v1/models", { headers });
+    }
+
     const data = await response.json();
     return res.status(response.status).json(data);
   } catch (error) {

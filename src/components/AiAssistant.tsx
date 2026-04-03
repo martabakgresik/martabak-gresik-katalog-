@@ -44,6 +44,28 @@ interface TextModelOption {
   paid?: boolean;
 }
 
+const normalizeModelList = (data: any) => {
+  const asArray =
+    (Array.isArray(data) && data) ||
+    (Array.isArray(data?.models) && data.models) ||
+    (Array.isArray(data?.data) && data.data) ||
+    (Array.isArray(data?.items) && data.items) ||
+    (data?.models && typeof data.models === "object" && !Array.isArray(data.models)
+      ? Object.entries(data.models).map(([id, value]: [string, any]) => ({
+          id,
+          ...(typeof value === "object" ? value : { name: String(value) })
+        }))
+      : []);
+
+  return asArray
+    .filter((item: any) => item?.id || item?.model)
+    .map((item: any) => ({
+      id: item.id || item.model,
+      name: item.name || item.label || item.id || item.model,
+      paid: Boolean(item.paid)
+    }));
+};
+
 export const AiAssistant = ({
   onAddToCart,
   isOpen = false,
@@ -169,16 +191,7 @@ export const AiAssistant = ({
           data = await directResponse.json();
         }
 
-        const rawList = Array.isArray(data)
-          ? data
-          : data?.models || data?.data || data?.items || [];
-        const normalized = rawList
-          .filter((item: any) => item?.id || item?.model)
-          .map((item: any) => ({
-            id: item.id || item.model,
-            name: item.name || item.id || item.model,
-            paid: Boolean(item.paid)
-          }));
+        const normalized = normalizeModelList(data);
 
         if (normalized.length > 0) {
           setImageModelOptions(normalized);
@@ -216,16 +229,7 @@ export const AiAssistant = ({
           data = await directResponse.json();
         }
 
-        const rawList = Array.isArray(data)
-          ? data
-          : data?.models || data?.data || data?.items || [];
-        const normalized = rawList
-          .filter((item: any) => item?.id || item?.model)
-          .map((item: any) => ({
-            id: item.id || item.model,
-            name: item.name || item.id || item.model,
-            paid: Boolean(item.paid)
-          }));
+        const normalized = normalizeModelList(data);
 
         if (normalized.length > 0) {
           setTextModelOptions(normalized);
@@ -434,8 +438,11 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config)
       });
-      if (!response.ok) throw new Error("Image generation failed");
       const data = await response.json();
+      if (!response.ok) {
+        const providerMessage = data?.error?.message || data?.error || data?.message || "Image generation failed";
+        throw new Error(providerMessage);
+      }
       const imageUrlRaw =
         data?.data?.[0]?.url ||
         data?.data?.[0]?.image_url ||
@@ -453,7 +460,8 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       setAiMessages([...nextMessages, { role: "assistant", content: generatedTag }]);
     } catch (error) {
       console.error("Image generation error:", error);
-      setAiMessages([...nextMessages, { role: "assistant", content: "Maaf Kak, gambar belum bisa digenerate sekarang. Coba ulangi dengan format: `/gambar sunset city --ratio 16:9 --model flux` ya 🙏" }]);
+      const msg = error instanceof Error ? error.message : "unknown_error";
+      setAiMessages([...nextMessages, { role: "assistant", content: `Maaf Kak, gambar belum bisa digenerate sekarang.\n\nDetail: ${msg}\n\nCoba: \`/gambar sunset city --ratio 16:9 --model flux\` 🙏` }]);
     } finally {
       setIsGeneratingImage(false);
     }
