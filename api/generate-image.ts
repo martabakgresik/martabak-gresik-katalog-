@@ -65,14 +65,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // fallback terakhir: direct URL mode (tetap pakai api key via query param)
+    // fallback terakhir: direct URL mode mengikuti format docs Pollinations
+    // https://gen.pollinations.ai/image/<prompt>
+    // Hindari bearer/query-key karena browser <img> tidak mengirim Authorization header.
+    const directParams = new URLSearchParams();
+    if (selectedModel && selectedModel !== "flux") {
+      directParams.set("model", selectedModel);
+    }
+    if (width && height) {
+      directParams.set("width", width);
+      directParams.set("height", height);
+    }
+    directParams.set("seed", "-1");
+    directParams.set("enhance", "true");
+    directParams.set("nologo", "true");
+
     const imageUrl =
       `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}` +
-      `?model=${encodeURIComponent(selectedModel)}` +
-      `&width=${encodeURIComponent(width)}` +
-      `&height=${encodeURIComponent(height)}` +
-      `&seed=-1&enhance=true&nologo=true` +
-      (apiKey ? `&key=${encodeURIComponent(apiKey)}` : "");
+      (directParams.toString() ? `?${directParams.toString()}` : "");
 
     return res.status(200).json({
       data: [{ url: imageUrl }],
