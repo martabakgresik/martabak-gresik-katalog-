@@ -35,7 +35,7 @@ export const SEO: React.FC<SEOProps> = ({
     "url": url,
     "telephone": phone,
     "priceRange": "Rp",
-    "servesCuisine": "Indonesian, Martabak, Terang Bulan",
+    "servesCuisine": "Indonesian, Martabak, Terang Bulan, Martabak Telor",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Jl. Usman Sadar No 10",
@@ -97,13 +97,13 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:image" content={image} />
       {phone && <meta property="og:phone_number" content={phone} />}
 
-      {/* Twitter */}
+      {/* Twitter atau X */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={url} />
       <meta name="twitter:title" content={siteTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
-      
+
       {/* Additional Tags */}
       <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
       <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
