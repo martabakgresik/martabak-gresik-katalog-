@@ -45,7 +45,7 @@ interface FavoriteItem {
 const PROMO_TEXT = (code: string, pct: number) => `🔥 Diskon ${pct}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${code})`;
 
 export default function App() {
-  // --- DATABASE & STORE STATE ---
+  // --- STORE STATE (Config-driven) ---
   const [menuSweet, setMenuSweet] = useState(MENU_SWEET);
   const [menuSavory, setMenuSavory] = useState(MENU_SAVORY);
   const [openHour, setOpenHour] = useState(OPEN_HOUR);
