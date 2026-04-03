@@ -62,6 +62,8 @@ export const AiAssistant = ({
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isImageModelsLoading, setIsImageModelsLoading] = useState(false);
   const [isTextModelsLoading, setIsTextModelsLoading] = useState(false);
+  const [imageModelsSource, setImageModelsSource] = useState<"api" | "direct" | "fallback">("fallback");
+  const [textModelsSource, setTextModelsSource] = useState<"api" | "direct" | "fallback">("fallback");
   const [imageModelOptions, setImageModelOptions] = useState<ImageModelOption[]>([
     { id: "flux", name: "Flux Schnell", paid: false }
   ]);
@@ -142,23 +144,34 @@ export const AiAssistant = ({
 
   useEffect(() => {
     let interval: number;
-    if (isAiLoading) {
+    if (isAiLoading || isGeneratingImage) {
       setAiTimer(0);
       interval = window.setInterval(() => {
         setAiTimer((prev) => prev + 10);
       }, 10);
     }
     return () => window.clearInterval(interval);
-  }, [isAiLoading]);
+  }, [isAiLoading, isGeneratingImage]);
 
   useEffect(() => {
     const fetchImageModels = async () => {
       setIsImageModelsLoading(true);
       try {
-        const response = await fetch("/api/image-models");
-        if (!response.ok) throw new Error("Gagal mengambil model gambar");
-        const data = await response.json();
-        const rawList = Array.isArray(data) ? data : data?.models || data?.data || [];
+        let data: any = null;
+        let source: "api" | "direct" = "api";
+        const apiResponse = await fetch("/api/image-models");
+        if (apiResponse.ok) {
+          data = await apiResponse.json();
+        } else {
+          source = "direct";
+          const directResponse = await fetch("https://gen.pollinations.ai/image/models");
+          if (!directResponse.ok) throw new Error("Gagal mengambil model gambar dari provider");
+          data = await directResponse.json();
+        }
+
+        const rawList = Array.isArray(data)
+          ? data
+          : data?.models || data?.data || data?.items || [];
         const normalized = rawList
           .filter((item: any) => item?.id || item?.model)
           .map((item: any) => ({
@@ -169,6 +182,7 @@ export const AiAssistant = ({
 
         if (normalized.length > 0) {
           setImageModelOptions(normalized);
+          setImageModelsSource(source);
           const hasCurrent = normalized.some((m: ImageModelOption) => m.id === selectedImageModel);
           if (!hasCurrent) {
             const firstFree = normalized.find((m: ImageModelOption) => !m.paid)?.id;
@@ -177,6 +191,7 @@ export const AiAssistant = ({
         }
       } catch (error) {
         console.error("Gagal load model gambar:", error);
+        setImageModelsSource("fallback");
       } finally {
         setIsImageModelsLoading(false);
       }
@@ -189,10 +204,21 @@ export const AiAssistant = ({
     const fetchTextModels = async () => {
       setIsTextModelsLoading(true);
       try {
-        const response = await fetch("/api/text-models");
-        if (!response.ok) throw new Error("Gagal mengambil model chat");
-        const data = await response.json();
-        const rawList = Array.isArray(data) ? data : data?.models || data?.data || [];
+        let data: any = null;
+        let source: "api" | "direct" = "api";
+        const apiResponse = await fetch("/api/text-models");
+        if (apiResponse.ok) {
+          data = await apiResponse.json();
+        } else {
+          source = "direct";
+          const directResponse = await fetch("https://gen.pollinations.ai/text/models");
+          if (!directResponse.ok) throw new Error("Gagal mengambil model chat dari provider");
+          data = await directResponse.json();
+        }
+
+        const rawList = Array.isArray(data)
+          ? data
+          : data?.models || data?.data || data?.items || [];
         const normalized = rawList
           .filter((item: any) => item?.id || item?.model)
           .map((item: any) => ({
@@ -203,6 +229,7 @@ export const AiAssistant = ({
 
         if (normalized.length > 0) {
           setTextModelOptions(normalized);
+          setTextModelsSource(source);
           const hasCurrent = normalized.some((m: TextModelOption) => m.id === selectedTextModel);
           if (!hasCurrent) {
             const firstFree = normalized.find((m: TextModelOption) => !m.paid)?.id;
@@ -211,6 +238,7 @@ export const AiAssistant = ({
         }
       } catch (error) {
         console.error("Gagal load model chat:", error);
+        setTextModelsSource("fallback");
       } finally {
         setIsTextModelsLoading(false);
       }
@@ -408,7 +436,16 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       });
       if (!response.ok) throw new Error("Image generation failed");
       const data = await response.json();
-      const imageUrl = data?.data?.[0]?.url || data?.url;
+      const imageUrlRaw =
+        data?.data?.[0]?.url ||
+        data?.data?.[0]?.image_url ||
+        data?.url ||
+        data?.image ||
+        null;
+      const b64ImageRaw = data?.data?.[0]?.b64_json || data?.b64_json || null;
+      const imageUrl = imageUrlRaw
+        ? imageUrlRaw
+        : (b64ImageRaw ? `data:image/jpeg;base64,${b64ImageRaw}` : null);
       if (!imageUrl) throw new Error("URL gambar tidak ditemukan");
 
       const safeName = config.prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 48) || "generated-image";
@@ -782,13 +819,15 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   </div>
                 </div>
               ))}
-              {isAiLoading && (
+              {(isAiLoading || isGeneratingImage) && (
                 <div className="flex justify-start items-end gap-2">
                   <ChatMascot isBusy={true} />
                   <div className="bg-white dark:bg-white/10 p-4 rounded-2xl rounded-tl-none flex flex-col gap-2 min-w-[180px]">
                     <div className="flex items-center gap-3 text-[10px] font-bold dark:text-brand-yellow">
                       <div className="w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin" />
-                      <span className="animate-pulse italic">Sedang meracik jawaban lezat...</span>
+                      <span className="animate-pulse italic">
+                        {isGeneratingImage ? "Sedang membuat gambar..." : "Sedang meracik jawaban lezat..."}
+                      </span>
                     </div>
                     <div className="flex justify-end pr-1">
                       <span className="text-[9px] font-mono opacity-40 tabular-nums">
@@ -839,6 +878,9 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                       </option>
                     ))}
                   </select>
+                  <span className="text-[8px] font-bold opacity-60 uppercase">
+                    {isTextModelsLoading ? "loading" : textModelsSource}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-brand-black/5 dark:bg-white/10">
                   <ImagePlus className="w-3.5 h-3.5 text-brand-orange shrink-0" />
@@ -856,6 +898,9 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                       </option>
                     ))}
                   </select>
+                  <span className="text-[8px] font-bold opacity-60 uppercase">
+                    {isImageModelsLoading ? "loading" : imageModelsSource}
+                  </span>
                 </div>
                 <textarea
                   ref={aiTextareaRef}
