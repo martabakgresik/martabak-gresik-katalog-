@@ -30,6 +30,16 @@ interface AiAssistantProps {
   promoPercent?: number;
   menuSweet?: any[];
   menuSavory?: any[];
+  storeInfo?: {
+    name: string;
+    address: string;
+    phone: string;
+    since: string;
+    openHour: number;
+    closeHour: number;
+    shippingRate: number;
+    maxDistance: number;
+  };
 }
 
 interface ImageModelOption {
@@ -77,15 +87,58 @@ const normalizeModelList = (data: any) => {
 
 export const AiAssistant = ({
   onAddToCart,
-  isOpen = false,
+  isOpen: isAiOpenExternal = false,
   promoCode = PROMO_CODE,
   promoPercent = PROMO_PERCENT,
   menuSweet = MENU_SWEET,
-  menuSavory = MENU_SAVORY
+  menuSavory = MENU_SAVORY,
+  storeInfo = {
+    name: STORE_NAME,
+    address: STORE_ADDRESS,
+    phone: STORE_PHONE,
+    since: SINCE_YEAR,
+    openHour: OPEN_HOUR,
+    closeHour: CLOSE_HOUR,
+    shippingRate: SHIPPING_RATE_PER_KM,
+    maxDistance: MAX_SHIPPING_DISTANCE
+  }
 }: AiAssistantProps) => {
-  const [isAiOpen, setIsAiOpen] = useState(false);
+  const [isAiOpen, setIsAiOpen] = useState(isAiOpenExternal);
+  useEffect(() => setIsAiOpen(isAiOpenExternal), [isAiOpenExternal]);
+
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
+  
+  // Dynamic Menu Context for AI
+  const getMenuContext = () => {
+    let context = "--- MENU TERANG BULAN (MANIS) ---\n";
+    menuSweet.forEach(cat => {
+      context += `Kategori: ${cat.category}\n`;
+      cat.items.forEach((item: any) => {
+        context += `- ${item.name}: Rp${item.price} (${item.description}) ${item.isBestSeller ? "[BEST SELLER]" : ""} ${item.isAvailable === false ? "[STOK HABIS]" : ""}\n`;
+      });
+    });
+
+    context += "\n--- MENU MARTABAK TELOR (ASIN) ---\n";
+    menuSavory.forEach(menu => {
+      context += `Menu: ${menu.title}\n`;
+      menu.variants.forEach((v: any) => {
+        context += `- ${v.type}: ${v.description}\n`;
+        v.prices.forEach((p: any) => {
+          context += `  * ${p.desc || `${p.qty} Telor`}: Rp${p.price} ${p.isBestSeller ? "[BEST SELLER]" : ""}\n`;
+        });
+      });
+    });
+    return context;
+  };
+
+  const getAllImagePaths = () => {
+    const paths: string[] = [];
+    menuSweet.forEach(cat => cat.items.forEach((i: any) => i.image && paths.push(i.image)));
+    menuSavory.forEach(menu => menu.variants.forEach((v: any) => v.prices.forEach((p: any) => p.image && paths.push(p.image))));
+    return [...new Set(paths)].join(', ');
+  };
+
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
     { role: 'assistant', content: `Halo Kak! Saya "Asisten Virtual" dari ${STORE_NAME}. 🌙✨\n\nSenang banget bisa bantu Kakak! Saya bukan cuma jago kasih rekomendasi martabak lumer, tapi Kakak juga bisa tanya apa saja ke saya—mulai dari info menu, promo, sampai hal-hal umum lainnya. Saya siap jawab!\n\n✨ Apa yang bisa saya bantu:\n📑 Lihat katalog lengkap\n🍕 Rekomendasi menu favorit\n💳 Cara order & pembayaran\n🎁 Promo terbaru\n⏰ Jam operasional\n\nKira-kira Kakak mau tanya apa atau lagi pengen jajan apa hari ini? 😊` }
   ]);
@@ -108,6 +161,11 @@ export const AiAssistant = ({
   ]);
   const [aiTimer, setAiTimer] = useState(0);
 
+  const now = new Date();
+  const currentHour = now.getHours();
+  const isStoreOpen = currentHour >= storeInfo.openHour && currentHour < storeInfo.closeHour;
+  const isHoliday = HOLIDAYS.includes(now.toISOString().split('T')[0]);
+
   const aiMessagesEndRef = useRef<HTMLDivElement>(null);
   const aiTextareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -121,40 +179,6 @@ export const AiAssistant = ({
     []
   );
 
-  // --- HELPER: GENERATE MENU CONTEXT FOR AI (MEMOIZED) ---
-  const getMenuContext = useCallback(() => {
-    let context = "DAFTAR MENU REAL-TIME (STOK & PROMO AKTIF):\n\n";
-    
-    context += "=== TERANG BULAN (SWEET) ===\n";
-    menuSweet.forEach(cat => {
-      context += `\nKategori: ${cat.category}\n`;
-      cat.items.forEach((item: any) => {
-        const promoInfo = item.original_price && item.original_price > item.price 
-          ? ` (PROMO! Harga asli: ${item.original_price}, Harga sekarang: ${item.price})` 
-          : ` (Harga: ${item.price})`;
-        const availability = item.isAvailable === false ? " [STOK HABIS]" : "";
-        context += `- ${item.name}: ${promoInfo}${availability}\n  Deskripsi: ${item.description || "N/A"}\n  Gambar: ${item.image}\n`;
-      });
-    });
-
-    context += "\n=== MARTABAK TELOR (SAVORY) ===\n";
-    menuSavory.forEach(cat => {
-      context += `\nKategori: ${cat.title}\n`;
-      cat.variants.forEach((v: any) => {
-        context += `- Varian: ${v.type}\n`;
-        v.prices.forEach((p: any) => {
-          const promoInfo = p.original_price && p.original_price > p.price 
-            ? ` (PROMO! Harga asli: ${p.original_price}, Harga sekarang: ${p.price})` 
-            : ` (Harga: ${p.price})`;
-          const availability = p.isAvailable === false ? " [STOK HABIS]" : "";
-          const desc = p.desc || `${p.qty} Telor`;
-          context += `  * ${desc}: ${promoInfo}${availability}\n    Gambar: ${p.image}\n`;
-        });
-      });
-    });
-
-    return context;
-  }, [menuSweet, menuSavory]);
 
   const scrollAiToBottom = () => {
     aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -162,10 +186,25 @@ export const AiAssistant = ({
 
   useEffect(() => {
     if (isAiOpen) {
+      // Focus on input when opened
+      setTimeout(() => {
+        aiTextareaRef.current?.focus();
+      }, 400);
+
       const container = scrollContainerRef.current;
       if (container) {
-        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 150;
-        if (isNearBottom) {
+        // Force scroll to bottom on open
+        scrollAiToBottom();
+      }
+    }
+  }, [isAiOpen]);
+
+  useEffect(() => {
+    if (isAiOpen) {
+      const container = scrollContainerRef.current;
+      if (container) {
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 200;
+        if (isNearBottom || isAiLoading || isGeneratingImage) {
           scrollAiToBottom();
         }
       }
@@ -175,7 +214,7 @@ export const AiAssistant = ({
         aiTextareaRef.current.style.height = `${Math.min(aiTextareaRef.current.scrollHeight, 120)}px`;
       }
     }
-  }, [aiMessages, isAiOpen, aiInput]);
+  }, [aiMessages, isAiLoading, isGeneratingImage]);
 
   useEffect(() => {
     let interval: number;
@@ -316,11 +355,11 @@ export const AiAssistant = ({
       const currentDate = now.toISOString().split('T')[0];
       const isHoliday = HOLIDAYS.includes(currentDate);
       const currentHour = now.getHours();
-      const isStoreOpen = currentHour >= OPEN_HOUR && currentHour < CLOSE_HOUR;
+      const isStoreOpen = currentHour >= storeInfo.openHour && currentHour < storeInfo.closeHour;
 
-       const systemPrompt = `Anda adalah "Asisten Virtual", asisten virtual ${STORE_NAME} yang cerdas, asik, ramah, dan berpengetahuan luas. Anda bisa menjawab APAPUN yang ditanyakan pelanggan — mulai dari pengetahuan umum, cuaca, tips hidup, lelucon, sampai topik sehari-hari.
+      const systemPrompt = `Anda adalah "Asisten Virtual", asisten virtual ${storeInfo.name} yang cerdas, asik, ramah, dan berpengetahuan luas. Anda bisa menjawab APAPUN yang ditanyakan pelanggan — mulai dari pengetahuan umum, cuaca, tips hidup, lelucon, sampai topik sehari-hari.
 
-PENTING: Anda boleh menjawab topik apa saja, TAPI selalu hubungkan kembali ke ${STORE_NAME} secara natural dan kreatif di akhir jawaban. Contoh:
+PENTING: Anda boleh menjawab topik apa saja, TAPI selalu hubungkan kembali ke ${storeInfo.name} secara natural dan kreatif di akhir jawaban. Contoh:
 - Ditanya soal cuaca → jawab, lalu: "Cuaca dingin gini paling enak makan martabak hangat lho Kak! 🍕"
 - Ditanya soal film → jawab, lalu: "Nonton sambil ngemil Terang Bulan makin seru, Kak!"
 - Ditanya joke → jawab, lalu sisipkan humor martabak
@@ -329,12 +368,12 @@ PENTING: Anda boleh menjawab topik apa saja, TAPI selalu hubungkan kembali ke ${
 Jangan pernah menolak pertanyaan. Jawab dulu dengan benar dan informatif, baru arahkan kembali ke martabak secara halus dan natural. Jangan dipaksakan — kalau bridging-nya tidak natural, cukup tambahkan "Btw, ada yang mau dipesan dari menu kami, Kak? 😊"
 
 INFORMASI TOKO:
-- Nama: ${STORE_NAME}
-- Alamat: ${STORE_ADDRESS}
-- WhatsApp: ${STORE_PHONE}
-- Berdiri sejak: ${SINCE_YEAR}
-- Jam Buka: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
-- Ongkir: Rp${SHIPPING_RATE_PER_KM}/km (maks ${MAX_SHIPPING_DISTANCE} km)
+- Nama: ${storeInfo.name}
+- Alamat: ${storeInfo.address}
+- WhatsApp: ${storeInfo.phone}
+- Berdiri sejak: ${storeInfo.since}
+- Jam Buka: ${storeInfo.openHour}:00 - ${storeInfo.closeHour}:00 WIB
+- Ongkir: Rp${storeInfo.shippingRate}/km (maks ${storeInfo.maxDistance} km)
 - Promo: Diskon ${promoPercent}% dengan kode "${promoCode}"
 
 DATA MENU AKTIF:
@@ -345,14 +384,14 @@ PANDUAN PROMOSI:
 - Sebutkan harga asli (yang dicoret) dan harga baru jika menonjolkan diskon. Contoh: "Lagi murah Kak, dari 25k jadi cuma 20k aja!".
 - Jangan arahkan ke item yang "[STOK HABIS]".
 
-STATUS TOKO SAAT INI: ${isHoliday ? "Toko sedang LIBUR hari ini." : (isStoreOpen ? `Toko sedang BUKA (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).` : `Toko sedang TUTUP (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).`)}
+STATUS TOKO SAAT INI: ${isHoliday ? "Toko sedang LIBUR hari ini." : (isStoreOpen ? `Toko sedang BUKA (Jam operasional: ${storeInfo.openHour}:00 - ${storeInfo.closeHour}:00).` : `Toko sedang TUTUP (Jam operasional: ${storeInfo.openHour}:00 - ${storeInfo.closeHour}:00).`)}
 Waktu sekarang: ${currentTime} WIB
 
 Jika pelanggan ingin memesan dan toko sedang libur atau tutup, beritahukan dengan sangat ramah dan sopan. Berikan rekomendasi menu untuk dipesan nanti, atau arahkan hubungi via WhatsApp jika mendesak.
 
-NOMOR WHATSAPP TOKO: ${STORE_PHONE}
+NOMOR WHATSAPP TOKO: ${storeInfo.phone}
 Saat perlu menampilkan nomor WhatsApp toko, SELALU gunakan format tag berikut (JANGAN tulis nomor mentah):
-#whatsapp|${STORE_PHONE}|Pesan teks opsional
+#whatsapp|${storeInfo.phone}|Pesan teks opsional
 
 GAYA KOMUNIKASI: Gunakan "Kak", "Kakak", "yuk", "gurih poll", "coba deh", "lumer parah", "mantap". Natural, lokal, hangat, dan penuh semangat. Short sentences, reaction positif. Sesekali pakai emoji tapi jangan berlebihan.
 
@@ -364,17 +403,8 @@ JANGAN GUNAKAN XML/JSX tags. GUNAKAN FORMAT INI:
 
 FORMAT HARUS: #product-card|Kategori|Nama Produk|harga_angka|/images/folder/namafile.webp
 
-CONTOH BENAR:
-
-#product-card|Terang Bulan Standard|Keju|17000|/images/sweet/keju.webp
-
-#product-card|Terang Bulan Pandan|Pandan Keju|20000|/images/sweet/pandan-keju.webp
-
-#product-card|Martabak Telor|Martabak 2 Telor|25000|/images/savory/martabak.webp
-
-PATH GAMBAR:
-Sweet: /images/sweet/keju.webp, /images/sweet/coklat.webp, /images/sweet/kacang.webp, /images/sweet/kacang-coklat.webp, /images/sweet/kacang-coklat-keju.webp, /images/sweet/keju-kacang.webp, /images/sweet/keju-coklat.webp, /images/sweet/pandan-keju.webp, /images/sweet/pandan-kacang.webp, /images/sweet/pandan-coklat.webp, /images/sweet/pandan-kacang-coklat.webp, /images/sweet/pandan-coklat-keju.webp, /images/sweet/pandan-kacang-keju.webp, /images/sweet/pandan-kacang-coklat-keju.webp, /images/sweet/redvelvet-keju.webp, /images/sweet/redvelvet-coklat.webp, /images/sweet/redvelvet-kacang.webp, /images/sweet/redvelvet-kacang-coklat.webp, /images/sweet/redvelvet-kacang-coklat-keju.webp, /images/sweet/redvelvet-keju-coklat.webp, /images/sweet/redvelvet-keju-kacang.webp, /images/sweet/blackforest-keju.webp, /images/sweet/blackforest-coklat.webp, /images/sweet/blackforest-kacang.webp, /images/sweet/blackforest-kacang-coklat.webp, /images/sweet/blackforest-kacang-coklat-keju.webp, /images/sweet/blackforest-keju-kacang.webp, /images/sweet/blackforest-keju-coklat.webp
-Savory: /images/savory/martabak.webp, /images/savory/samyang-pedas.webp
+PATH GAMBAR YANG TERSEDIA:
+${getAllImagePaths()}
 
 FITUR KHUSUS:
 - KATALOG: Jika user minta "katalog", "lihat katalog", "download katalog" → WAJIB kirim "#download-catalog"
@@ -393,6 +423,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
         ...newMessages
       ];
 
+      console.log(`[AI Debug] Fetching from /api/chat with model: ${selectedTextModel}`);
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -404,13 +435,17 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
         })
       });
 
-      if (!response.ok) throw new Error('AI Error');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        console.error("[AI Debug] API Response Error:", response.status, errData);
+        throw new Error(`AI Error: ${response.status}`);
+      }
 
       const data = await response.json();
       const assistantMessage = data.choices[0].message.content;
       setAiMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
     } catch (error) {
-      console.error("AI Error:", error);
+      console.error("[AI Debug] Connection Error:", error);
       setAiMessages([...newMessages, { role: 'assistant', content: "Maaf ya, mungkin koneksi saya saat ini sedang bermasalah. Coba tanya bentar lagi ya! 🙏. atau bisa hubungi via whatsapp di nomor berikut: 081330763633" }]);
     } finally {
       setIsAiLoading(false);
@@ -498,6 +533,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
     setIsGeneratingImage(true);
 
     try {
+      console.log(`[AI Debug] Generating image with config:`, config);
       const response = await fetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -505,6 +541,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       });
       const data = await response.json();
       if (!response.ok) {
+        console.error("[AI Debug] Image Generation Error:", response.status, data);
         const providerMessage = data?.error?.message || data?.error || data?.message || "Image generation failed";
         throw new Error(providerMessage);
       }
@@ -524,7 +561,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       const generatedTag = `#generated-image|${imageUrl}|${safeName}.jpg|${config.ratio}|${config.model}|${config.prompt}`;
       setAiMessages([...nextMessages, { role: "assistant", content: generatedTag }]);
     } catch (error) {
-      console.error("Image generation error:", error);
+      console.error("[AI Debug] Image Connection Error:", error);
       const msg = error instanceof Error ? error.message : "unknown_error";
       setAiMessages([...nextMessages, { role: "assistant", content: `Maaf Kak, gambar belum bisa digenerate sekarang.\n\nDetail: ${msg}\n\nCoba: \`/gambar sunset city --ratio 16:9 --model flux\` 🙏` }]);
     } finally {
@@ -826,17 +863,18 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
   );
 
   return (
-    <div className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50 flex flex-col items-center gap-2">
+    <div className={`fixed z-50 flex flex-col items-center gap-2 transition-all duration-500 ${
+      isAiOpen 
+        ? "inset-[5px]" 
+        : "bottom-4 left-4 md:bottom-8 md:left-8"
+    }`}>
       <AnimatePresence>
         {isAiOpen && (
           <motion.div
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
-            className={`bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left ${isExpanded
-              ? 'w-[95vw] md:w-[90vw] max-w-5xl h-[calc(100dvh-120px)] md:h-[calc(100vh-140px)]'
-              : 'w-[300px] sm:w-[350px] h-[450px] max-h-[calc(100dvh-120px)]'
-              }`}
+            className="bg-white dark:bg-brand-black rounded-[1.5rem] md:rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left w-full h-full"
           >
             <div className="bg-brand-black dark:bg-black p-3 sm:p-4 text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -853,13 +891,14 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="flex h-2 w-2 relative">
-                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
-                      <span className={`relative inline-flex rounded-full h-2 w-2 ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isStoreOpen && !isHoliday ? 'bg-green-400' : 'bg-red-400'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${isStoreOpen && !isHoliday ? 'bg-green-500' : 'bg-red-500'}`}></span>
                     </span>
-                    <span className={`text-[9px] sm:text-[10px] font-bold tracking-wider ${isOpen ? 'text-green-400' : 'text-red-400'} whitespace-nowrap`}>
-                      {isOpen ? 'Toko Buka' : 'Toko Tutup'}
+                    <span className={`text-[9px] sm:text-[10px] font-bold tracking-wider ${isStoreOpen && !isHoliday ? 'text-green-400' : 'text-red-400'} whitespace-nowrap`}>
+                      {isStoreOpen && !isHoliday ? 'Toko Buka' : 'Toko Tutup'}
                     </span>
                   </div>
+
                 </div>
               </div>
               <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
