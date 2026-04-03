@@ -39,7 +39,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       })
     });
 
-    const data = await response.json();
+    const rawText = await response.text();
+    let data: any = null;
+    try {
+      data = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      data = { error: { message: rawText || "Non-JSON response from provider" } };
+    }
     return { response, data };
   };
 
@@ -59,10 +65,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // Hindari 403 di direct URL fallback saat model berbayar/tidak diizinkan
-    if (response && !response.ok && selectedModel !== "flux") {
-      selectedModel = "flux";
-    }
+    // Apapun error upstream-nya, fallback direct harus pakai flux (model paling aman)
+    if (response && !response.ok) selectedModel = "flux";
 
     if (response?.ok) {
       return res.status(200).json({
