@@ -1,10 +1,8 @@
 /**
  * 🔐 Admin Authentication Service
- * Menyediakan fungsi verifikasi password untuk akses dashboard
- * 
- * CLIENT-SIDE WARNING: Jangan relai hanya pada validasi client-side!
- * Ini hanya untuk UX. Verifikasi sesungguhnya harus di backend/Supabase.
+ * Menyediakan fungsi verifikasi kredensial untuk akses dashboard
  */
+import { supabase } from './supabase';
 
 /**
  * Generate SHA-256 hash dari password (client-side only)
@@ -19,24 +17,38 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 /**
- * Verifikasi password admin
- * PENTING: Untuk production, implementasikan server-side authentication!
+ * Verifikasi kredensial admin melalui Supabase
  */
-export async function verifyAdminPassword(inputPassword: string): Promise<boolean> {
+export async function verifyAdminCredentials(username: string, password: string): Promise<boolean> {
   try {
-    const adminPasswordHash = import.meta.env.VITE_ADMIN_PASSWORD_HASH;
-    
-    if (!adminPasswordHash) {
-      console.error('VITE_ADMIN_PASSWORD_HASH tidak ditemukan di environment');
+    const { data: settings, error } = await supabase
+      .from('store_settings')
+      .select('admin_username, admin_password')
+      .eq('id', 'main_config')
+      .single();
+
+    if (error || !settings) {
+      console.error('Gagal mengambil kredensial admin:', error);
       return false;
     }
 
-    const inputHash = await hashPassword(inputPassword);
-    return inputHash === adminPasswordHash;
+    // Pengecekan username dan password (plain text sesuai implementasi Dashboard terbaru)
+    return username === settings.admin_username && password === settings.admin_password;
   } catch (error) {
-    console.error('Error verifying admin password:', error);
+    console.error('Error verifying admin credentials:', error);
     return false;
   }
+}
+
+/**
+ * Verifikasi password admin (Deprecated - gunakan verifyAdminCredentials)
+ */
+export async function verifyAdminPassword(inputPassword: string): Promise<boolean> {
+  // Fallback ke pengecekan hash untuk kompatibilitas lama jika diperlukan
+  const adminPasswordHash = import.meta.env.VITE_ADMIN_PASSWORD_HASH;
+  if (!adminPasswordHash) return false;
+  const inputHash = await hashPassword(inputPassword);
+  return inputHash === adminPasswordHash;
 }
 
 /**
