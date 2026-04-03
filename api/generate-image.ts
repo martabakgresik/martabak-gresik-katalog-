@@ -5,7 +5,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const apiKey = process.env.POLLINATIONS_API_KEY || process.env.VITE_POLLINATIONS_API_KEY;
+  const apiKey = (process.env.POLLINATIONS_API_KEY || process.env.VITE_POLLINATIONS_API_KEY || "").trim();
 
   const { prompt, size = "1024x1024" } = req.body || {};
   // Stabilkan endpoint: pakai flux sebagai model aman/default agar tidak kena scope-key mismatch.
@@ -87,12 +87,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}` +
       (directParams.toString() ? `?${directParams.toString()}` : "");
 
-    // 1) Coba dengan key (jika ada), 2) jika forbidden/auth issue, coba tanpa key (public quickstart mode)
-    const withKeyUrl = apiKey ? `${pollinationsUrl}&key=${encodeURIComponent(apiKey)}` : pollinationsUrl;
-    let directResponse = await fetch(withKeyUrl);
-    if (!directResponse.ok && (directResponse.status === 401 || directResponse.status === 403 || directResponse.status === 402)) {
-      directResponse = await fetch(pollinationsUrl);
-    }
+    const directResponse = await fetch(pollinationsUrl, {
+      headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined
+    });
     if (!directResponse.ok) {
       const directError = await directResponse.text().catch(() => "");
       return res.status(directResponse.status).json({
