@@ -15,7 +15,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  const { prompt, model = "flux", size = "1024x1024" } = req.body || {};
+  const { prompt, size = "1024x1024" } = req.body || {};
+  // Stabilkan endpoint: pakai flux sebagai model aman/default agar tidak kena scope-key mismatch.
+  const model = "flux";
   if (!prompt || typeof prompt !== "string") {
     return res.status(400).json({ error: "Prompt wajib diisi" });
   }

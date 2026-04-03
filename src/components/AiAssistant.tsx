@@ -509,7 +509,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         const providerMessage = data?.error?.message || data?.error || data?.message || "Image generation failed";
-        console.warn("Image proxy failed, fallback to direct URL:", providerMessage);
+        throw new Error(typeof providerMessage === "string" ? providerMessage : JSON.stringify(providerMessage));
       } else {
         const imageUrlRaw =
           data?.data?.[0]?.url ||
