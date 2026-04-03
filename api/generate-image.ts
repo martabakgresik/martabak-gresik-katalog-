@@ -71,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // fallback terakhir: direct URL mode mengikuti docs Pollinations + key via query param
+    // fallback terakhir: proxy direct URL via server agar API key tidak terekspos ke browser
     const directParams = new URLSearchParams();
     if (selectedModel && selectedModel !== "flux") {
       directParams.set("model", selectedModel);
@@ -83,19 +83,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     directParams.set("seed", "-1");
     directParams.set("enhance", "true");
     directParams.set("nologo", "true");
-    directParams.set("key", apiKey);
-
-    const imageUrl =
+    const pollinationsUrl =
       `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}` +
-      (directParams.toString() ? `?${directParams.toString()}` : "");
+      (directParams.toString() ? `?${directParams.toString()}&key=${encodeURIComponent(apiKey)}` : `?key=${encodeURIComponent(apiKey)}`);
+
+    const directResponse = await fetch(pollinationsUrl);
+    if (!directResponse.ok) {
+      const directError = await directResponse.text().catch(() => "");
+      return res.status(directResponse.status).json({
+        error: {
+          code: "direct_fallback_failed",
+          message: directError || `Direct fallback failed with status ${directResponse.status}`
+        }
+      });
+    }
+
+    const imageBuffer = Buffer.from(await directResponse.arrayBuffer());
+    const b64 = imageBuffer.toString("base64");
 
     return res.status(200).json({
-      data: [{ url: imageUrl }],
-      meta: { source: "direct-url", model: selectedModel },
-      warning:
-        data?.error?.message ||
-        data?.error ||
-        "Using direct URL fallback"
+      data: [{ b64_json: b64 }],
+      meta: { source: "direct-proxy-b64", model: selectedModel },
+      warning: data?.error?.message || data?.error || "Using direct proxy fallback"
     });
   } catch (error) {
     console.error("Error in image proxy:", error);
