@@ -833,8 +833,8 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
             initial={{ scale: 0.8, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 20 }}
-            className={`bg-white dark:bg-brand-black rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform origin-bottom-left ${isExpanded
-              ? 'w-[95vw] md:w-[90vw] max-w-5xl h-[calc(100dvh-120px)] md:h-[calc(100vh-140px)]'
+            className={`bg-white dark:bg-brand-black border-4 border-brand-black dark:border-brand-yellow shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform ${isExpanded
+              ? 'fixed inset-[5px] w-auto h-auto max-w-none max-h-none rounded-[1.75rem] origin-center'
               : 'w-[300px] sm:w-[350px] h-[450px] max-h-[calc(100dvh-120px)]'
               }`}
           >
@@ -933,7 +933,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
 
             <form
               onSubmit={(e) => { e.preventDefault(); if (aiInput.trim()) generateImageResponse(aiInput); }}
-              className="p-3 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex items-end gap-2"
+              className="p-3 sm:p-4 bg-white dark:bg-black border-t border-brand-black/10 dark:border-white/10 flex items-end gap-2 pr-4 sm:pr-5"
             >
               <div className="flex-grow flex flex-col gap-2">
                 <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-brand-black/5 dark:bg-white/10">
@@ -1003,7 +1003,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
               </div>
               <button
                 disabled={isAiLoading || isGeneratingImage || !aiInput.trim()}
-                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5 group"
+                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5 mr-0.5 group"
                 title="Kirim Pesan"
               >
                 <Send className="w-4 h-4 group-hover:translate-x-0.5 group-active:translate-x-1 transition-transform" />
