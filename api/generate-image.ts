@@ -73,9 +73,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // fallback terakhir: proxy direct URL via server agar API key tidak terekspos ke browser
     const directParams = new URLSearchParams();
-    if (selectedModel && selectedModel !== "flux") {
-      directParams.set("model", selectedModel);
-    }
+    // Selalu kirim model secara eksplisit. Default Pollinations untuk GET /image adalah zimage.
+    // Tanpa parameter ini, fallback flux bisa berubah jadi zimage dan memicu 403.
+    directParams.set("model", selectedModel || "flux");
     if (width && height) {
       directParams.set("width", width);
       directParams.set("height", height);
