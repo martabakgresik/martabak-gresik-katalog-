@@ -13,6 +13,7 @@ const CLOUDFLARE_TEST_SECRET_KEYS = [
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const apiKey = env.POLLINATIONS_API_KEY || env.VITE_POLLINATIONS_API_KEY;
+  console.log(`[Vite] POLLINATIONS_API_KEY status: ${apiKey ? 'Loaded (masked: ' + apiKey.slice(0, 4) + '...)' : 'MISSING'}`);
 
   return {
     plugins: [

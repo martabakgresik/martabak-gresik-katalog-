@@ -475,7 +475,10 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
 
   const extractImageConfig = (rawInput: string) => {
     const input = rawInput.trim();
-    const isImageIntent = /^\/(img|gambar)\b/i.test(input) || /(buat|bikin|generate).*(gambar|image|ilustrasi)/i.test(input);
+    const isImageIntent = 
+      /^\/(img|gambar)\b/i.test(input) || 
+      /^(gambar|img|ilustrasi|foto|buatkan|bikin|tampilkan)\b/i.test(input) ||
+      /(buat|bikin|generate|tampilkan).*(gambar|image|ilustrasi|foto)/i.test(input);
     if (!isImageIntent) return null;
 
     const ratioMatch = input.match(/(?:--ratio\s*=?\s*|rasio\s*)(16:9|9:16|1:1|4:3|3:4|3:2|2:3)/i);
