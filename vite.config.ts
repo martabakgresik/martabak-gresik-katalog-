@@ -12,6 +12,8 @@ const CLOUDFLARE_TEST_SECRET_KEYS = [
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
+  const apiKey = env.POLLINATIONS_API_KEY || env.VITE_POLLINATIONS_API_KEY;
+
   return {
     plugins: [
       react(),
@@ -45,9 +47,33 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      proxy: {
+        '/api/chat': {
+          target: 'https://gen.pollinations.ai',
+          changeOrigin: true,
+          headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+          rewrite: (path) => path.replace(/^\/api\/chat/, '/v1/chat/completions')
+        },
+        '/api/generate-image': {
+          target: 'https://gen.pollinations.ai',
+          changeOrigin: true,
+          headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+          rewrite: (path) => path.replace(/^\/api\/generate-image/, '/v1/images/generations')
+        },
+        '/api/image-models': {
+          target: 'https://gen.pollinations.ai',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/image-models/, '/image/models')
+        },
+        '/api/text-models': {
+          target: 'https://gen.pollinations.ai',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/text-models/, '/text/models')
+        }
+      },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modify - file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };
 });
+
