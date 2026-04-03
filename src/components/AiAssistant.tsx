@@ -258,7 +258,6 @@ export const AiAssistant = ({
     setAiInput("");
 
     try {
-      const apiKey = import.meta.env.VITE_POLLINATIONS_API_KEY;
       const now = new Date();
       const currentTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
       const currentDate = now.toISOString().split('T')[0];
@@ -335,14 +334,19 @@ KARAKTER: "Asisten Virtual" — passionate, cerdas, bisa ngobrol apa saja tapi s
 
 RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri dengan pertanyaan engagement atau rekomendasi menu.`;
 
+      // Construct payload with full message history including system prompt
+      const apiMessages = [
+        { role: 'system', content: systemPrompt },
+        ...newMessages
+      ];
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: userMessage,
-          systemPrompt: systemPrompt,
+          messages: apiMessages,
           model: selectedTextModel
         })
       });
@@ -359,6 +363,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       setIsAiLoading(false);
     }
   };
+
 
   const buildImageSize = (ratio?: string) => {
     switch (ratio) {
