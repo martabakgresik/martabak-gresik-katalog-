@@ -15,7 +15,6 @@ const AI_SUGGESTIONS = [
   "Katalog Menu 📑",
   "Cara Order & Bayar 💳",
   "Rekomendasi Menu 🍕",
-  "/gambar neon cyberpunk city --ratio 16:9 🎨",
   "Promo Hari Ini 🎁",
   "Cek Ongkir 🛵",
   "Pesan Skala Besar 📦",
@@ -486,56 +485,20 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
   };
 
   const generateImageResponse = async (userMessage: string) => {
-    const config = extractImageConfig(userMessage);
-    if (!config) {
-      await getAiResponse(userMessage);
+    if (/^\/(img|gambar)\b/i.test(userMessage.trim())) {
+      const nextMessages = [...aiMessages, { role: "user" as const, content: userMessage }];
+      setAiMessages([
+        ...nextMessages,
+        {
+          role: "assistant",
+          content: "Fitur generate gambar sedang dinonaktifkan dulu ya Kak 🙏\n\nUntuk sementara, saya tetap siap bantu rekomendasi menu, promo, dan info order."
+        }
+      ]);
+      setAiInput("");
       return;
     }
 
-    const nextMessages = [...aiMessages, { role: "user" as const, content: userMessage }];
-    setAiMessages(nextMessages);
-    setAiInput("");
-    setIsGeneratingImage(true);
-
-    try {
-      let imageUrl: string | null = null;
-      let modelUsed = config.model || "flux";
-
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config)
-      });
-      const data = await response.json().catch(() => null);
-      if (!response.ok) {
-        const providerMessage = data?.error?.message || data?.error || data?.message || "Image generation failed";
-        throw new Error(typeof providerMessage === "string" ? providerMessage : JSON.stringify(providerMessage));
-      } else {
-        const imageUrlRaw =
-          data?.data?.[0]?.url ||
-          data?.data?.[0]?.image_url ||
-          data?.url ||
-          data?.image ||
-          null;
-        const b64ImageRaw = data?.data?.[0]?.b64_json || data?.b64_json || null;
-        imageUrl = imageUrlRaw
-          ? imageUrlRaw
-          : (b64ImageRaw ? `data:image/jpeg;base64,${b64ImageRaw}` : null);
-        modelUsed = data?.meta?.model || modelUsed;
-      }
-
-      if (!imageUrl) throw new Error("URL gambar tidak ditemukan dari server proxy");
-
-      const safeName = config.prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 48) || "generated-image";
-      const generatedTag = `#generated-image|${imageUrl}|${safeName}.jpg|${config.ratio}|${modelUsed}|${config.prompt}`;
-      setAiMessages([...nextMessages, { role: "assistant", content: generatedTag }]);
-    } catch (error) {
-      console.error("Image generation error:", error);
-      const msg = error instanceof Error ? error.message : "unknown_error";
-      setAiMessages([...nextMessages, { role: "assistant", content: `Maaf Kak, gambar belum bisa digenerate sekarang.\n\nDetail: ${msg}\n\nCoba: \`/gambar sunset city --ratio 16:9 --model flux\` 🙏` }]);
-    } finally {
-      setIsGeneratingImage(false);
-    }
+    await getAiResponse(userMessage);
   };
 
   const renderMessage = (content: string) => {
@@ -958,40 +921,6 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                     ))}
                   </select>
                 </div>
-                <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-brand-black/5 dark:bg-white/10">
-                  <ImagePlus className="w-3.5 h-3.5 text-brand-orange shrink-0" />
-                  <label className="text-[9px] font-bold uppercase tracking-wide dark:text-white/80">Image</label>
-                  <select
-                    value={selectedImageModel}
-                    onChange={(e) => setSelectedImageModel(e.target.value)}
-                    className="flex-1 bg-transparent text-[10px] font-bold outline-none dark:text-white"
-                    disabled={isImageModelsLoading}
-                    title="Model gambar default"
-                  >
-                    {imageModelOptions.map((model) => (
-                      <option key={model.id} value={model.id}>
-                        {model.name || model.id}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="w-[1px] h-3 bg-brand-black/20 dark:bg-white/20 mx-1" />
-                  <div className="flex items-center gap-1">
-                    <Maximize2 className="w-2.5 h-2.5 opacity-50" />
-                    <select
-                      value={selectedRatio}
-                      onChange={(e) => setSelectedRatio(e.target.value)}
-                      className="bg-transparent text-[10px] font-bold outline-none dark:text-white"
-                      title="Rasio Gambar"
-                    >
-                      {ASPECT_RATIOS.map((r) => (
-                        <option key={r} value={r}>{r}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-
-
                 <textarea
                   ref={aiTextareaRef}
                   rows={1}
@@ -1003,7 +932,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                       if (aiInput.trim() && !isAiLoading && !isGeneratingImage) generateImageResponse(aiInput);
                     }
                   }}
-                  placeholder="Tanya apa aja atau /gambar prompt --ratio 16:9"
+                  placeholder="Tanya apa aja seputar menu, promo, atau order"
                   className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
                 />
               </div>
