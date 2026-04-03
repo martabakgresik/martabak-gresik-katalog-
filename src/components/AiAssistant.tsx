@@ -438,6 +438,25 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
     }
   };
 
+  const buildDirectImageUrl = (prompt: string, model?: string, size?: string) => {
+    const [width = "1024", height = "1024"] = String(size || "1024x1024").split("x");
+    const params = new URLSearchParams({
+      width,
+      height,
+      seed: "-1",
+      enhance: "true",
+      nologo: "true"
+    });
+
+    if (model && model !== "flux") {
+      params.set("model", model);
+    } else {
+      params.set("model", "flux");
+    }
+
+    return `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}?${params.toString()}`;
+  };
+
   const extractImageConfig = (rawInput: string) => {
     const input = rawInput.trim();
     const isImageIntent = /^\/(img|gambar)\b/i.test(input) || /(buat|bikin|generate).*(gambar|image|ilustrasi)/i.test(input);
@@ -498,30 +517,39 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
     setIsGeneratingImage(true);
 
     try {
+      let imageUrl: string | null = null;
+      let modelUsed = config.model || "flux";
+
       const response = await fetch("/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(config)
       });
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
       if (!response.ok) {
         const providerMessage = data?.error?.message || data?.error || data?.message || "Image generation failed";
-        throw new Error(providerMessage);
+        console.warn("Image proxy failed, fallback to direct URL:", providerMessage);
+      } else {
+        const imageUrlRaw =
+          data?.data?.[0]?.url ||
+          data?.data?.[0]?.image_url ||
+          data?.url ||
+          data?.image ||
+          null;
+        const b64ImageRaw = data?.data?.[0]?.b64_json || data?.b64_json || null;
+        imageUrl = imageUrlRaw
+          ? imageUrlRaw
+          : (b64ImageRaw ? `data:image/jpeg;base64,${b64ImageRaw}` : null);
+        modelUsed = data?.meta?.model || modelUsed;
       }
-      const imageUrlRaw =
-        data?.data?.[0]?.url ||
-        data?.data?.[0]?.image_url ||
-        data?.url ||
-        data?.image ||
-        null;
-      const b64ImageRaw = data?.data?.[0]?.b64_json || data?.b64_json || null;
-      const imageUrl = imageUrlRaw
-        ? imageUrlRaw
-        : (b64ImageRaw ? `data:image/jpeg;base64,${b64ImageRaw}` : null);
-      if (!imageUrl) throw new Error("URL gambar tidak ditemukan");
+
+      if (!imageUrl) {
+        modelUsed = "flux";
+        imageUrl = buildDirectImageUrl(config.prompt, modelUsed, config.size);
+      }
 
       const safeName = config.prompt.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 48) || "generated-image";
-      const generatedTag = `#generated-image|${imageUrl}|${safeName}.jpg|${config.ratio}|${config.model}|${config.prompt}`;
+      const generatedTag = `#generated-image|${imageUrl}|${safeName}.jpg|${config.ratio}|${modelUsed}|${config.prompt}`;
       setAiMessages([...nextMessages, { role: "assistant", content: generatedTag }]);
     } catch (error) {
       console.error("Image generation error:", error);
