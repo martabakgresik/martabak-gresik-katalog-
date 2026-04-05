@@ -43,10 +43,38 @@ interface FavoriteItem {
   category?: string;
 }
 
-const PROMO_TEXT = (code: string, pct: number) => `🔥 Diskon ${pct}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${code})`;
+const UI_COPY = {
+  id: {
+    promoText: (code: string, pct: number) => `🔥 Diskon ${pct}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${code})`,
+    share: "Bagikan",
+    toLight: "Ganti ke Terang",
+    toDark: "Ganti ke Gelap",
+    holidayClosed: "LIBUR (TUTUP)",
+    open: "BUKA",
+    closedAt: (openHour: number) => `TUTUP (Buka ${openHour}:00)`,
+    heroSubtitle: "Terang Bulan dan Martabak Telor",
+    openingHours: "Jam Buka",
+    backToTop: "Kembali ke Atas",
+    viewOrder: "Lihat Pesanan",
+  },
+  en: {
+    promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
+    share: "Share",
+    toLight: "Switch to Light",
+    toDark: "Switch to Dark",
+    holidayClosed: "HOLIDAY (CLOSED)",
+    open: "OPEN",
+    closedAt: (openHour: number) => `CLOSED (Open ${openHour}:00)`,
+    heroSubtitle: "Sweet Martabak and Savory Egg Martabak",
+    openingHours: "Opening Hours",
+    backToTop: "Back to Top",
+    viewOrder: "View Order",
+  },
+} as const;
 
 export default function App() {
   const { uiLang, setUiLang } = useUiLanguage();
+  const t = UI_COPY[uiLang];
 
   // --- STORE STATE (Config-driven) ---
   const [menuSweet, setMenuSweet] = useState(MENU_SWEET);
@@ -291,7 +319,7 @@ export default function App() {
 
   const shareGeneral = async (platform: string) => {
     const title = "Martabak Gresik";
-    const text = "Cek Martabak Gresik - Terang Bulan dan Martabak Telor Terenak!";
+    const text = "Cek Martabak Gresik - {t.heroSubtitle} Terenak!";
     const url = APP_URL;
 
     // Use Web Share API if available (best for mobile)
@@ -403,7 +431,7 @@ export default function App() {
             exit={{ y: -50 }}
             className="bg-brand-orange text-brand-black text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
           >
-              {PROMO_TEXT(activePromoCode, activePromoPercent)}
+              {t.promoText(activePromoCode, activePromoPercent)}
             <button
               onClick={() => setShowPromo(false)}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
@@ -423,7 +451,7 @@ export default function App() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsGeneralShareOpen(true)}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
-            title="Bagikan"
+            title={t.share}
           >
             <Send className="w-5 h-5" />
           </motion.button>
@@ -436,7 +464,7 @@ export default function App() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsDarkMode(!isDarkMode)}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
-            title={isDarkMode ? "Ganti ke Terang" : "Ganti ke Gelap"}
+            title={isDarkMode ? t.toLight : t.toDark}
           >
             {isDarkMode ? <Sun className="w-5 h-5 text-brand-yellow" /> : <Moon className="w-5 h-5" />}
           </motion.button>
@@ -473,7 +501,7 @@ export default function App() {
                 </div>
                 <div className={`px-3 py-0.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border-2 ${isHoliday ? 'bg-orange-600 border-orange-700' : isOpen ? 'bg-green-500 border-green-600' : 'bg-red-500 border-red-600'} text-white whitespace-nowrap`}>
                   <div className={`w-2 h-2 rounded-full animate-pulse ${isHoliday || isOpen ? 'bg-white' : 'bg-white/50'}`} />
-                  {isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'BUKA' : 'TUTUP (Buka 16:00)'}
+                  {isHoliday ? t.holidayClosed : isOpen ? t.open : t.closedAt(openHour)}
                 </div>
               </div>
               <motion.h1
@@ -489,7 +517,7 @@ export default function App() {
                 <span className="text-brand-yellow font-display">Gresik</span>
               </motion.h1>
               <p className="text-xs md:text-2xl font-medium text-brand-orange italic mt-1 md:mt-2">
-                Terang Bulan dan Martabak Telor
+                {t.heroSubtitle}
               </p>
             </div>
           </div>
@@ -513,7 +541,7 @@ export default function App() {
             </a>
             <div className="flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-brand-orange" />
-              <span>Jam Buka: {openHour}.00 - {closeHour}.00 WIB</span>
+              <span>{t.openingHours}: {openHour}.00 - {closeHour}.00 WIB</span>
             </div>
           </motion.div>
 
@@ -1087,7 +1115,7 @@ export default function App() {
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               className="p-3 md:p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90"
-              title="Kembali ke Atas"
+              title={t.backToTop}
             >
               <ArrowUp className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-y-1 transition-transform" />
             </motion.button>
@@ -1109,7 +1137,7 @@ export default function App() {
                   {totalItems}
                 </span>
               </div>
-              <span className="font-bold text-sm md:text-base pr-1 md:pr-2 tracking-wide uppercase">Lihat Pesanan</span>
+              <span className="font-bold text-sm md:text-base pr-1 md:pr-2 tracking-wide uppercase">{t.viewOrder}</span>
             </motion.button>
           )}
         </AnimatePresence>
