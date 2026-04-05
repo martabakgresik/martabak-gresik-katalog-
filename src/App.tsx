@@ -97,6 +97,39 @@ const UI_COPY = {
     usePromo: "Pakai",
     noFavorites: "Belum ada favorit",
     addFavoriteHint: "Klik ikon hati pada menu untuk menambahkan",
+    estimatedShippingLabel: "Estimasi Ongkir",
+    discountLabel: "Diskon",
+    finalTotal: "Total Akhir",
+    notePlaceholderSweet: "Catatan (opsional)... Misal: gulanya dikit aja ya kak",
+    notePlaceholderSavory: "Catatan (opsional)... Misal: jangan dikasih acar",
+    addButton: "Tambah",
+    extraOptions: "Opsi Tambahan",
+    optional: "(Opsional)",
+    addToCart: "Tambah ke Keranjang",
+    shareMenuTitle: "Bagikan Menu",
+    menuSummary: "Ringkasan Menu:",
+    noteLabel: "Catatan",
+    estimatedTotal: "Estimasi Total",
+    includesShippingPromo: "Sudah termasuk ongkir & diskon promo",
+    continueToPayment: "Lanjut ke Pembayaran",
+    enterNameAlert: "Mohon masukkan nama Anda.",
+    enterAddressAlert: "Mohon masukkan alamat lengkap pengiriman.",
+    holidayNow: "Kami Sedang Libur",
+    locationTooFar: "Lokasi Terlalu Jauh",
+    confirmViaWhatsApp: "Konfirmasi via WhatsApp",
+    autoOrderHint: "Klik tombol di atas untuk mengirim pesanan secara otomatis",
+    sendToWhatsApp: "Kirim ke WhatsApp",
+    copiedSuccess: "Berhasil Disalin!",
+    copyMessage: "Salin Pesan",
+    shareCatalogTitle: "Bagikan Katalog",
+    inviteFriends: "Ajak teman jajan Martabak!",
+    copiedShort: "Disalin!",
+    copyLink: "Salin Link",
+    orShareVia: "Atau bagikan via:",
+    shareInstagram: "Bagikan ke Instagram",
+    shareTikTok: "Bagikan ke TikTok",
+    orderConfirmationTitle: "Konfirmasi Pesanan",
+    reviewOrder: "Periksa kembali pesanan Anda",
   },
   en: {
     promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
@@ -151,6 +184,39 @@ const UI_COPY = {
     usePromo: "Apply",
     noFavorites: "No favorites yet",
     addFavoriteHint: "Click the heart icon on a menu to add it",
+    estimatedShippingLabel: "Estimated Shipping",
+    discountLabel: "Discount",
+    finalTotal: "Final Total",
+    notePlaceholderSweet: "Note (optional)... e.g. less sugar please",
+    notePlaceholderSavory: "Note (optional)... e.g. no pickles",
+    addButton: "Add",
+    extraOptions: "Extra Options",
+    optional: "(Optional)",
+    addToCart: "Add to Cart",
+    shareMenuTitle: "Share Menu",
+    menuSummary: "Menu Summary:",
+    noteLabel: "Note",
+    estimatedTotal: "Estimated Total",
+    includesShippingPromo: "Includes shipping fee & promo discount",
+    continueToPayment: "Continue to Payment",
+    enterNameAlert: "Please enter your name.",
+    enterAddressAlert: "Please enter the full delivery address.",
+    holidayNow: "We are on Holiday",
+    locationTooFar: "Location Too Far",
+    confirmViaWhatsApp: "Confirm via WhatsApp",
+    autoOrderHint: "Click the button above to send your order automatically",
+    sendToWhatsApp: "Send to WhatsApp",
+    copiedSuccess: "Copied Successfully!",
+    copyMessage: "Copy Message",
+    shareCatalogTitle: "Share Catalog",
+    inviteFriends: "Invite friends to enjoy Martabak!",
+    copiedShort: "Copied!",
+    copyLink: "Copy Link",
+    orShareVia: "Or share via:",
+    shareInstagram: "Share to Instagram",
+    shareTikTok: "Share to TikTok",
+    orderConfirmationTitle: "Order Confirmation",
+    reviewOrder: "Review your order",
   },
 } as const;
 
@@ -1521,21 +1587,21 @@ export default function App() {
                           </div>
                           {deliveryMethod === 'delivery' && distance > 0 && (
                             <div className="flex justify-between items-center opacity-60">
-                              <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">Estimasi Ongkir</span>
+                              <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">{t.estimatedShippingLabel}</span>
                               <span className="text-sm font-black dark:text-white">+{formatPrice(shippingCost)}</span>
                             </div>
                           )}
                           {discountAmount > 0 && (
                             <div className="flex justify-between items-center text-brand-orange">
                               <span className="text-[11px] font-black uppercase tracking-widest italic animate-pulse">
-                                Diskon (<span className="text-brand-black dark:text-brand-yellow">{promoCode}</span>)
+                                {t.discountLabel} (<span className="text-brand-black dark:text-brand-yellow">{promoCode}</span>)
                               </span>
                               <span className="text-sm font-black">-{formatPrice(discountAmount)}</span>
                             </div>
                           )}
                           <div className="h-0.5 bg-brand-black/10 dark:bg-white/10 my-1"></div>
                           <div className="flex justify-between items-center pt-2">
-                            <span className="text-sm font-black uppercase italic tracking-wider dark:text-white">Total Akhir</span>
+                            <span className="text-sm font-black uppercase italic tracking-wider dark:text-white">{t.finalTotal}</span>
                             <span className="text-2xl font-black text-brand-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
                           </div>
                         </div>
@@ -1592,8 +1658,8 @@ export default function App() {
                         </div>
                         <textarea
                           placeholder={item.category?.toLowerCase().includes('terang bulan') 
-                            ? "Catatan (opsional)... Misal: gulanya dikit aja ya kak" 
-                            : "Catatan (opsional)... Misal: jangan dikasih acar"}
+                            ? t.notePlaceholderSweet
+                            : t.notePlaceholderSavory}
                           value={item.note || ""}
                           onChange={(e) => updateNote(item.id, e.target.value)}
                           className="mt-2 w-full text-[10px] p-3 bg-brand-black/5 dark:bg-white/10 rounded-xl outline-none focus:ring-2 focus:ring-brand-orange transition-all dark:text-white dark:placeholder:text-white/20 resize-none min-h-[60px]"
@@ -1634,7 +1700,7 @@ export default function App() {
                             className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-colors active:scale-95 flex items-center gap-2"
                           >
                             <Plus className="w-3 h-3" />
-                            Tambah
+                            {t.addButton}
                           </button>
                         </div>
                       </div>
@@ -1648,12 +1714,12 @@ export default function App() {
                 <div className="p-6 bg-white dark:bg-brand-black border-t-4 border-brand-black dark:border-brand-yellow shadow-[0_-10px_30px_rgba(0,0,0,0.1)] shrink-0 z-20">
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-black uppercase opacity-40 dark:text-white">Estimasi Total</span>
+                      <span className="text-[10px] font-black uppercase opacity-40 dark:text-white">{t.estimatedTotal}</span>
                       <span className="text-xl font-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
                     </div>
                     {isCheckoutPhase && (
                       <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest text-center">
-                        Sudah termasuk ongkir & diskon promo
+                        {t.includesShippingPromo}
                       </p>
                     )}
                   </div>
@@ -1663,7 +1729,7 @@ export default function App() {
                       onClick={() => setIsCheckoutPhase(true)}
                       className="w-full py-4 rounded-2xl bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black font-black uppercase italic flex items-center justify-center gap-3 transition-all shadow-xl hover:scale-[1.02] active:scale-95 group"
                     >
-                      <span className="text-sm">Lanjut ke Pembayaran</span>
+                      <span className="text-sm">{t.continueToPayment}</span>
                       <ArrowUp className="w-5 h-5 rotate-90 group-hover:translate-x-1 transition-transform" />
                     </button>
                   ) : (
@@ -1671,11 +1737,11 @@ export default function App() {
                       <button
                         onClick={() => {
                           if (!customerName.trim()) {
-                            alert("Mohon masukkan nama Anda.");
+                            alert(t.enterNameAlert);
                             return;
                           }
                           if (deliveryMethod === 'delivery' && !customerAddress.trim()) {
-                            alert("Mohon masukkan alamat lengkap pengiriman.");
+                            alert(t.enterAddressAlert);
                             return;
                           }
                           setIsOrderConfirmationOpen(true);
@@ -1687,10 +1753,10 @@ export default function App() {
                           }`}
                       >
                         <MessageCircle className="w-6 h-6" />
-                        <span className="text-sm">{isHoliday ? 'Kami Sedang Libur' : distance > MAX_SHIPPING_DISTANCE ? 'Lokasi Terlalu Jauh' : 'Konfirmasi via WhatsApp'}</span>
+                        <span className="text-sm">{isHoliday ? t.holidayNow : distance > MAX_SHIPPING_DISTANCE ? t.locationTooFar : t.confirmViaWhatsApp}</span>
                       </button>
                       <p className="text-[9px] text-center opacity-40 font-bold uppercase tracking-widest">
-                        Klik tombol di atas untuk mengirim pesanan secara otomatis
+                        {t.autoOrderHint}
                       </p>
                     </div>
                   )}
@@ -1740,7 +1806,7 @@ export default function App() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow leading-tight">
-                      Opsi Tambahan <span className="text-sm font-bold text-brand-orange lowercase not-italic">(Opsional)</span>
+                      {t.extraOptions} <span className="text-sm font-bold text-brand-orange lowercase not-italic">{t.optional}</span>
                     </h3>
                     <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-1">Pilih topping ekstra supaya makin mantap Kak!</p>
                     <p className="text-xs font-bold text-brand-orange uppercase tracking-wider mb-2">{selectedItemForAddon.name}</p>
@@ -1860,7 +1926,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <ShoppingBag className="w-5 h-5" />
-                  Tambah ke Keranjang
+                  {t.addToCart}
                 </div>
                 <div className="text-brand-orange dark:text-brand-black/70">
                   {formatPrice(selectedItemForAddon.price + selectedAddons.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0))}
@@ -1890,8 +1956,8 @@ export default function App() {
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Bagikan Menu</h3>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">Kirim ke teman via WhatsApp</p>
+                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">{t.shareMenuTitle}</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">{t.sendToWhatsApp}</p>
                 </div>
                 <button
                   onClick={() => setShareItem(null)}
@@ -1913,7 +1979,7 @@ export default function App() {
                   className="w-full bg-[#25D366] text-white py-4 rounded-xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  Kirim ke WhatsApp
+                  {t.sendToWhatsApp}
                 </button>
                 <button
                   onClick={() => {
@@ -1923,7 +1989,7 @@ export default function App() {
                   className="w-full bg-brand-black text-white py-4 rounded-xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
                 >
                   {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                  {copied ? "Berhasil Disalin!" : "Salin Pesan"}
+                  {copied ? t.copiedSuccess : t.copyMessage}
                 </button>
               </div>
             </motion.div>
@@ -1950,8 +2016,8 @@ export default function App() {
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Bagikan Katalog</h3>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">Ajak teman jajan Martabak!</p>
+                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">{t.shareCatalogTitle}</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">{t.inviteFriends}</p>
                 </div>
                 <button
                   onClick={() => setIsGeneralShareOpen(false)}
@@ -1988,23 +2054,23 @@ export default function App() {
                   className="bg-brand-orange text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
                 >
                   {copied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
-                  <span className="text-[10px] font-bold uppercase">{copied ? "Disalin!" : "Salin Link"}</span>
+                  <span className="text-[10px] font-bold uppercase">{copied ? t.copiedShort : t.copyLink}</span>
                 </button>
               </div>
 
               <div className="text-center space-y-2">
-                <p className="text-[10px] font-bold uppercase opacity-40 dark:text-white/40">Atau bagikan via:</p>
+                <p className="text-[10px] font-bold uppercase opacity-40 dark:text-white/40">{t.orShareVia}</p>
                 <div className="flex justify-center gap-4">
                   <button 
                     onClick={() => shareGeneral("instagram")} 
-                    title="Bagikan ke Instagram"
+                    title={t.shareInstagram}
                     className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white"
                   >
                     <Instagram className="w-5 h-5" />
                   </button>
                   <button 
                     onClick={() => shareGeneral("tiktok")} 
-                    title="Bagikan ke TikTok"
+                    title={t.shareTikTok}
                     className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white"
                   >
                     <Music2 className="w-5 h-5" />
@@ -2034,8 +2100,8 @@ export default function App() {
             >
               <div className="p-6 bg-brand-black dark:bg-black text-white flex justify-between items-center shrink-0">
                 <div>
-                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Konfirmasi Pesanan</h3>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">Periksa kembali pesanan Anda</p>
+                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">{t.orderConfirmationTitle}</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">{t.reviewOrder}</p>
                 </div>
                 <button
                   onClick={() => setIsOrderConfirmationOpen(false)}
@@ -2048,14 +2114,14 @@ export default function App() {
               <div className="flex-grow overflow-y-auto p-6 space-y-6">
                 {/* Order Summary */}
                 <div className="space-y-4">
-                  <h4 className="font-black uppercase italic text-sm border-b-2 border-brand-black dark:border-brand-yellow pb-2 dark:text-brand-yellow">Ringkasan Menu:</h4>
+                  <h4 className="font-black uppercase italic text-sm border-b-2 border-brand-black dark:border-brand-yellow pb-2 dark:text-brand-yellow">{t.menuSummary}</h4>
                   <div className="space-y-3">
                     {cart.map((item) => (
                       <div key={item.id} className="flex justify-between items-start gap-4">
                         <div className="flex-grow">
                           <p className="font-bold text-sm leading-tight dark:text-white">{item.name}</p>
                           {item.category && <p className="text-[10px] uppercase font-bold opacity-40 dark:text-brand-yellow/60">{item.category}</p>}
-                          {item.note && <p className="text-[10px] italic opacity-60 dark:text-white/40">Catatan: {item.note}</p>}
+                          {item.note && <p className="text-[10px] italic opacity-60 dark:text-white/40">{t.noteLabel}: {item.note}</p>}
                           <p className="text-xs opacity-60 dark:text-white/40">{item.quantity}x {formatPrice(item.price)}</p>
                         </div>
                         <span className="font-black text-sm shrink-0 dark:text-white">{formatPrice(item.price * item.quantity)}</span>
