@@ -77,6 +77,26 @@ const UI_COPY = {
     emptyCart: "Keranjang Kosong",
     pickMenu: "Pilih menu favoritmu sekarang!",
     openInGoogleMaps: "Buka di Google Maps",
+    shippingData: "Data Pengiriman",
+    fullName: "Nama Lengkap",
+    fullAddress: "Alamat Lengkap",
+    addressPlaceholder: "Contoh: Jl. Usman Sadar No. 12, RT 01/RW 02, Dekat Masjid Al-Ikhlas...",
+    aiPleaseWait: "⏳ mohon tunggu...",
+    aiFixAddress: "Perbaiki Alamat dengan AI",
+    deliverToAddress: "Kirim ke Alamat",
+    pickupSelf: "Ambil Sendiri",
+    deliveryDistance: "Jarak Pengiriman",
+    aiVerified: "DIVERIFIKASI AI ✔️",
+    maxDistance: "(MAKS 10KM)",
+    enableSliderHint: "⚠️ Klik \"Perbaiki Alamat dengan AI\" untuk mengaktifkan slider",
+    shippingEstimate: "Estimasi Ongkir",
+    pickupMethod: "Metode: Ambil Sendiri",
+    pickupDesc: "Silakan ambil pesanan Anda di outlet kami. Gratis ongkir!",
+    havePromoCode: "Punya Kode Promo?",
+    promoApplied: "Terpasang!",
+    usePromo: "Pakai",
+    noFavorites: "Belum ada favorit",
+    addFavoriteHint: "Klik ikon hati pada menu untuk menambahkan",
   },
   en: {
     promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
@@ -111,6 +131,26 @@ const UI_COPY = {
     emptyCart: "Cart is Empty",
     pickMenu: "Pick your favorite menu now!",
     openInGoogleMaps: "Open in Google Maps",
+    shippingData: "Delivery Details",
+    fullName: "Full Name",
+    fullAddress: "Full Address",
+    addressPlaceholder: "Example: 12 Usman Sadar St, RT 01/RW 02, near Al-Ikhlas Mosque...",
+    aiPleaseWait: "⏳ please wait...",
+    aiFixAddress: "Improve Address with AI",
+    deliverToAddress: "Deliver to Address",
+    pickupSelf: "Self Pickup",
+    deliveryDistance: "Delivery Distance",
+    aiVerified: "AI VERIFIED ✔️",
+    maxDistance: "(MAX 10KM)",
+    enableSliderHint: "⚠️ Click \"Improve Address with AI\" to enable slider",
+    shippingEstimate: "Estimated Shipping",
+    pickupMethod: "Method: Self Pickup",
+    pickupDesc: "Please pick up your order at our outlet. Free shipping!",
+    havePromoCode: "Have a Promo Code?",
+    promoApplied: "Applied!",
+    usePromo: "Apply",
+    noFavorites: "No favorites yet",
+    addFavoriteHint: "Click the heart icon on a menu to add it",
   },
 } as const;
 
@@ -1274,12 +1314,12 @@ export default function App() {
                         <div className="space-y-3 bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 dark:border-white/5 shadow-inner">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-5 bg-brand-orange rounded-full"></div>
-                            <span className="text-xs font-black uppercase tracking-wider dark:text-brand-yellow">Data Pengiriman</span>
+                            <span className="text-xs font-black uppercase tracking-wider dark:text-brand-yellow">{t.shippingData}</span>
                           </div>
                           
                           <div className="space-y-3">
                             <div>
-                              <label className="text-[10px] font-black uppercase opacity-40 mb-1 block px-1">Nama Lengkap</label>
+                              <label className="text-[10px] font-black uppercase opacity-40 mb-1 block px-1">{t.fullName}</label>
                               <input
                                 type="text"
                                 placeholder="..."
@@ -1293,9 +1333,9 @@ export default function App() {
                               <div className="space-y-3">
                                 <div className="space-y-3">
                                   <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase opacity-40 block px-1">Alamat Lengkap</label>
+                                    <label className="text-[10px] font-black uppercase opacity-40 block px-1">{t.fullAddress}</label>
                                     <textarea
-                                      placeholder="Contoh: Jl. Usman Sadar No. 12, RT 01/RW 02, Dekat Masjid Al-Ikhlas..."
+                                      placeholder={t.addressPlaceholder}
                                       value={customerAddress}
                                       onChange={(e) => setCustomerAddress(e.target.value)}
                                       rows={4}
@@ -1329,7 +1369,7 @@ export default function App() {
                                     className="w-full bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black py-3.5 rounded-2xl text-[11px] font-black uppercase flex items-center justify-center gap-3 transition-all hover:bg-brand-orange hover:text-white disabled:opacity-40 disabled:grayscale shadow-lg active:scale-95"
                                   >
                                     <Sparkles className={`w-4 h-4 ${isAiProcessing ? 'animate-spin' : 'animate-pulse'}`} />
-                                    {isAiProcessing ? '⏳ mohon tunggu...' : 'Perbaiki Alamat dengan AI'}
+                                    {isAiProcessing ? t.aiPleaseWait : t.aiFixAddress}
                                   </button>
                                 </div>
                               </div>
@@ -1351,7 +1391,7 @@ export default function App() {
                                 }`}
                             >
                               <MapPin className="w-3.5 h-3.5" />
-                              Kirim ke Alamat
+                              {t.deliverToAddress}
                             </button>
                             <button
                               onClick={() => {
@@ -1364,22 +1404,22 @@ export default function App() {
                                 }`}
                             >
                               <ShoppingBag className="w-3.5 h-3.5" />
-                              Ambil Sendiri
+                              {t.pickupSelf}
                             </button>
                           </div>
 
                           {deliveryMethod === 'delivery' && (
                             <div className="bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 shadow-sm">
                               <div className="flex justify-between items-center mb-3">
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Jarak Pengiriman</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">{t.deliveryDistance}</span>
                                 <div className="flex items-center gap-2">
                                   {isDistanceAiVerified && (
                                     <span className="text-[10px] font-black bg-brand-white/80 text-brand-black px-2 py-0.5 rounded-lg border border-brand-black/60 animate-pulse">
-                                    DIVERIFIKASI AI ✔️
+                                    {t.aiVerified}
                                     </span>
                                   )}
                                   <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > maxDistance ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg'} ${isDistanceAiVerified && ! (distance > maxDistance) ? 'ring-2 ring-brand-orange ring-offset-2 dark:ring-offset-brand-black animate-in zoom-in' : ''}`}>
-                                    {distance} KM {distance > maxDistance && " (MAKS 10KM)"}
+                                    {distance} KM {distance > maxDistance && ` ${t.maxDistance}`}
                                   </span>
                                 </div>
                               </div>
@@ -1398,7 +1438,7 @@ export default function App() {
                               />
                               {!isDistanceAiVerified && (
                                 <p className="text-[10px] mt-2 font-black text-brand-black/40 dark:text-brand-yellow/40 uppercase tracking-tighter text-center">
-                                  ⚠️ Klik "Perbaiki Alamat dengan AI" untuk mengaktifkan slider
+                                  {t.enableSliderHint}
                                 </p>
                               )}
                               <div className="flex justify-between mt-2 opacity-50 text-[9px] font-black tracking-widest">
@@ -1409,7 +1449,7 @@ export default function App() {
                               </div>
                               {distance > 0 && distance <= maxDistance && (
                                 <p className="text-[10px] mt-4 font-black text-brand-black text-center uppercase tracking-widest bg-brand-black/5 py-2 rounded-xl border border-brand-orange/20">
-                                  Estimasi Ongkir: + {formatPrice(shippingCost)}
+                                  {t.shippingEstimate}: + {formatPrice(shippingCost)}
                                 </p>
                               )}
                             </div>
@@ -1421,8 +1461,8 @@ export default function App() {
                                 <MapPin className="w-5 h-5 text-white" />
                               </div>
                               <div>
-                                <p className="text-xs font-black text-green-600 dark:text-green-500 uppercase tracking-wider">Metode: Ambil Sendiri</p>
-                                <p className="text-[10px] font-bold opacity-60 dark:text-white/60 mt-0.5">Silakan ambil pesanan Anda di outlet kami. Gratis ongkir!</p>
+                                <p className="text-xs font-black text-green-600 dark:text-green-500 uppercase tracking-wider">{t.pickupMethod}</p>
+                                <p className="text-[10px] font-bold opacity-60 dark:text-white/60 mt-0.5">{t.pickupDesc}</p>
                               </div>
                             </div>
                           )}
@@ -1430,9 +1470,9 @@ export default function App() {
                           {/* Promo Code Input */}
                           <div className="bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 shadow-sm space-y-3">
                             <div className="flex justify-between items-center mb-1">
-                              <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Punya Kode Promo?</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">{t.havePromoCode}</span>
                               {promoCode && (
-                                <span className="text-[10px] font-black text-brand-orange uppercase animate-bounce">Terpasang!</span>
+                                <span className="text-[10px] font-black text-brand-orange uppercase animate-bounce">{t.promoApplied}</span>
                               )}
                             </div>
                             <div className="flex gap-2">
@@ -1451,7 +1491,7 @@ export default function App() {
                                 }}
                                 className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-6 py-3 rounded-2xl text-[11px] font-black uppercase hover:bg-brand-orange transition-all active:scale-95 shadow-md"
                               >
-                                Pakai
+                                {t.usePromo}
                               </button>
                             </div>
                             {promoMessage && (
@@ -1566,8 +1606,8 @@ export default function App() {
                   favorites.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                       <Heart className="w-16 h-16 mb-4" />
-                      <p className="font-bold uppercase italic">Belum ada favorit</p>
-                      <p className="text-xs mt-2">Klik ikon hati pada menu untuk menambahkan</p>
+                      <p className="font-bold uppercase italic">{t.noFavorites}</p>
+                      <p className="text-xs mt-2">{t.addFavoriteHint}</p>
                     </div>
                   ) : (
                     favorites.map((item) => (
