@@ -6,7 +6,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const { messages, prompt, systemPrompt, model } = req.body;
-  const apiKey = process.env.POLLINATIONS_API_KEY;
+  const apiKey = process.env.POLLINATIONS_API_KEY || process.env.VITE_POLLINATIONS_API_KEY;
 
   if (!apiKey) {
     return res.status(500).json({ error: 'API Key not configured on server' });
@@ -49,10 +49,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(response.status).json(data);
     }
 
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return res.status(200).json(data);
   } catch (error) {
     console.error('Error in AI Proxy:', error);
     return res.status(500).json({ error: 'Failed to communicate with AI provider' });
   }
 }
+
