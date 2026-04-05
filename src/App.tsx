@@ -958,7 +958,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="bg-brand-black text-white pt-12 pb-32 md:pb-12 px-6 mt-20 relative overflow-hidden">
+      <footer className="bg-brand-black text-white pt-12 pb-44 md:pb-12 px-6 mt-20 relative overflow-hidden">
         {/* Wavy Background Element */}
         <div className="absolute top-0 left-0 w-full h-16 bg-brand-yellow rounded-b-[100%] -translate-y-8" />
 
@@ -1068,10 +1068,10 @@ export default function App() {
       </footer>
 
       {/* Floating Buttons: Back to Top & Cart */}
-      <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end">
+      <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end pointer-events-none">
         <button
           onClick={() => setUiLang((prev) => (prev === "id" ? "en" : "id"))}
-          className="px-4 py-2 rounded-full bg-white/95 dark:bg-brand-black border-2 border-brand-black dark:border-brand-yellow text-brand-black dark:text-white shadow-xl font-black text-[10px] uppercase tracking-wide flex items-center gap-2 hover:scale-105 transition-transform"
+          className="px-4 py-2 rounded-full bg-white/95 dark:bg-brand-black border-2 border-brand-black dark:border-brand-yellow text-brand-black dark:text-white shadow-xl font-black text-[10px] uppercase tracking-wide flex items-center gap-2 hover:scale-105 transition-transform pointer-events-auto"
           title={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
           aria-label={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
         >
@@ -1085,7 +1085,7 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="p-3 md:p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90"
+              className="p-3 md:p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90 pointer-events-auto"
               title={t.backToTop}
             >
               <ArrowUp className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-y-1 transition-transform" />
@@ -1100,7 +1100,7 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => setIsCartOpen(true)}
-              className="w-auto md:bg-brand-black bg-brand-black text-white px-6 py-4 md:px-8 md:py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 md:gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite]"
+              className="w-auto md:bg-brand-black bg-brand-black text-white px-6 py-4 md:px-8 md:py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 md:gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite] pointer-events-auto"
             >
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 animate-[bounce_2s_infinite]" />
