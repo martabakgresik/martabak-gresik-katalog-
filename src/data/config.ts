@@ -39,7 +39,8 @@ export {
 };
 
 // 🔑 KEAMANAN (Security)
-export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAACwdrus7K-Tn9Gd-";
+const env: any = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
+export const TURNSTILE_SITE_KEY = (env.VITE_TURNSTILE_SITE_KEY as string) || "0x4AAAAAACwdrus7K-Tn9Gd-";
 
 // 🖼️ ASSETS
 const ASSET_BASE_URL = "/images";

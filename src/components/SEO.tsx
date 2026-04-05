@@ -14,8 +14,8 @@ interface SEOProps {
 }
 
 export const SEO: React.FC<SEOProps> = ({
-  title = "Martabak Gresik - Terang Bulan & Martabak Telor Terenak",
-  description = "Katalog resmi Martabak Gresik (Jl. Usman Sadar No 10). Pesan Terang Bulan Lumer dan Martabak Telor Gurih sekarang! Sejak 2020.",
+  title = "Martabak Gresik - Terang Bulan Gresik & Martabak Telor Terenak",
+  description = "Nikmati Martabak Gresik - Terang Bulan Gresik asli yang lumer di lidah dan Martabak Telor gurih premium. Menu lengkap, lokasi Jl. Usman Sadar No 10. Sejak 2020!",
   image = "https://martabakgresik.my.id/metaseo.webp",
   url = "https://martabakgresik.my.id",
   type = "website",
