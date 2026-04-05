@@ -1,15 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset 
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Halaman Utama / Katalog -->
   <url>
     <loc>https://martabakgresik.my.id/</loc>
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/metaseo.webp</image:loc>
+      <image:title>Martabak Gresik - Terang Bulan &amp; Martabak Telor Autentik</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/terang-bulan.webp</image:loc>
+      <image:title>Terang Bulan Martabak Gresik</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/martabak.webp</image:loc>
+      <image:title>Martabak Telor Martabak Gresik</image:title>
+    </image:image>
   </url>
+
+  <!-- Blog -->
   <url>
     <loc>https://martabakgresik.my.id/blog</loc>
-    <lastmod>2026-03-31</lastmod>
+    <lastmod>2026-04-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <!-- Gallery -->
+  <url>
+    <loc>https://martabakgresik.my.id/gallery</loc>
+    <lastmod>2026-04-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/images/sweet/keju.webp</image:loc>
+      <image:title>Terang Bulan Keju Martabak Gresik</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/images/sweet/pandan-keju.webp</image:loc>
+      <image:title>Terang Bulan Pandan Keju Martabak Gresik</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/images/savory/martabak.webp</image:loc>
+      <image:title>Martabak Telor Martabak Gresik</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/images/savory/samyang-pedas.webp</image:loc>
+      <image:title>Martabak Samyang Pedas Martabak Gresik</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/images/sweet/blackforest-keju.webp</image:loc>
+      <image:title>Terang Bulan Blackforest Keju Martabak Gresik</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://martabakgresik.my.id/images/sweet/redvelvet-keju.webp</image:loc>
+      <image:title>Terang Bulan Red Velvet Keju Martabak Gresik</image:title>
+    </image:image>
+  </url>
+
 </urlset>

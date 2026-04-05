@@ -125,7 +125,7 @@ export const Gallery: React.FC = () => {
       <SEO 
         title={t.seoTitle} 
         description={t.seoDescription}
-        url="/gallery"
+        url="https://martabakgresik.my.id/gallery"
       />
 
       {/* Hero Header */}
