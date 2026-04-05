@@ -988,6 +988,13 @@ export default function App() {
                 Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity cursor-pointer">Arif Tirtana</a>
               </p>
               <div className="flex items-center gap-2">
+                <Link
+                  to="/text2img"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-orange/20 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+                >
+                  <Sparkles className="w-3 h-3 text-brand-orange" />
+                  Text2Img
+                </Link>
                 <Link 
                   to="/gallery" 
                   className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-orange/20 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
