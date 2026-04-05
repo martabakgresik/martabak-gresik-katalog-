@@ -17,7 +17,7 @@ const detectUiLanguage = (): UiLang => {
   return navigator.language?.toLowerCase().startsWith("en") ? "en" : "id";
 };
 
-const AI_TEXTS: Record<UiLang, { suggestions: string[]; greeting: (storeName: string) => string; error: string }> = {
+const AI_TEXTS: Record<UiLang, { suggestions: string[]; greeting: (storeName: string) => string; error: string; askUs: string; sendMessage: string }> = {
   id: {
     suggestions: [
       "Katalog Menu 📑",
@@ -31,6 +31,8 @@ const AI_TEXTS: Record<UiLang, { suggestions: string[]; greeting: (storeName: st
     ],
     greeting: (storeName: string) => `Halo Kak! Saya "Asisten Virtual" dari ${storeName}. 🌙✨\n\nSenang banget bisa bantu Kakak! Saya bukan cuma jago kasih rekomendasi martabak lumer, tapi Kakak juga bisa tanya apa saja ke saya—mulai dari info menu, promo, sampai hal-hal umum lainnya. Saya siap jawab!\n\n✨ Apa yang bisa saya bantu:\n📑 Lihat katalog lengkap\n🍕 Rekomendasi menu favorit\n💳 Cara order & pembayaran\n🎁 Promo terbaru\n⏰ Jam operasional\n\nKira-kira Kakak mau tanya apa atau lagi pengen jajan apa hari ini? 😊`,
     error: "Maaf ya, mungkin koneksi saya saat ini sedang bermasalah. Coba tanya bentar lagi ya! 🙏 Atau bisa hubungi via WhatsApp di nomor berikut: 081330763633",
+    askUs: "Tanya Kami 👋",
+    sendMessage: "Kirim Pesan",
   },
   en: {
     suggestions: [
@@ -45,6 +47,8 @@ const AI_TEXTS: Record<UiLang, { suggestions: string[]; greeting: (storeName: st
     ],
     greeting: (storeName: string) => `Hi there! I'm the "Virtual Assistant" from ${storeName}. 🌙✨\n\nI'm here to help! You can ask me anything—from menu details and promos to general everyday questions.\n\n✨ I can help with:\n📑 Full menu catalog\n🍕 Best menu recommendations\n💳 Ordering & payment\n🎁 Latest promos\n⏰ Opening hours\n\nWhat would you like to ask first? 😊`,
     error: "Sorry, I'm having a connection issue right now. Please try again in a moment 🙏 Or contact us via WhatsApp: 081330763633",
+    askUs: "Ask Us 👋",
+    sendMessage: "Send Message",
   },
 };
 
@@ -778,7 +782,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
               <button
                 disabled={isAiLoading || !aiInput.trim()}
                 className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5 mr-0.5 group"
-                title="Kirim Pesan"
+                title={aiText.sendMessage}
               >
                 <Send className="w-4 h-4 group-hover:translate-x-0.5 group-active:translate-x-1 transition-transform" />
               </button>
@@ -806,7 +810,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
             transition={{ duration: 0.3 }}
             className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg relative flex items-center justify-center mx-auto"
           >
-            Tanya Kami 👋
+            {aiText.askUs}
             <div className="absolute -top-1 left-1/2 -ml-1 w-2 h-2 bg-brand-black dark:bg-brand-yellow rotate-45" />
           </motion.div>
         )}

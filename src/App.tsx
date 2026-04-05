@@ -130,6 +130,21 @@ const UI_COPY = {
     shareTikTok: "Bagikan ke TikTok",
     orderConfirmationTitle: "Konfirmasi Pesanan",
     reviewOrder: "Periksa kembali pesanan Anda",
+    orderNow: "Pesan Sekarang",
+    viewGallery: "Lihat Galeri Foto",
+    extraToppingHint: "Pilih topping ekstra supaya makin mantap Kak!",
+    copyMenuLink: "Salin Link Menu",
+    totalPayment: "Total Bayar",
+    qrisPayment: "Pembayaran QRIS:",
+    downloadQris: "Download QRIS",
+    scanQrisHint: "Scan kode QR di atas untuk melakukan pembayaran.",
+    saveProofHint: "Simpan bukti bayar untuk dikirim via WhatsApp.",
+    confirmAndSendWhatsApp: "Konfirmasi & Kirim WhatsApp",
+    emergencyClosed: "TUTUP SEMENTARA (DARURAT)",
+    openNowReady: "Sedang Buka - Siap Melayani!",
+    closedNowAt: (openHour: number) => `Sedang Tutup - Buka Jam ${openHour}:00`,
+    subtotalItems: (count: number) => `Subtotal ${count} Item`,
+    addressProcessFailed: "❌ Gagal memproses alamat. Coba lagi.",
   },
   en: {
     promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
@@ -217,6 +232,21 @@ const UI_COPY = {
     shareTikTok: "Share to TikTok",
     orderConfirmationTitle: "Order Confirmation",
     reviewOrder: "Review your order",
+    orderNow: "Order Now",
+    viewGallery: "View Gallery Photos",
+    extraToppingHint: "Choose extra toppings to make it even better!",
+    copyMenuLink: "Copy Menu Link",
+    totalPayment: "Total Payment",
+    qrisPayment: "QRIS Payment:",
+    downloadQris: "Download QRIS",
+    scanQrisHint: "Scan the QR code above to make a payment.",
+    saveProofHint: "Save your payment proof to send via WhatsApp.",
+    confirmAndSendWhatsApp: "Confirm & Send WhatsApp",
+    emergencyClosed: "TEMPORARILY CLOSED (EMERGENCY)",
+    openNowReady: "Open Now - Ready to Serve!",
+    closedNowAt: (openHour: number) => `Closed Now - Opens at ${openHour}:00`,
+    subtotalItems: (count: number) => `Subtotal ${count} Items`,
+    addressProcessFailed: "❌ Failed to process address. Please try again.",
   },
 } as const;
 
@@ -705,7 +735,7 @@ export default function App() {
               } font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-lg backdrop-blur-md`}
             >
               <span className={`w-2 h-2 rounded-full animate-pulse ${isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
-              {isEmergencyClosed ? 'TUTUP SEMENTARA (DARURAT)' : isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'Sedang Buka - Siap Melayani!' : `Sedang Tutup - Buka Jam ${openHour}:00`}
+              {isEmergencyClosed ? t.emergencyClosed : isHoliday ? t.holidayClosed : isOpen ? t.openNowReady : t.closedNowAt(openHour)}
             </motion.div>
           </div>
 
@@ -727,7 +757,7 @@ export default function App() {
               className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50"
             >
               <ShoppingBag className="w-5 h-5" />
-              Pesan Sekarang
+              {t.orderNow}
             </motion.button>
             <Link to="/gallery">
               <motion.button
@@ -736,7 +766,7 @@ export default function App() {
                 className="bg-brand-yellow text-brand-black px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-yellow/50 cursor-pointer"
               >
                 <ImageIcon className="w-5 h-5" />
-                Lihat Galeri Foto
+                {t.viewGallery}
               </motion.button>
             </Link>
           </motion.div>
@@ -1428,7 +1458,7 @@ export default function App() {
                                       } else if (result?.error) {
                                         alert(`❌ ${result.error}`);
                                       } else {
-                                        alert('❌ Gagal memproses alamat. Coba lagi.');
+                                        alert(t.addressProcessFailed);
                                       }
                                     }}
                                     disabled={customerAddress.length < 5 || isAiProcessing}
@@ -1582,7 +1612,7 @@ export default function App() {
                          {/* Detailed Summary */}
                          <div className="bg-white/50 dark:bg-white/5 p-6 rounded-3xl border-t-4 border-brand-black dark:border-brand-yellow space-y-2.5">
                           <div className="flex justify-between items-center opacity-60">
-                            <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">Subtotal {totalItems} Item</span>
+                            <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">{t.subtotalItems(totalItems)}</span>
                             <span className="text-sm font-black dark:text-white">{formatPrice(totalPrice + discountAmount - shippingCost)}</span>
                           </div>
                           {deliveryMethod === 'delivery' && distance > 0 && (
@@ -1808,7 +1838,7 @@ export default function App() {
                     <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow leading-tight">
                       {t.extraOptions} <span className="text-sm font-bold text-brand-orange lowercase not-italic">{t.optional}</span>
                     </h3>
-                    <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-1">Pilih topping ekstra supaya makin mantap Kak!</p>
+                    <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-1">{t.extraToppingHint}</p>
                     <p className="text-xs font-bold text-brand-orange uppercase tracking-wider mb-2">{selectedItemForAddon.name}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -1820,7 +1850,7 @@ export default function App() {
                         setTimeout(() => setCopied(false), 2000);
                       }}
                       className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white"
-                      title="Salin Link Menu"
+                      title={t.copyMenuLink}
                     >
                       {copied ? <Check className="w-5 h-5 text-green-500" /> : <Share2 className="w-5 h-5" />}
                     </button>
@@ -2129,14 +2159,14 @@ export default function App() {
                     ))}
                   </div>
                   <div className="pt-4 border-t-2 border-dashed border-brand-black/20 dark:border-brand-yellow/20 flex justify-between items-center">
-                    <span className="font-black uppercase dark:text-brand-yellow/60">Total Bayar</span>
+                    <span className="font-black uppercase dark:text-brand-yellow/60">{t.totalPayment}</span>
                     <span className="text-xl font-black text-brand-orange">{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
 
                 {/* QRIS Section */}
                 <div className="bg-brand-yellow/20 p-6 rounded-3xl border-2 border-brand-black/10 flex flex-col items-center text-center">
-                  <h4 className="font-black uppercase italic text-sm mb-4 dark:text-brand-yellow">Pembayaran QRIS:</h4>
+                  <h4 className="font-black uppercase italic text-sm mb-4 dark:text-brand-yellow">{t.qrisPayment}</h4>
                   <div className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-inner mb-4">
                     <img
                       src="/qris.png"
@@ -2151,12 +2181,12 @@ export default function App() {
                     className="mb-4 bg-brand-black text-white px-6 py-3 rounded-xl font-bold text-sm uppercase flex items-center gap-2 hover:bg-brand-orange transition-colors active:scale-95 shadow-md"
                   >
                     <Download className="w-4 h-4" />
-                    Download QRIS
+                    {t.downloadQris}
                   </a>
 
                   <p className="text-[10px] font-bold uppercase opacity-60 leading-tight">
-                    Scan kode QR di atas untuk melakukan pembayaran.<br />
-                    Simpan bukti bayar untuk dikirim via WhatsApp.
+                    {t.scanQrisHint}<br />
+                    {t.saveProofHint}
                   </p>
                 </div>
               </div>
@@ -2170,7 +2200,7 @@ export default function App() {
                   className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
                 >
                   <MessageCircle className="w-6 h-6" />
-                  Konfirmasi & Kirim WhatsApp
+                  {t.confirmAndSendWhatsApp}
                 </button>
               </div>
             </motion.div>
