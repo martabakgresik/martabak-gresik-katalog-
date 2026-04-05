@@ -1,14 +1,20 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, ShieldCheck, FileText, Trash2, ArrowLeft, Mail } from 'lucide-react';
+import type { UiLang } from '../hooks/useUiLanguage';
 
 interface LegalPagesProps {
   type: 'tos' | 'privacy' | 'deletion';
   onClose: () => void;
+  uiLang?: UiLang;
 }
 
-export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose }) => {
-  const content = {
+export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, uiLang = 'id' }) => {
+  const contentByLang = {
+    id: {
+      contactUs: 'Hubungi Kami',
+      backToCatalog: 'Kembali ke Katalog',
+      content: {
     tos: {
       title: 'Ketentuan Layanan',
       icon: <FileText className="w-8 h-8 text-brand-orange" />,
@@ -71,9 +77,80 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose }) => {
         }
       ]
     },
-  };
+      },
+    },
+    en: {
+      contactUs: 'Contact Us',
+      backToCatalog: 'Back to Catalog',
+      content: {
+        tos: {
+          title: 'Terms of Service',
+          icon: <FileText className="w-8 h-8 text-brand-orange" />,
+          sections: [
+            {
+              heading: '1. Catalog Usage',
+              body: 'Martabak Gresik online catalog is provided to share menu information and simplify ordering. By accessing this catalog, you agree to use our service lawfully.'
+            },
+            {
+              heading: '2. Information & Price Accuracy',
+              body: 'We strive to keep menu prices and descriptions accurate. However, prices may change at any time without prior notice following raw material costs.'
+            },
+            {
+              heading: '3. Ordering Process',
+              body: 'Orders from this catalog are forwarded directly to our WhatsApp system or third-party platforms (GrabFood/GoFood/ShopeeFood). Transactions are considered valid after confirmation from our team/admin.'
+            },
+            {
+              heading: '4. Delivery',
+              body: 'Delivery is handled by our internal couriers or third-party partners. Delivery estimates are approximate and may be affected by weather or order volume.'
+            }
+          ]
+        },
+        privacy: {
+          title: 'Privacy Policy',
+          icon: <ShieldCheck className="w-8 h-8 text-green-500" />,
+          sections: [
+            {
+              heading: '1. Data We Collect',
+              body: 'We only collect basic information you voluntarily provide to process orders, such as Name, Phone Number, and Delivery Address.'
+            },
+            {
+              heading: '2. Data Usage',
+              body: 'Your information is used solely for order delivery and communication related to the order. We do not sell or distribute your data for commercial purposes.'
+            },
+            {
+              heading: '3. Data Security',
+              body: 'We use local storage on your device to store cart and theme preferences. Order data sent via WhatsApp follows that application’s security protocols.'
+            },
+            {
+              heading: '4. Contact Us',
+              body: 'If you have questions about this privacy policy, please contact us via email: martabakgresik@gmail.com.'
+            }
+          ]
+        },
+        deletion: {
+          title: 'Data Deletion',
+          icon: <Trash2 className="w-8 h-8 text-red-500" />,
+          sections: [
+            {
+              heading: 'Your Data Rights',
+              body: 'Although we do not use a permanent account system (direct catalog system), your order data may appear in communication logs (such as WhatsApp).'
+            },
+            {
+              heading: 'Deletion Procedure',
+              body: 'If you want your order data history (Name/Address/Phone Number) removed from our internal records, you can request it easily.'
+            },
+            {
+              heading: 'Submission Steps',
+              body: 'Send an email to martabakgresik@gmail.com with subject \"Data Deletion Request\". Include the Name or Phone Number to be deleted. We will process the request within a maximum of 3x24 hours.'
+            }
+          ]
+        },
+      },
+    },
+  } as const;
 
-  const activeContent = content[type];
+  const activeLang = contentByLang[uiLang];
+  const activeContent = activeLang.content[type];
 
   return (
     <motion.div
@@ -133,7 +210,7 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose }) => {
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="flex items-center gap-2 text-brand-orange font-bold uppercase text-[10px] tracking-widest bg-brand-orange/10 px-4 py-1.5 rounded-full">
                 <Mail className="w-3.5 h-3.5" />
-                Hubungi Kami: martabakgresik@gmail.com
+                {activeLang.contactUs}: martabakgresik@gmail.com
               </div>
             </div>
             
@@ -142,7 +219,7 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose }) => {
               className="flex items-center gap-2 px-8 py-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-full font-black uppercase tracking-wider text-sm hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-all shadow-lg active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />
-              Kembali ke Katalog
+              {activeLang.backToCatalog}
             </button>
           </div>
         </div>

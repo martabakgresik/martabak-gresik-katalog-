@@ -1,13 +1,15 @@
 import React from "react";
 import { motion } from "motion/react";
 import { ChevronDown, HelpCircle } from "lucide-react";
+import type { UiLang } from "../hooks/useUiLanguage";
 
 interface FAQItem {
   question: string;
   answer: string;
 }
 
-const faqs: FAQItem[] = [
+const FAQS_BY_LANG: Record<UiLang, FAQItem[]> = {
+  id: [
   {
     question: "Apa itu Martabak Gresik?",
     answer: "Martabak Gresik adalah spesialis Terang Bulan (Martabak Manis) dan Martabak Telor yang berlokasi di Jl. Usman Sadar No. 10, Gresik. Kami menyajikan menu dengan bahan premium sejak tahun 2020."
@@ -32,10 +34,51 @@ const faqs: FAQItem[] = [
     question: "Apakah menerima pesanan partai besar?",
     answer: "Ya, kami menerima pesanan untuk acara selamatan, ulang tahun, atau rapat kantor. Silakan hubungi admin via WhatsApp untuk mendapatkan harga paket spesial."
   }
-];
+  ],
+  en: [
+    {
+      question: "What is Martabak Gresik?",
+      answer: "Martabak Gresik specializes in Sweet Martabak and Egg Martabak, located at Jl. Usman Sadar No. 10, Gresik. We have served premium ingredients since 2020."
+    },
+    {
+      question: "How do I place an order?",
+      answer: "You can order directly from this digital catalog by pressing the order button on your chosen menu, then sending the order via WhatsApp. We are also available on GrabFood, GoFood, and ShopeeFood."
+    },
+    {
+      question: "Is there a first-order promo?",
+      answer: "Yes! Use promo code 'MARTABAKBARU' to get a 10% discount for your first purchase through this catalog."
+    },
+    {
+      question: "How much is delivery to my location?",
+      answer: "Delivery cost is calculated by distance (per KM) from our outlet at Jl. Usman Sadar No 10. The cart system can detect your location automatically to estimate shipping."
+    },
+    {
+      question: "What are Martabak Gresik opening hours?",
+      answer: "We are open daily from 16:00 to 23:00 WIB. Check the real-time OPEN/CLOSED status at the top of this catalog."
+    },
+    {
+      question: "Do you accept bulk orders?",
+      answer: "Yes, we accept orders for events, birthdays, and office meetings. Contact admin via WhatsApp for special package pricing."
+    }
+  ]
+};
 
-export const FAQ = () => {
+export const FAQ = ({ uiLang = "id" }: { uiLang?: UiLang }) => {
   const [openIndex, setOpenIndex] = React.useState<number | null>(null);
+  const faqs = FAQS_BY_LANG[uiLang];
+  const text = uiLang === "en"
+    ? {
+        title: "Frequently Asked Questions",
+        subtitle: "What our customers usually ask",
+        moreQuestions: "Still have more questions?",
+        contactAdmin: "Contact Admin",
+      }
+    : {
+        title: "Tanya Jawab (FAQ)",
+        subtitle: "Hal yang sering ditanyakan pelanggan kami",
+        moreQuestions: "Masih punya pertanyaan lain?",
+        contactAdmin: "Hubungi Admin",
+      };
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto py-4">
@@ -44,8 +87,8 @@ export const FAQ = () => {
           <HelpCircle className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-black uppercase tracking-tight dark:text-brand-yellow">Tanya Jawab (FAQ)</h2>
-          <p className="text-xs font-bold text-brand-black/40 dark:text-white/40">Hal yang sering ditanyakan pelanggan kami</p>
+          <h2 className="text-xl font-black uppercase tracking-tight dark:text-brand-yellow">{text.title}</h2>
+          <p className="text-xs font-bold text-brand-black/40 dark:text-white/40">{text.subtitle}</p>
         </div>
       </div>
 
@@ -85,13 +128,13 @@ export const FAQ = () => {
       </div>
       
       <div className="mt-8 p-6 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-[2rem] text-center space-y-3">
-        <p className="text-sm font-bold">Masih punya pertanyaan lain?</p>
+        <p className="text-sm font-bold">{text.moreQuestions}</p>
         <a 
           href="https://wa.me/6281330763633?text=Halo%20Admin,%20saya%20ingin%20bertanya..."
           target="_blank"
           className="inline-flex items-center gap-2 px-6 py-2 bg-brand-orange text-white rounded-full font-black text-xs uppercase tracking-wider hover:scale-105 transition-transform"
         >
-          Hubungi Admin
+          {text.contactAdmin}
         </a>
       </div>
     </div>

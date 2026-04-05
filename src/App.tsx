@@ -2250,7 +2250,8 @@ export default function App() {
         {activeLegalPage && activeLegalPage !== 'about' && activeLegalPage !== 'faq' && (
           <LegalPages 
             type={activeLegalPage as any} 
-            onClose={() => setActiveLegalPage(null)} 
+            onClose={() => setActiveLegalPage(null)}
+            uiLang={uiLang}
           />
         )}
         {activeLegalPage === 'about' && (
@@ -2270,7 +2271,7 @@ export default function App() {
                  <button onClick={() => setActiveLegalPage(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
                </div>
                <div className="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
-                 <FAQ />
+                 <FAQ uiLang={uiLang} />
                </div>
              </motion.div>
           </div>
