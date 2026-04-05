@@ -37,6 +37,11 @@ interface TextModelOption {
   paid?: boolean;
 }
 
+interface ImageModelOption {
+  id: string;
+  name?: string;
+}
+
 const normalizeModelList = (data: any) => {
   const asArray =
     (Array.isArray(data) && data) ||
@@ -88,6 +93,12 @@ export const AiAssistant = ({
   const [selectedTextModel, setSelectedTextModel] = useState("openai");
   const [textModelOptions, setTextModelOptions] = useState<TextModelOption[]>([
     { id: "openai", name: "OpenAI GPT-5 Mini", paid: false }
+  ]);
+  const [isImageModelsLoading, setIsImageModelsLoading] = useState(false);
+  const [imageModelsSource, setImageModelsSource] = useState<"api" | "fallback">("api");
+  const [selectedImageModel, setSelectedImageModel] = useState("flux");
+  const [imageModelOptions, setImageModelOptions] = useState<ImageModelOption[]>([
+    { id: "flux", name: "FLUX (Default)" }
   ]);
   const [aiTimer, setAiTimer] = useState(0);
 
@@ -179,25 +190,16 @@ export const AiAssistant = ({
         let source: "api" | "direct" | "fallback" = "api";
         
         const apiPath = "/api/text-models";
-        const directPath = "https://gen.pollinations.ai/text/models";
 
         try {
           const apiResponse = await fetch(apiPath);
           if (apiResponse.ok) {
             data = await apiResponse.json();
           } else {
-            const directResponse = await fetch(directPath);
-            if (directResponse.ok) {
-              data = await directResponse.json();
-              source = "direct";
-            }
+            throw new Error("Text models API failed");
           }
         } catch (innerError) {
-          const directResponse = await fetch(directPath);
-          if (directResponse.ok) {
-            data = await directResponse.json();
-            source = "direct";
-          }
+          console.error("[AI Debug] fallback text model dipakai:", innerError);
         }
 
         if (!data) throw new Error("No text model data received");
@@ -227,6 +229,78 @@ export const AiAssistant = ({
     fetchTextModels();
   }, []);
 
+  useEffect(() => {
+    const fetchImageModels = async () => {
+      setIsImageModelsLoading(true);
+      try {
+        const response = await fetch("/api/image-models");
+        if (!response.ok) {
+          throw new Error("Failed to load image models");
+        }
+
+        const data = await response.json();
+        const normalized = normalizeModelList(data).map((item: any) => ({
+          id: item.id,
+          name: item.name || item.id
+        }));
+        if (normalized.length > 0) {
+          setImageModelOptions(normalized);
+          setImageModelsSource(data?.source === "fallback" ? "fallback" : "api");
+          if (!normalized.some((m: ImageModelOption) => m.id === selectedImageModel)) {
+            setSelectedImageModel(normalized[0].id);
+          }
+        }
+      } catch (error) {
+        console.error("[AI Debug] Gagal load model gambar:", error);
+        setImageModelsSource("fallback");
+      } finally {
+        setIsImageModelsLoading(false);
+      }
+    };
+
+    fetchImageModels();
+  }, []);
+
+  const parseImageCommand = (userMessage: string) => {
+    const trimmed = userMessage.trim();
+    const match = trimmed.match(/^\/(?:img|image|gambar)\s+(.+)/i);
+    if (!match) return null;
+    return match[1].trim();
+  };
+
+  const generateImage = async (userMessage: string, imagePrompt: string) => {
+    setIsAiLoading(true);
+    const newMessages = [...aiMessages, { role: 'user' as const, content: userMessage }];
+    setAiMessages(newMessages);
+    setAiInput("");
+
+    try {
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: imagePrompt,
+          model: selectedImageModel
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data?.imageUrl) {
+        throw new Error(data?.error || 'Image generation failed');
+      }
+
+      const assistantMessage = `Siap Kak, ini hasil gambarnya ✨\n\n![Generated image](${data.imageUrl})\n\nModel: ${data.model}\nSeed: ${data.seed}\n\nTip: ketik lagi dengan model lain kalau mau dibandingkan hasilnya.`;
+      setAiMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
+    } catch (error: any) {
+      console.error("Image Error:", error);
+      setAiMessages([
+        ...newMessages,
+        { role: 'assistant', content: `Maaf Kak, gambar belum berhasil dibuat. ${error?.message || "Silakan coba lagi."}` }
+      ]);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
 
   const getAiResponse = async (userMessage: string) => {
@@ -344,6 +418,11 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
 
 
   const generateImageResponse = async (userMessage: string) => {
+    const imagePrompt = parseImageCommand(userMessage);
+    if (imagePrompt) {
+      await generateImage(userMessage, imagePrompt);
+      return;
+    }
     await getAiResponse(userMessage);
   };
 
@@ -728,6 +807,22 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                     ))}
                   </select>
                 </div>
+                <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-brand-black/5 dark:bg-white/10">
+                  <span className="text-[9px] font-bold uppercase tracking-wide dark:text-white/80">Image</span>
+                  <select
+                    value={selectedImageModel}
+                    onChange={(e) => setSelectedImageModel(e.target.value)}
+                    className="flex-1 bg-transparent text-[10px] font-bold outline-none dark:text-white"
+                    disabled={isImageModelsLoading}
+                    title="Model gambar untuk perintah /img"
+                  >
+                    {imageModelOptions.map((model) => (
+                      <option key={model.id} value={model.id}>
+                        {model.name || model.id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <textarea
                   ref={aiTextareaRef}
                   rows={1}
@@ -739,7 +834,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                       if (aiInput.trim() && !isAiLoading) generateImageResponse(aiInput);
                     }
                   }}
-                  placeholder="Tanya apa aja seputar menu, promo, atau order"
+                  placeholder="Chat biasa, atau /img [deskripsi gambar]"
                   className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
                 />
               </div>
