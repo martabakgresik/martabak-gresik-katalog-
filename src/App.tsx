@@ -2050,7 +2050,8 @@ export default function App() {
         )}
         {activeLegalPage === 'about' && (
           <AboutMe 
-            onClose={() => setActiveLegalPage(null)} 
+            onClose={() => setActiveLegalPage(null)}
+            uiLang={uiLang}
           />
         )}
         {activeLegalPage === 'faq' && (
