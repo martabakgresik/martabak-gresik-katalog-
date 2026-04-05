@@ -485,8 +485,11 @@ export default function App() {
                   window.history.pushState({}, '', '/');
                 }}
               >
-                Martabak<br />
-                <span className="text-brand-yellow font-display">Gresik</span>
+                <span className="sr-only">Martabak Gresik - Terang Bulan Gresik</span>
+                <span aria-hidden="true">
+                  Martabak<br />
+                  <span className="text-brand-yellow font-display">Gresik</span>
+                </span>
               </motion.h1>
               <p className="text-xs md:text-2xl font-medium text-brand-orange italic mt-1 md:mt-2">
                 {t.heroSubtitle}
