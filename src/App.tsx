@@ -6,7 +6,7 @@ import {
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock, ChevronDown,
   MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2, Settings,
-  QrCode, Image as ImageIcon
+  QrCode, Image as ImageIcon, Languages
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
@@ -34,6 +34,7 @@ import { CookieConsent } from "./components/CookieConsent";
 import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
+import { useUiLanguage } from "./hooks/useUiLanguage";
 
 interface FavoriteItem {
   id: string;
@@ -45,6 +46,8 @@ interface FavoriteItem {
 const PROMO_TEXT = (code: string, pct: number) => `🔥 Diskon ${pct}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${code})`;
 
 export default function App() {
+  const { uiLang, setUiLang } = useUiLanguage();
+
   // --- STORE STATE (Config-driven) ---
   const [menuSweet, setMenuSweet] = useState(MENU_SWEET);
   const [menuSavory, setMenuSavory] = useState(MENU_SAVORY);
@@ -1067,6 +1070,15 @@ export default function App() {
 
       {/* Floating Buttons: Back to Top & Cart */}
       <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end">
+        <button
+          onClick={() => setUiLang((prev) => (prev === "id" ? "en" : "id"))}
+          className="px-4 py-2 rounded-full bg-white/95 dark:bg-brand-black border-2 border-brand-black dark:border-brand-yellow text-brand-black dark:text-white shadow-xl font-black text-[10px] uppercase tracking-wide flex items-center gap-2 hover:scale-105 transition-transform"
+          title={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
+          aria-label={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
+        >
+          <Languages className="w-4 h-4" />
+          {uiLang === "id" ? "Bahasa ID" : "English"}
+        </button>
         <AnimatePresence>
           {showBackToTop && (
             <motion.button
@@ -1111,6 +1123,7 @@ export default function App() {
         promoPercent={activePromoPercent || PROMO_PERCENT}
         menuSweet={menuSweet}
         menuSavory={menuSavory}
+        uiLang={uiLang}
       />
 
       {/* Cart Sidebar */}
