@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { getBlogPosts, type BlogPost } from '../data/blogUtils';
 import type { UiLang } from '../hooks/useUiLanguage';
 import { BLOG_I18N } from '../data/i18n/blogCopy';
+import { SEO } from './SEO';
 
 interface BlogViewProps {
   onClose: () => void;
@@ -62,65 +63,35 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
     }
   }, []);
 
-  // SEO Metadata Update
-  React.useEffect(() => {
-    const defaultTitle = "Martabak Gresik - Terang Bulan & Martabak Telor Autentik";
-    const defaultDesc = "Nikmati kelezatan Martabak Gresik. Menu lengkap Terang Bulan (Manis) dan Martabak Telor (Asin) dengan bahan berkualitas.";
-    const baseUrl = "https://martabakgresik.my.id";
-    const defaultImage = `${baseUrl}/logo.webp`;
-
-    const getMeta = (id: string, nameAttr: string, propertyAttr: string) => {
-      return document.getElementById(id) || 
-             document.querySelector(`meta[name="${nameAttr}"]`) || 
-             document.querySelector(`meta[property="${propertyAttr}"]`);
-    };
-
-    const updateTag = (id: string, nameAttr: string, propertyAttr: string, value: string) => {
-      const el = getMeta(id, nameAttr, propertyAttr);
-      if (el) {
-        el.setAttribute('content', value);
-        console.log(`[SEO] Updated ${nameAttr || propertyAttr}:`, value);
-      } else {
-        console.warn(`[SEO] Tag not found: ${id} (${nameAttr || propertyAttr})`);
-      }
-    };
-
+  // Computed SEO values berdasarkan state
+  const BASE_URL = 'https://martabakgresik.my.id';
+  const seoProps = React.useMemo(() => {
     if (selectedPost) {
-      const fullTitle = `${selectedPost.title} | Blog Martabak Gresik`;
-      const thumbUrl = selectedPost.thumbnail.startsWith('http') ? selectedPost.thumbnail : `${baseUrl}${selectedPost.thumbnail}`;
-      
-      document.title = fullTitle;
-      console.log(`[SEO] Title set to: ${fullTitle}`);
-
-      updateTag('meta-description', 'description', '', selectedPost.excerpt);
-      updateTag('og-title', '', 'og:title', fullTitle);
-      updateTag('og-description', '', 'og:description', selectedPost.excerpt);
-      updateTag('og-image', '', 'og:image', thumbUrl);
-      updateTag('og-url', '', 'og:url', window.location.href);
-      updateTag('twitter-title', 'twitter:title', '', fullTitle);
-      updateTag('twitter-description', 'twitter:description', '', selectedPost.excerpt);
-      updateTag('twitter-image', 'twitter:image', '', thumbUrl);
-    } else if (isNotFound) {
-      const nfTitle = `Artikel Tidak Ditemukan | Blog Martabak Gresik`;
-      document.title = nfTitle;
-      console.log(`[SEO] 404 Title set to: ${nfTitle}`);
-
-      updateTag('meta-description', 'description', '', "Maaf, artikel yang Anda cari tidak dapat ditemukan.");
-      updateTag('og-title', '', 'og:title', nfTitle);
-      updateTag('og-url', '', 'og:url', window.location.href);
-    } else {
-      document.title = defaultTitle;
-      console.log(`[SEO] Reset to default title`);
-
-      updateTag('meta-description', 'description', '', defaultDesc);
-      updateTag('og-title', '', 'og:title', defaultTitle);
-      updateTag('og-description', '', 'og:description', "Katalog menu digital Martabak Gresik. Terang Bulan Manis & Martabak Telor Asin Spesial.");
-      updateTag('og-image', '', 'og:image', defaultImage);
-      updateTag('og-url', '', 'og:url', baseUrl + '/');
-      updateTag('twitter-title', 'twitter:title', '', defaultTitle);
-      updateTag('twitter-description', 'twitter:description', '', "Katalog menu digital Martabak Gresik. Terang Bulan Manis & Martabak Telor Asin Spesial.");
-      updateTag('twitter-image', 'twitter:image', '', defaultImage);
+      const thumbUrl = selectedPost.thumbnail.startsWith('http')
+        ? selectedPost.thumbnail
+        : `${BASE_URL}${selectedPost.thumbnail}`;
+      return {
+        title: `${selectedPost.title} | Blog Martabak Gresik`,
+        description: selectedPost.excerpt,
+        image: thumbUrl,
+        url: `${BASE_URL}/blog/${selectedPost.slug}`,
+        type: 'article' as const,
+      };
     }
+    if (isNotFound) {
+      return {
+        title: 'Artikel Tidak Ditemukan | Blog Martabak Gresik',
+        description: 'Maaf, artikel yang Anda cari tidak dapat ditemukan.',
+        url: `${BASE_URL}/blog`,
+        noindex: true,
+      };
+    }
+    return {
+      title: 'Blog Martabak Gresik - Tips Kuliner & Info UMKM',
+      description: 'Baca artikel seputar kuliner, tips UMKM, dan informasi terbaru dari Martabak Gresik.',
+      url: `${BASE_URL}/blog`,
+      image: `${BASE_URL}/metaseo.webp`,
+    };
   }, [selectedPost, isNotFound]);
 
   // Sync with URL slug on mount and popstate
@@ -185,6 +156,8 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black transition-colors duration-300 font-sans">
+      {/* SEO — dikelola via react-helmet-async */}
+      <SEO {...seoProps} />
       <div ref={blogContainerRef} className="max-w-4xl mx-auto px-4 py-12 focus:outline-none">
         <AnimatePresence mode="wait">
           {isNotFound ? (
