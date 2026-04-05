@@ -1,26 +1,64 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, ArrowLeft, Mail, Globe, Github, Instagram, MessageCircle } from 'lucide-react';
+import type { UiLang } from '../hooks/useUiLanguage';
 
 interface AboutMeProps {
   onClose: () => void;
+  uiLang: UiLang;
 }
 
-export const AboutMe: React.FC<AboutMeProps> = ({ onClose }) => {
-  const sections = [
-    {
-      heading: 'Halo, Saya Arif Tirtana!',
-      body: 'Saya adalah pengembang dan desainer di balik katalog digital Martabak Gresik ini. Berbekal pengalaman lebih dari 10 tahun di industri kreatif dan pengembangan perangkat lunak, saya berdedikasi melahirkan solusi digital yang tidak hanya fungsional, tetapi juga memiliki estetika visual premium. Melalui website interaktif ini, saya ingin memastikan Anda mendapatkan pengalaman "nyemil" yang modern, praktis, dan menyenangkan.'
-    },
-    {
-      heading: 'Visi & Misi',
-      body: 'Misi utama saya adalah menjembatani kesenjangan antara teknologi modern dan UMKM lokal melalui inovasi digital. Dimulai dari Martabak Gresik, saya berkomitmen mendigitalkan ekosistem kuliner tradisional agar lebih efisien, transparan, dan kompetitif, dengan tetap mengedepankan kualitas visual serta pengalaman pengguna yang premium.'
-    },
-    {
-      heading: 'Hubungi Saya',
-      body: 'Jika Anda tertarik berkolaborasi, membutuhkan solusi digital kreatif, atau sekadar ingin berdiskusi mengenai teknologi, saya sangat terbuka untuk berbagi. Hubungi saya langsung melalui WhatsApp atau media sosial untuk respon yang lebih personal.'
-    }
-  ];
+const ABOUT_COPY: Record<UiLang, {
+  title: string;
+  role: string;
+  sections: Array<{ heading: string; body: string }>;
+  contactLabel: string;
+  backToCatalog: string;
+}> = {
+  id: {
+    title: 'Tentang Arif Tirtana',
+    role: 'Developer & Food Enthusiast',
+    sections: [
+      {
+        heading: 'Halo, Saya Arif Tirtana!',
+        body: 'Saya adalah pengembang dan desainer di balik katalog digital Martabak Gresik ini. Berbekal pengalaman lebih dari 10 tahun di industri kreatif dan pengembangan perangkat lunak, saya berdedikasi melahirkan solusi digital yang tidak hanya fungsional, tetapi juga memiliki estetika visual premium. Melalui website interaktif ini, saya ingin memastikan Anda mendapatkan pengalaman "nyemil" yang modern, praktis, dan menyenangkan.'
+      },
+      {
+        heading: 'Visi & Misi',
+        body: 'Misi utama saya adalah menjembatani kesenjangan antara teknologi modern dan UMKM lokal melalui inovasi digital. Dimulai dari Martabak Gresik, saya berkomitmen mendigitalkan ekosistem kuliner tradisional agar lebih efisien, transparan, dan kompetitif, dengan tetap mengedepankan kualitas visual serta pengalaman pengguna yang premium.'
+      },
+      {
+        heading: 'Hubungi Saya',
+        body: 'Jika Anda tertarik berkolaborasi, membutuhkan solusi digital kreatif, atau sekadar ingin berdiskusi mengenai teknologi, saya sangat terbuka untuk berbagi. Hubungi saya langsung melalui WhatsApp atau media sosial untuk respon yang lebih personal.'
+      }
+    ],
+    contactLabel: 'Hubungi Kami',
+    backToCatalog: 'Kembali ke Katalog'
+  },
+  en: {
+    title: 'About Arif Tirtana',
+    role: 'Developer & Food Enthusiast',
+    sections: [
+      {
+        heading: 'Hi, I\'m Arif Tirtana!',
+        body: 'I\'m the developer and designer behind this Martabak Gresik digital catalog. With over 10 years of experience in the creative industry and software development, I am dedicated to building digital solutions that are not only functional, but also have a premium visual aesthetic. Through this interactive website, I want to ensure you get a modern, practical, and enjoyable snacking experience.'
+      },
+      {
+        heading: 'Vision & Mission',
+        body: 'My main mission is to bridge the gap between modern technology and local MSMEs through digital innovation. Starting with Martabak Gresik, I am committed to digitizing the traditional culinary ecosystem to make it more efficient, transparent, and competitive, while still prioritizing premium visual quality and user experience.'
+      },
+      {
+        heading: 'Contact Me',
+        body: 'If you are interested in collaborating, need creative digital solutions, or simply want to discuss technology, I am always open to sharing. Contact me directly via WhatsApp or social media for a more personal response.'
+      }
+    ],
+    contactLabel: 'Contact Us',
+    backToCatalog: 'Back to Catalog'
+  }
+};
+
+export const AboutMe: React.FC<AboutMeProps> = ({ onClose, uiLang }) => {
+  const content = ABOUT_COPY[uiLang];
 
   return (
     <motion.div
@@ -47,9 +85,9 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose }) => {
             </div>
             <div>
               <h2 className="text-2xl md:text-3xl font-display font-black uppercase text-brand-black dark:text-brand-yellow leading-tight">
-                Tentang Arif Tirtana
+                {content.title}
               </h2>
-              <p className="text-[10px] md:text-xs font-bold text-brand-white uppercase tracking-widest mt-0.5">Developer & Food Enthusiast</p>
+              <p className="text-[10px] md:text-xs font-bold text-brand-white uppercase tracking-widest mt-0.5">{content.role}</p>
             </div>
           </div>
           <button
@@ -73,7 +111,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {sections.map((section, idx) => (
+          {content.sections.map((section, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, x: -10 }}
@@ -112,7 +150,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose }) => {
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="flex items-center gap-2 text-brand-orange font-bold uppercase text-[10px] tracking-widest bg-brand-orange/10 px-4 py-1.5 rounded-full">
                 <Mail className="w-3.5 h-3.5" />
-                Hubungi Kami: martabakgresik@gmail.com
+                {content.contactLabel}: martabakgresik@gmail.com
               </div>
             </div>
             
@@ -121,7 +159,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose }) => {
               className="flex items-center gap-2 px-8 py-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-full font-black uppercase tracking-wider text-sm hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-all shadow-lg active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />
-              Kembali ke Katalog
+              {content.backToCatalog}
             </button>
           </div>
         </div>
