@@ -1,39 +1,42 @@
 import type { Addon } from "../hooks/useCart";
+import {
+  OPEN_HOUR,
+  CLOSE_HOUR,
+  PROMO_CODE,
+  PROMO_PERCENT,
+  HOLIDAYS,
+  STORE_NAME,
+  STORE_ADDRESS,
+  STORE_PHONE,
+  SINCE_YEAR,
+  SHIPPING_RATE_PER_KM,
+  MAX_SHIPPING_DISTANCE,
+  SCROLL_SPACING,
+  STORE_RULES,
+} from "./storeRules";
 
 /**
  * PUSAT KONTROL MARTABAK GRESIK ⚙️
  * Edit file ini untuk merubah pengaturan toko tanpa menyentuh kode aplikasi.
  */
 
-// ⏰ JAM OPERASIONAL
-export const OPEN_HOUR = 16;  // Jam Buka (16:00)
-export const CLOSE_HOUR = 23; // Jam Tutup (23:00)
-
-// 🎟️ PROMO & DISKON
-export const PROMO_CODE = "MARTABAKBARU"; // Kode yang harus dimasukkan pelanggan
-export const PROMO_PERCENT = 10;          // Persentase diskon (Misal: 10 untuk 10%)
-
-// 🗓️ DAFTAR HARI LIBUR / TUTUP (Format: YYYY-MM-DD)
-export const HOLIDAYS = [
-  "2026-03-19", 
-  "2026-03-20",
-  "2026-03-21",
-  "2026-03-23"
-];
-
-// 📱 INFORMASI TOKO (Untuk AI Assistant)
-export const STORE_NAME = "Martabak Gresik";
-export const STORE_ADDRESS = "Jl. Usman Sadar No 10, Gresik, Jawa Timur, Indonesia";
-export const STORE_PHONE = "081330763633";
-export const SINCE_YEAR = "2020";
-
-// 🛵 PENGIRIMAN (Shipping)
-export const SHIPPING_RATE_PER_KM = 2500;
-export const MAX_SHIPPING_DISTANCE = 10;
-
-// ⬇️ UI SPACING
-// Jarak antara Pencarian dan Scroll Indicator (Gunakan class Tailwind: mt-2, mt-4, mt-8, dsb.)
-export const SCROLL_SPACING = "mt-2"; 
+// ⏰ JAM OPERASIONAL, PROMO, LIBUR, PROFIL TOKO, PENGIRIMAN, DAN UI
+// Dipindahkan ke file khusus aturan: src/data/storeRules.ts
+export {
+  OPEN_HOUR,
+  CLOSE_HOUR,
+  PROMO_CODE,
+  PROMO_PERCENT,
+  HOLIDAYS,
+  STORE_NAME,
+  STORE_ADDRESS,
+  STORE_PHONE,
+  SINCE_YEAR,
+  SHIPPING_RATE_PER_KM,
+  MAX_SHIPPING_DISTANCE,
+  SCROLL_SPACING,
+  STORE_RULES,
+};
 
 // 🔑 KEAMANAN (Security)
 export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || "0x4AAAAAACwdrus7K-Tn9Gd-";

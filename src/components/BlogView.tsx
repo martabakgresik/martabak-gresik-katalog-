@@ -4,12 +4,15 @@ import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check, Searc
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getBlogPosts, type BlogPost } from '../data/blogUtils';
+import type { UiLang } from '../hooks/useUiLanguage';
+import { BLOG_I18N } from '../data/i18n/blogCopy';
 
 interface BlogViewProps {
   onClose: () => void;
+  uiLang?: UiLang;
 }
 
-export function BlogView({ onClose }: BlogViewProps) {
+export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -17,6 +20,8 @@ export function BlogView({ onClose }: BlogViewProps) {
   const [postsLoading, setPostsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [displayLimit, setDisplayLimit] = useState(6);
+  const t = BLOG_I18N[uiLang];
+  const dateLocale = uiLang === 'en' ? 'en-US' : 'id-ID';
 
   // Fetch posts dari file markdown lokal
   useEffect(() => {
@@ -192,9 +197,9 @@ export function BlogView({ onClose }: BlogViewProps) {
             >
               <div className="space-y-4">
                 <div className="text-8xl md:text-9xl font-black text-brand-black/10 dark:text-brand-yellow/10">404</div>
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">Opps! Artikel Hilang</h2>
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">{t.notFoundTitle}</h2>
                 <p className="text-brand-black/60 dark:text-brand-yellow/60 font-medium max-w-md mx-auto px-6">
-                  Maaf Kak, artikel yang Kakak cari sepertinya sudah dipindahkan atau dihapus. Jangan sedih, masih banyak cerita lezat lainnya!
+                  {t.notFoundDesc}
                 </p>
               </div>
               <button
@@ -218,14 +223,14 @@ export function BlogView({ onClose }: BlogViewProps) {
                   onClick={onClose}
                   className="flex items-center gap-2 font-black uppercase text-xs tracking-widest text-brand-orange hover:gap-3 transition-all p-2 rounded-full hover:bg-brand-orange/10"
                 >
-                  <ArrowLeft className="w-4 h-4" /> Kembali ke Katalog
+                  <ArrowLeft className="w-4 h-4" /> {t.backCatalog}
                 </button>
                 <div className="text-center space-y-4">
                   <h2 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">
-                    Blog Martabak
+                    {t.blogTitle}
                   </h2>
                 <p className="text-brand-black/60 dark:text-brand-yellow/60 font-medium">
-                  Cerita, Tips, dan Promo Menarik dari Martabak Gresik
+                  {t.blogSubtitle}
                 </p>
               </div>
 
@@ -234,7 +239,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-black/30 group-focus-within:text-brand-orange transition-colors" />
                 <input
                   type="text"
-                  placeholder="Cari artikel menarik..."
+                  placeholder={t.searchPlaceholder}
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -270,7 +275,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                         <div className="md:w-2/3 p-6 md:p-8 space-y-4 flex flex-col justify-center">
                           <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-brand-orange">
                             <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> {new Date(post.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                              <Calendar className="w-3 h-3" /> {new Date(post.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })}
                             </span>
                           </div>
                           <h3 className="text-2xl md:text-3xl font-black leading-tight group-hover:text-brand-orange transition-colors">
@@ -280,7 +285,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                             {post.excerpt}
                           </p>
                           <div className="pt-2 flex items-center text-brand-orange font-black uppercase text-xs tracking-widest gap-1 group-hover:gap-2 transition-all">
-                            Baca Selengkapnya <ChevronRight className="w-4 h-4" />
+                            {t.readMore} <ChevronRight className="w-4 h-4" />
                           </div>
                         </div>
                       </div>
@@ -288,8 +293,8 @@ export function BlogView({ onClose }: BlogViewProps) {
                   ))
                 ) : posts.length === 0 ? (
                   <div className="text-center py-20 bg-white/10 rounded-3xl border-2 border-dashed border-brand-black/10 dark:border-white/10">
-                    <p className="text-2xl font-bold opacity-50">Belum ada artikel blog.</p>
-                    <p className="text-sm opacity-40 mt-2 font-medium">Pastikan file .md sudah ada di src/content/blog/</p>
+                    <p className="text-2xl font-bold opacity-50">{t.noPosts}</p>
+                    <p className="text-sm opacity-40 mt-2 font-medium">{t.noPostsHint}</p>
                   </div>
                 ) : null}
               </div>
@@ -301,7 +306,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                     onClick={handleLoadMore}
                     className="group flex items-center gap-3 bg-white dark:bg-zinc-900 border-2 border-brand-orange text-brand-orange px-8 py-3 rounded-2xl font-black uppercase italic tracking-wider hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95"
                   >
-                    Muat Lebih Banyak <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    {t.loadMore} <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </div>
               )}
@@ -314,13 +319,13 @@ export function BlogView({ onClose }: BlogViewProps) {
                   className="text-center py-20 bg-white/10 rounded-3xl border-2 border-dashed border-brand-black/10 dark:border-white/10"
                 >
                   <Search className="w-12 h-12 mx-auto mb-4 text-brand-black/20" />
-                  <p className="text-xl font-bold opacity-50 italic uppercase tracking-tighter">Yah, Artikelnya Tidak Ketemu...</p>
-                  <p className="text-sm opacity-40 mt-2 font-medium">Coba cari dengan kata kunci lain ya Kak!</p>
+                  <p className="text-xl font-bold opacity-50 italic uppercase tracking-tighter">{t.noResultsTitle}</p>
+                  <p className="text-sm opacity-40 mt-2 font-medium">{t.noResultsHint}</p>
                   <button 
                     onClick={() => setSearchQuery('')}
                     className="mt-6 text-brand-orange font-black text-xs uppercase tracking-widest hover:underline"
                   >
-                    Reset Pencarian
+                    {t.resetSearch}
                   </button>
                 </motion.div>
               )}
@@ -337,7 +342,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                 onClick={handleBack}
                 className="flex items-center gap-2 font-black uppercase text-xs tracking-widest text-brand-orange hover:gap-3 transition-all p-2 rounded-full hover:bg-brand-orange/10"
               >
-                <ArrowLeft className="w-4 h-4" /> {selectedPost ? "Kembali ke Daftar Blog" : "Kembali ke Katalog"}
+                <ArrowLeft className="w-4 h-4" /> {selectedPost ? t.backBlogList : t.backCatalog}
               </button>
 
               <div className="space-y-6">
@@ -350,7 +355,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-6 text-xs font-bold uppercase tracking-widest text-brand-black/40 dark:text-brand-yellow/40">
                     <span className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-brand-orange" /> {new Date(selectedPost.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      <Calendar className="w-4 h-4 text-brand-orange" /> {new Date(selectedPost.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
                     <span className="flex items-center gap-2">
                       <User className="w-4 h-4 text-brand-orange" /> {selectedPost.author}
@@ -366,7 +371,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                     }`}
                   >
                     {copied ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
-                    {copied ? 'Tersalin' : 'Bagikan Link'}
+                    {copied ? t.copied : t.shareLink}
                   </button>
                 </div>
                   
@@ -400,7 +405,7 @@ export function BlogView({ onClose }: BlogViewProps) {
                     onClick={handleBack}
                     className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50 mx-auto"
                   >
-                    <BookOpen className="w-5 h-5" /> Lihat Artikel Lainnya
+                    <BookOpen className="w-5 h-5" /> {t.otherArticles}
                   </button>
                 </div>
             </motion.div>

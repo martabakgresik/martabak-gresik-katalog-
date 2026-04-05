@@ -16,6 +16,8 @@ import {
   Utensils
 } from 'lucide-react';
 import { SEO } from './SEO';
+import { useUiLanguage } from '../hooks/useUiLanguage';
+import { GALLERY_TEXT } from '../data/i18n/galleryCopy';
 
 type Category = 'all' | 'savory' | 'sweet' | 'promo' | 'sticker';
 
@@ -82,8 +84,11 @@ const GALLERY_ITEMS: GalleryItem[] = [
 
 export const Gallery: React.FC = () => {
   const navigate = useNavigate();
+  const { uiLang } = useUiLanguage();
   const [activeCategory, setActiveCategory] = useState<Category>('all');
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+
+  const t = GALLERY_TEXT[uiLang];
 
   const filteredItems = GALLERY_ITEMS.filter(item => 
     activeCategory === 'all' || item.category === activeCategory
@@ -108,18 +113,18 @@ export const Gallery: React.FC = () => {
   };
 
   const categories: { id: Category; label: string; icon: React.ReactNode }[] = [
-    { id: 'all', label: 'Semua', icon: <ImageIcon className="w-4 h-4" /> },
-    { id: 'savory', label: 'Martabak Telor', icon: <Utensils className="w-4 h-4" /> },
-    { id: 'sweet', label: 'Terang Bulan', icon: <Camera className="w-4 h-4" /> },
-    { id: 'promo', label: 'Promosi', icon: <Sparkles className="w-4 h-4" /> },
-    { id: 'sticker', label: 'Stiker', icon: <Tag className="w-4 h-4" /> },
+    { id: 'all', label: t.all, icon: <ImageIcon className="w-4 h-4" /> },
+    { id: 'savory', label: t.savory, icon: <Utensils className="w-4 h-4" /> },
+    { id: 'sweet', label: t.sweet, icon: <Camera className="w-4 h-4" /> },
+    { id: 'promo', label: t.promo, icon: <Sparkles className="w-4 h-4" /> },
+    { id: 'sticker', label: t.sticker, icon: <Tag className="w-4 h-4" /> },
   ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-brand-black text-brand-black dark:text-white pb-20">
       <SEO 
-        title="Galeri Visual - Martabak Gresik" 
-        description="Jelajahi kelezatan visual Martabak Gresik. Koleksi lengkap foto menu, promo terbaru, dan stiker resmi kami."
+        title={t.seoTitle} 
+        description={t.seoDescription}
         url="/gallery"
       />
 
@@ -147,10 +152,10 @@ export const Gallery: React.FC = () => {
               <Camera className="w-8 h-8 text-brand-black" />
             </div>
             <h1 className="text-4xl md:text-6xl font-black uppercase italic text-brand-yellow">
-              Visual <span className="text-white">Gallery</span>
+              {t.heroTitle} <span className="text-white">{t.heroHighlight}</span>
             </h1>
             <p className="text-white/60 font-bold uppercase tracking-[0.3em] text-[10px] md:text-xs">
-              Kelezatan Lengkap Dalam Setiap Frame - Martabak Gresik
+              {t.heroSubtitle}
             </p>
           </motion.div>
         </div>
@@ -160,7 +165,7 @@ export const Gallery: React.FC = () => {
           className="absolute top-6 left-6 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-brand-yellow backdrop-blur-md rounded-full text-white hover:text-brand-black transition-all z-20 group border border-white/20 shadow-xl"
         >
           <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
-          <span className="text-xs font-black uppercase italic tracking-widest">Kembali ke Katalog</span>
+          <span className="text-xs font-black uppercase italic tracking-widest">{t.backToCatalog}</span>
         </button>
       </div>
 
@@ -263,10 +268,10 @@ export const Gallery: React.FC = () => {
                   <button 
                     onClick={() => setIsZoomed(!isZoomed)}
                     className={`p-3 md:p-4 rounded-2xl transition-all shadow-xl flex items-center gap-2 ${isZoomed ? 'bg-brand-yellow text-brand-black' : 'bg-white/10 text-white hover:bg-white/20'}`}
-                    title="Zoom Toggle"
+                    title={t.zoomToggle}
                   >
                     <Maximize2 className="w-5 h-5 md:w-6 md:h-6" />
-                    <span className="hidden md:block text-[10px] font-black uppercase italic">Zoom</span>
+                    <span className="hidden md:block text-[10px] font-black uppercase italic">{t.zoom}</span>
                   </button>
                   <a 
                     href={selectedItem.src} 
@@ -335,7 +340,7 @@ export const Gallery: React.FC = () => {
 
       <footer className="max-w-7xl mx-auto px-4 mt-20 text-center opacity-40">
         <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
-          Dikelompokkan secara profesional oleh AI Assistant &copy; {new Date().getFullYear()}
+          {t.groupedByAi} &copy; {new Date().getFullYear()}
         </p>
       </footer>
     </div>

@@ -10,17 +10,13 @@ import {
 } from "../data/config";
 import { formatPrice, type CartItem } from "../hooks/useCart";
 import { debounce } from "../lib/debounce";
+import type { UiLang } from "../hooks/useUiLanguage";
+import { AI_TEXTS } from "../data/i18n/aiAssistantCopy";
 
-const AI_SUGGESTIONS = [
-  "Katalog Menu 📑",
-  "Cara Order & Bayar 💳",
-  "Rekomendasi Menu 🍕",
-  "Promo Hari Ini 🎁",
-  "Cek Ongkir 🛵",
-  "Pesan Skala Besar 📦",
-  "Jam Buka ⏰",
-  "Kontak Admin 📞"
-];
+const detectUiLanguage = (): UiLang => {
+  if (typeof navigator === "undefined") return "id";
+  return navigator.language?.toLowerCase().startsWith("en") ? "en" : "id";
+};
 
 interface AiAssistantProps {
   onAddToCart?: (item: Omit<CartItem, 'id' | 'quantity'>) => void;
@@ -29,6 +25,7 @@ interface AiAssistantProps {
   promoPercent?: number;
   menuSweet?: any[];
   menuSavory?: any[];
+  uiLang?: UiLang;
 }
 
 interface TextModelOption {
@@ -74,13 +71,16 @@ export const AiAssistant = ({
   promoCode = PROMO_CODE,
   promoPercent = PROMO_PERCENT,
   menuSweet = MENU_SWEET,
-  menuSavory = MENU_SAVORY
+  menuSavory = MENU_SAVORY,
+  uiLang: uiLangProp
 }: AiAssistantProps) => {
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
+  const uiLang = uiLangProp ?? detectUiLanguage();
+  const aiText = AI_TEXTS[uiLang];
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
-    { role: 'assistant', content: `Halo Kak! Saya "Asisten Virtual" dari ${STORE_NAME}. 🌙✨\n\nSenang banget bisa bantu Kakak! Saya bukan cuma jago kasih rekomendasi martabak lumer, tapi Kakak juga bisa tanya apa saja ke saya—mulai dari info menu, promo, sampai hal-hal umum lainnya. Saya siap jawab!\n\n✨ Apa yang bisa saya bantu:\n📑 Lihat katalog lengkap\n🍕 Rekomendasi menu favorit\n💳 Cara order & pembayaran\n🎁 Promo terbaru\n⏰ Jam operasional\n\nKira-kira Kakak mau tanya apa atau lagi pengen jajan apa hari ini? 😊` }
+    { role: 'assistant', content: aiText.greeting(STORE_NAME) }
   ]);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [isTextModelsLoading, setIsTextModelsLoading] = useState(false);
@@ -237,13 +237,15 @@ export const AiAssistant = ({
 
     try {
       const now = new Date();
-      const currentTime = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const currentTime = now.toLocaleTimeString(uiLang === 'en' ? 'en-US' : 'id-ID', { hour: '2-digit', minute: '2-digit' });
       const currentDate = now.toISOString().split('T')[0];
       const isHoliday = HOLIDAYS.includes(currentDate);
       const currentHour = now.getHours();
       const isStoreOpen = currentHour >= OPEN_HOUR && currentHour < CLOSE_HOUR;
 
        const systemPrompt = `Anda adalah "Asisten Virtual", asisten virtual ${STORE_NAME} yang cerdas, asik, ramah, dan berpengetahuan luas. Anda bisa menjawab APAPUN yang ditanyakan pelanggan — mulai dari pengetahuan umum, cuaca, tips hidup, lelucon, sampai topik sehari-hari.
+
+BAHASA: Balas mengikuti bahasa user. Jika user menggunakan English, balas full English. Jika user menggunakan Bahasa Indonesia, balas Bahasa Indonesia natural. Jika campur, ikuti bahasa dominan user.
 
 PENTING: Anda boleh menjawab topik apa saja, TAPI selalu hubungkan kembali ke ${STORE_NAME} secara natural dan kreatif di akhir jawaban. Contoh:
 - Ditanya soal cuaca → jawab, lalu: "Cuaca dingin gini paling enak makan martabak hangat lho Kak! 🍕"
@@ -336,7 +338,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
       setAiMessages([...newMessages, { role: 'assistant', content: assistantMessage }]);
     } catch (error) {
       console.error("AI Error:", error);
-      setAiMessages([...newMessages, { role: 'assistant', content: "Maaf ya, mungkin koneksi saya saat ini sedang bermasalah. Coba tanya bentar lagi ya! 🙏. atau bisa hubungi via whatsapp di nomor berikut: 081330763633" }]);
+      setAiMessages([...newMessages, { role: 'assistant', content: aiText.error }]);
     } finally {
       setIsAiLoading(false);
     }
@@ -692,7 +694,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
             {/* Shortcuts/Suggestions */}
             <div className="bg-brand-yellow/5 dark:bg-black/20 px-4 pb-3">
               <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-                {AI_SUGGESTIONS.map((suggestion, idx) => (
+                {aiText.suggestions.map((suggestion, idx) => (
                   <motion.button
                     key={idx}
                     whileHover={{ scale: 1.05 }}
@@ -746,7 +748,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
               <button
                 disabled={isAiLoading || !aiInput.trim()}
                 className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black p-2 rounded-xl active:scale-90 transition-transform disabled:opacity-50 shrink-0 mb-0.5 mr-0.5 group"
-                title="Kirim Pesan"
+                title={aiText.sendMessage}
               >
                 <Send className="w-4 h-4 group-hover:translate-x-0.5 group-active:translate-x-1 transition-transform" />
               </button>
@@ -774,7 +776,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
             transition={{ duration: 0.3 }}
             className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-widest shadow-lg relative flex items-center justify-center mx-auto"
           >
-            Tanya Kami 👋
+            {aiText.askUs}
             <div className="absolute -top-1 left-1/2 -ml-1 w-2 h-2 bg-brand-black dark:bg-brand-yellow rotate-45" />
           </motion.div>
         )}

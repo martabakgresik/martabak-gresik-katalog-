@@ -6,7 +6,7 @@ import {
   Facebook, Twitter, Instagram, ExternalLink, Download,
   Sun, Moon, ArrowUp, Clock, ChevronDown,
   MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2, Settings,
-  QrCode, Image as ImageIcon
+  QrCode, Image as ImageIcon, Languages
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
@@ -34,6 +34,8 @@ import { CookieConsent } from "./components/CookieConsent";
 import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
+import { useUiLanguage } from "./hooks/useUiLanguage";
+import { UI_COPY } from "./data/i18n/appCopy";
 
 interface FavoriteItem {
   id: string;
@@ -42,9 +44,10 @@ interface FavoriteItem {
   category?: string;
 }
 
-const PROMO_TEXT = (code: string, pct: number) => `🔥 Diskon ${pct}% untuk Pembelian Pertama via Katalog! (Gunakan kode: ${code})`;
-
 export default function App() {
+  const { uiLang, setUiLang } = useUiLanguage();
+  const t = UI_COPY[uiLang];
+
   // --- STORE STATE (Config-driven) ---
   const [menuSweet, setMenuSweet] = useState(MENU_SWEET);
   const [menuSavory, setMenuSavory] = useState(MENU_SAVORY);
@@ -288,7 +291,7 @@ export default function App() {
 
   const shareGeneral = async (platform: string) => {
     const title = "Martabak Gresik";
-    const text = "Cek Martabak Gresik - Terang Bulan dan Martabak Telor Terenak!";
+    const text = "Cek Martabak Gresik - {t.heroSubtitle} Terenak!";
     const url = APP_URL;
 
     // Use Web Share API if available (best for mobile)
@@ -400,7 +403,7 @@ export default function App() {
             exit={{ y: -50 }}
             className="bg-brand-orange text-brand-black text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
           >
-              {PROMO_TEXT(activePromoCode, activePromoPercent)}
+              {t.promoText(activePromoCode, activePromoPercent)}
             <button
               onClick={() => setShowPromo(false)}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
@@ -420,7 +423,7 @@ export default function App() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsGeneralShareOpen(true)}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
-            title="Bagikan"
+            title={t.share}
           >
             <Send className="w-5 h-5" />
           </motion.button>
@@ -433,7 +436,7 @@ export default function App() {
             whileTap={{ scale: 0.9 }}
             onClick={() => setIsDarkMode(!isDarkMode)}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
-            title={isDarkMode ? "Ganti ke Terang" : "Ganti ke Gelap"}
+            title={isDarkMode ? t.toLight : t.toDark}
           >
             {isDarkMode ? <Sun className="w-5 h-5 text-brand-yellow" /> : <Moon className="w-5 h-5" />}
           </motion.button>
@@ -470,7 +473,7 @@ export default function App() {
                 </div>
                 <div className={`px-3 py-0.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border-2 ${isHoliday ? 'bg-orange-600 border-orange-700' : isOpen ? 'bg-green-500 border-green-600' : 'bg-red-500 border-red-600'} text-white whitespace-nowrap`}>
                   <div className={`w-2 h-2 rounded-full animate-pulse ${isHoliday || isOpen ? 'bg-white' : 'bg-white/50'}`} />
-                  {isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'BUKA' : 'TUTUP (Buka 16:00)'}
+                  {isHoliday ? t.holidayClosed : isOpen ? t.open : t.closedAt(openHour)}
                 </div>
               </div>
               <motion.h1
@@ -486,7 +489,7 @@ export default function App() {
                 <span className="text-brand-yellow font-display">Gresik</span>
               </motion.h1>
               <p className="text-xs md:text-2xl font-medium text-brand-orange italic mt-1 md:mt-2">
-                Terang Bulan dan Martabak Telor
+                {t.heroSubtitle}
               </p>
             </div>
           </div>
@@ -510,7 +513,7 @@ export default function App() {
             </a>
             <div className="flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-brand-orange" />
-              <span>Jam Buka: {openHour}.00 - {closeHour}.00 WIB</span>
+              <span>{t.openingHours}: {openHour}.00 - {closeHour}.00 WIB</span>
             </div>
           </motion.div>
 
@@ -526,7 +529,7 @@ export default function App() {
               } font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-lg backdrop-blur-md`}
             >
               <span className={`w-2 h-2 rounded-full animate-pulse ${isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
-              {isEmergencyClosed ? 'TUTUP SEMENTARA (DARURAT)' : isHoliday ? 'LIBUR (TUTUP)' : isOpen ? 'Sedang Buka - Siap Melayani!' : `Sedang Tutup - Buka Jam ${openHour}:00`}
+              {isEmergencyClosed ? t.emergencyClosed : isHoliday ? t.holidayClosed : isOpen ? t.openNowReady : t.closedNowAt(openHour)}
             </motion.div>
           </div>
 
@@ -548,7 +551,7 @@ export default function App() {
               className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50"
             >
               <ShoppingBag className="w-5 h-5" />
-              Pesan Sekarang
+              {t.orderNow}
             </motion.button>
             <Link to="/gallery">
               <motion.button
@@ -557,7 +560,7 @@ export default function App() {
                 className="bg-brand-yellow text-brand-black px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-yellow/50 cursor-pointer"
               >
                 <ImageIcon className="w-5 h-5" />
-                Lihat Galeri Foto
+                {t.viewGallery}
               </motion.button>
             </Link>
           </motion.div>
@@ -949,21 +952,20 @@ export default function App() {
           exit={{ opacity: 0, x: -20 }}
           className="w-full min-h-screen"
         >
-          <BlogView onClose={() => setCurrentView('catalog')} />
+          <BlogView onClose={() => setCurrentView('catalog')} uiLang={uiLang} />
         </motion.main>
       )}
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="bg-brand-black text-white pt-12 pb-32 md:pb-12 px-6 mt-20 relative overflow-hidden">
+      <footer className="bg-brand-black text-white pt-12 pb-44 md:pb-12 px-6 mt-20 relative overflow-hidden">
         {/* Wavy Background Element */}
         <div className="absolute top-0 left-0 w-full h-16 bg-brand-yellow rounded-b-[100%] -translate-y-8" />
 
         <div className="max-w-6xl mx-auto text-center relative z-10 flex flex-col items-center">
           <h2 className="text-3xl font-display font-black text-brand-yellow uppercase mb-4">Martabak Gresik</h2>
           <p className="opacity-60 text-sm max-w-md mb-8">
-            Nikmati kelezatan martabak autentik dengan bahan berkualitas.
-            Buka setiap hari untuk menemani waktu santai Anda.
+            {t.footerDescription}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 mb-8">
@@ -973,14 +975,14 @@ export default function App() {
               className="bg-brand-orange text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-white hover:text-brand-orange transition-all shadow-lg text-sm uppercase tracking-wider active:scale-95"
             >
               <Download className="w-4 h-4" />
-              Download Katalog
+              {t.downloadCatalog}
             </a>
           </div>
 
           <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] md:text-xs opacity-40">
             <div className="flex flex-col items-center md:items-start gap-1">
               <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
-              <p className="italic font-medium">catatan: *Harga dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.</p>
+              <p className="italic font-medium">{t.priceNote}</p>
             </div>
             
             <div className="flex flex-col items-center md:items-end gap-2">
@@ -1016,28 +1018,28 @@ export default function App() {
                 className="text-brand-orange hover:underline transition-all flex items-center gap-1"
                 type="button"
               >
-                <BookOpen className="w-3 h-3" /> Blog Martabak
+                <BookOpen className="w-3 h-3" /> {t.blogLink}
               </button>
               <button 
                 onClick={() => { setCurrentView('catalog'); setActiveLegalPage('tos'); }}
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Ketentuan Layanan
+                {t.terms}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('privacy')}
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Kebijakan Privasi
+                {t.privacy}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('deletion')}
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Penghapusan Data
+                {t.deletion}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('about')}
@@ -1051,14 +1053,14 @@ export default function App() {
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Tanya Jawab (FAQ)
+                {t.faq}
               </button>
             </div>
             
             <div className="flex gap-6">
               <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5 font-bold">
                 <MessageCircleQuestionIcon className="w-3.5 h-3.5" />
-                Kritik & Saran? Chat Kami
+                {t.feedback}
               </a>
             </div>
           </div>
@@ -1066,7 +1068,16 @@ export default function App() {
       </footer>
 
       {/* Floating Buttons: Back to Top & Cart */}
-      <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end">
+      <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end pointer-events-none">
+        <button
+          onClick={() => setUiLang((prev) => (prev === "id" ? "en" : "id"))}
+          className="px-4 py-2 rounded-full bg-white/95 dark:bg-brand-black border-2 border-brand-black dark:border-brand-yellow text-brand-black dark:text-white shadow-xl font-black text-[10px] uppercase tracking-wide flex items-center gap-2 hover:scale-105 transition-transform pointer-events-auto"
+          title={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
+          aria-label={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
+        >
+          <Languages className="w-4 h-4" />
+          {uiLang === "id" ? "Bahasa ID" : "English"}
+        </button>
         <AnimatePresence>
           {showBackToTop && (
             <motion.button
@@ -1074,8 +1085,8 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="p-3 md:p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90"
-              title="Kembali ke Atas"
+              className="p-3 md:p-4 bg-brand-orange text-white rounded-full shadow-2xl hover:bg-brand-black dark:hover:bg-brand-yellow dark:hover:text-brand-black transition-all group active:scale-90 pointer-events-auto"
+              title={t.backToTop}
             >
               <ArrowUp className="w-5 h-5 md:w-6 md:h-6 group-hover:-translate-y-1 transition-transform" />
             </motion.button>
@@ -1089,7 +1100,7 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
               onClick={() => setIsCartOpen(true)}
-              className="w-auto md:bg-brand-black bg-brand-black text-white px-6 py-4 md:px-8 md:py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 md:gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite]"
+              className="w-auto md:bg-brand-black bg-brand-black text-white px-6 py-4 md:px-8 md:py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 md:gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite] pointer-events-auto"
             >
               <div className="relative">
                 <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 animate-[bounce_2s_infinite]" />
@@ -1097,7 +1108,7 @@ export default function App() {
                   {totalItems}
                 </span>
               </div>
-              <span className="font-bold text-sm md:text-base pr-1 md:pr-2 tracking-wide uppercase">Lihat Pesanan</span>
+              <span className="font-bold text-sm md:text-base pr-1 md:pr-2 tracking-wide uppercase">{t.viewOrder}</span>
             </motion.button>
           )}
         </AnimatePresence>
@@ -1111,6 +1122,7 @@ export default function App() {
         promoPercent={activePromoPercent || PROMO_PERCENT}
         menuSweet={menuSweet}
         menuSavory={menuSavory}
+        uiLang={uiLang}
       />
 
       {/* Cart Sidebar */}
@@ -1144,10 +1156,10 @@ export default function App() {
                   )}
                   <div>
                     <h3 className="text-xl font-black uppercase italic tracking-tighter">
-                      {activeTab === "cart" ? (isCheckoutPhase ? "PENGIRIMAN" : "MENU ANDA") : "MENU FAVORIT"}
+                      {activeTab === "cart" ? (isCheckoutPhase ? t.shippingTitle : t.yourMenuTitle) : t.favoritesTitle}
                     </h3>
                     <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">
-                      {activeTab === "cart" ? (isCheckoutPhase ? "Lengkapi Data Pesanan" : `${totalItems} Produk Terpilih`) : `${favorites.length} Item Simpanan`}
+                      {activeTab === "cart" ? (isCheckoutPhase ? t.completeOrderData : t.selectedProducts(totalItems)) : t.savedItems(favorites.length)}
                     </p>
                   </div>
                 </div>
@@ -1166,13 +1178,13 @@ export default function App() {
                     onClick={() => setActiveTab("cart")}
                     className={`flex-1 py-3 text-xs font-black uppercase italic tracking-wider transition-all border-b-4 ${activeTab === "cart" ? "border-brand-black dark:border-brand-yellow opacity-100" : "border-transparent opacity-30"}`}
                   >
-                    Keranjang ({totalItems})
+                    {t.cartTab(totalItems)}
                   </button>
                   <button
                     onClick={() => setActiveTab("favorites")}
                     className={`flex-1 py-3 text-xs font-black uppercase italic tracking-wider transition-all border-b-4 ${activeTab === "favorites" ? "border-brand-black dark:border-brand-yellow opacity-100" : "border-transparent opacity-30"}`}
                   >
-                    Favorit ({favorites.length})
+                    {t.favoritesTab(favorites.length)}
                   </button>
                 </div>
               )}
@@ -1182,8 +1194,8 @@ export default function App() {
                   cart.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                       <ShoppingBag className="w-16 h-16 mb-4" />
-                      <p className="font-bold uppercase italic">Keranjang Kosong</p>
-                      <p className="text-xs mt-2">Pilih menu favoritmu sekarang!</p>
+                      <p className="font-bold uppercase italic">{t.emptyCart}</p>
+                      <p className="text-xs mt-2">{t.pickMenu}</p>
                     </div>
                   ) : (
                     isCheckoutPhase ? (
@@ -1192,12 +1204,12 @@ export default function App() {
                         <div className="space-y-3 bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 dark:border-white/5 shadow-inner">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-5 bg-brand-orange rounded-full"></div>
-                            <span className="text-xs font-black uppercase tracking-wider dark:text-brand-yellow">Data Pengiriman</span>
+                            <span className="text-xs font-black uppercase tracking-wider dark:text-brand-yellow">{t.shippingData}</span>
                           </div>
                           
                           <div className="space-y-3">
                             <div>
-                              <label className="text-[10px] font-black uppercase opacity-40 mb-1 block px-1">Nama Lengkap</label>
+                              <label className="text-[10px] font-black uppercase opacity-40 mb-1 block px-1">{t.fullName}</label>
                               <input
                                 type="text"
                                 placeholder="..."
@@ -1211,9 +1223,9 @@ export default function App() {
                               <div className="space-y-3">
                                 <div className="space-y-3">
                                   <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase opacity-40 block px-1">Alamat Lengkap</label>
+                                    <label className="text-[10px] font-black uppercase opacity-40 block px-1">{t.fullAddress}</label>
                                     <textarea
-                                      placeholder="Contoh: Jl. Usman Sadar No. 12, RT 01/RW 02, Dekat Masjid Al-Ikhlas..."
+                                      placeholder={t.addressPlaceholder}
                                       value={customerAddress}
                                       onChange={(e) => setCustomerAddress(e.target.value)}
                                       rows={4}
@@ -1240,14 +1252,14 @@ export default function App() {
                                       } else if (result?.error) {
                                         alert(`❌ ${result.error}`);
                                       } else {
-                                        alert('❌ Gagal memproses alamat. Coba lagi.');
+                                        alert(t.addressProcessFailed);
                                       }
                                     }}
                                     disabled={customerAddress.length < 5 || isAiProcessing}
                                     className="w-full bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black py-3.5 rounded-2xl text-[11px] font-black uppercase flex items-center justify-center gap-3 transition-all hover:bg-brand-orange hover:text-white disabled:opacity-40 disabled:grayscale shadow-lg active:scale-95"
                                   >
                                     <Sparkles className={`w-4 h-4 ${isAiProcessing ? 'animate-spin' : 'animate-pulse'}`} />
-                                    {isAiProcessing ? '⏳ mohon tunggu...' : 'Perbaiki Alamat dengan AI'}
+                                    {isAiProcessing ? t.aiPleaseWait : t.aiFixAddress}
                                   </button>
                                 </div>
                               </div>
@@ -1269,7 +1281,7 @@ export default function App() {
                                 }`}
                             >
                               <MapPin className="w-3.5 h-3.5" />
-                              Kirim ke Alamat
+                              {t.deliverToAddress}
                             </button>
                             <button
                               onClick={() => {
@@ -1282,22 +1294,22 @@ export default function App() {
                                 }`}
                             >
                               <ShoppingBag className="w-3.5 h-3.5" />
-                              Ambil Sendiri
+                              {t.pickupSelf}
                             </button>
                           </div>
 
                           {deliveryMethod === 'delivery' && (
                             <div className="bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 shadow-sm">
                               <div className="flex justify-between items-center mb-3">
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Jarak Pengiriman</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">{t.deliveryDistance}</span>
                                 <div className="flex items-center gap-2">
                                   {isDistanceAiVerified && (
                                     <span className="text-[10px] font-black bg-brand-white/80 text-brand-black px-2 py-0.5 rounded-lg border border-brand-black/60 animate-pulse">
-                                    DIVERIFIKASI AI ✔️
+                                    {t.aiVerified}
                                     </span>
                                   )}
                                   <span className={`text-xs font-black px-3 py-1 rounded-full ${distance > maxDistance ? 'bg-red-500 text-white animate-pulse' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg'} ${isDistanceAiVerified && ! (distance > maxDistance) ? 'ring-2 ring-brand-orange ring-offset-2 dark:ring-offset-brand-black animate-in zoom-in' : ''}`}>
-                                    {distance} KM {distance > maxDistance && " (MAKS 10KM)"}
+                                    {distance} KM {distance > maxDistance && ` ${t.maxDistance}`}
                                   </span>
                                 </div>
                               </div>
@@ -1316,7 +1328,7 @@ export default function App() {
                               />
                               {!isDistanceAiVerified && (
                                 <p className="text-[10px] mt-2 font-black text-brand-black/40 dark:text-brand-yellow/40 uppercase tracking-tighter text-center">
-                                  ⚠️ Klik "Perbaiki Alamat dengan AI" untuk mengaktifkan slider
+                                  {t.enableSliderHint}
                                 </p>
                               )}
                               <div className="flex justify-between mt-2 opacity-50 text-[9px] font-black tracking-widest">
@@ -1327,7 +1339,7 @@ export default function App() {
                               </div>
                               {distance > 0 && distance <= maxDistance && (
                                 <p className="text-[10px] mt-4 font-black text-brand-black text-center uppercase tracking-widest bg-brand-black/5 py-2 rounded-xl border border-brand-orange/20">
-                                  Estimasi Ongkir: + {formatPrice(shippingCost)}
+                                  {t.shippingEstimate}: + {formatPrice(shippingCost)}
                                 </p>
                               )}
                             </div>
@@ -1339,8 +1351,8 @@ export default function App() {
                                 <MapPin className="w-5 h-5 text-white" />
                               </div>
                               <div>
-                                <p className="text-xs font-black text-green-600 dark:text-green-500 uppercase tracking-wider">Metode: Ambil Sendiri</p>
-                                <p className="text-[10px] font-bold opacity-60 dark:text-white/60 mt-0.5">Silakan ambil pesanan Anda di outlet kami. Gratis ongkir!</p>
+                                <p className="text-xs font-black text-green-600 dark:text-green-500 uppercase tracking-wider">{t.pickupMethod}</p>
+                                <p className="text-[10px] font-bold opacity-60 dark:text-white/60 mt-0.5">{t.pickupDesc}</p>
                               </div>
                             </div>
                           )}
@@ -1348,9 +1360,9 @@ export default function App() {
                           {/* Promo Code Input */}
                           <div className="bg-brand-black/5 dark:bg-white/10 p-5 rounded-3xl border-2 border-brand-black/5 shadow-sm space-y-3">
                             <div className="flex justify-between items-center mb-1">
-                              <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">Punya Kode Promo?</span>
+                              <span className="text-[10px] font-black uppercase tracking-widest opacity-40 dark:text-brand-yellow">{t.havePromoCode}</span>
                               {promoCode && (
-                                <span className="text-[10px] font-black text-brand-orange uppercase animate-bounce">Terpasang!</span>
+                                <span className="text-[10px] font-black text-brand-orange uppercase animate-bounce">{t.promoApplied}</span>
                               )}
                             </div>
                             <div className="flex gap-2">
@@ -1369,7 +1381,7 @@ export default function App() {
                                 }}
                                 className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-6 py-3 rounded-2xl text-[11px] font-black uppercase hover:bg-brand-orange transition-all active:scale-95 shadow-md"
                               >
-                                Pakai
+                                {t.usePromo}
                               </button>
                             </div>
                             {promoMessage && (
@@ -1394,26 +1406,26 @@ export default function App() {
                          {/* Detailed Summary */}
                          <div className="bg-white/50 dark:bg-white/5 p-6 rounded-3xl border-t-4 border-brand-black dark:border-brand-yellow space-y-2.5">
                           <div className="flex justify-between items-center opacity-60">
-                            <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">Subtotal {totalItems} Item</span>
+                            <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">{t.subtotalItems(totalItems)}</span>
                             <span className="text-sm font-black dark:text-white">{formatPrice(totalPrice + discountAmount - shippingCost)}</span>
                           </div>
                           {deliveryMethod === 'delivery' && distance > 0 && (
                             <div className="flex justify-between items-center opacity-60">
-                              <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">Estimasi Ongkir</span>
+                              <span className="text-[11px] font-black uppercase tracking-widest dark:text-white">{t.estimatedShippingLabel}</span>
                               <span className="text-sm font-black dark:text-white">+{formatPrice(shippingCost)}</span>
                             </div>
                           )}
                           {discountAmount > 0 && (
                             <div className="flex justify-between items-center text-brand-orange">
                               <span className="text-[11px] font-black uppercase tracking-widest italic animate-pulse">
-                                Diskon (<span className="text-brand-black dark:text-brand-yellow">{promoCode}</span>)
+                                {t.discountLabel} (<span className="text-brand-black dark:text-brand-yellow">{promoCode}</span>)
                               </span>
                               <span className="text-sm font-black">-{formatPrice(discountAmount)}</span>
                             </div>
                           )}
                           <div className="h-0.5 bg-brand-black/10 dark:bg-white/10 my-1"></div>
                           <div className="flex justify-between items-center pt-2">
-                            <span className="text-sm font-black uppercase italic tracking-wider dark:text-white">Total Akhir</span>
+                            <span className="text-sm font-black uppercase italic tracking-wider dark:text-white">{t.finalTotal}</span>
                             <span className="text-2xl font-black text-brand-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
                           </div>
                         </div>
@@ -1470,8 +1482,8 @@ export default function App() {
                         </div>
                         <textarea
                           placeholder={item.category?.toLowerCase().includes('terang bulan') 
-                            ? "Catatan (opsional)... Misal: gulanya dikit aja ya kak" 
-                            : "Catatan (opsional)... Misal: jangan dikasih acar"}
+                            ? t.notePlaceholderSweet
+                            : t.notePlaceholderSavory}
                           value={item.note || ""}
                           onChange={(e) => updateNote(item.id, e.target.value)}
                           className="mt-2 w-full text-[10px] p-3 bg-brand-black/5 dark:bg-white/10 rounded-xl outline-none focus:ring-2 focus:ring-brand-orange transition-all dark:text-white dark:placeholder:text-white/20 resize-none min-h-[60px]"
@@ -1484,8 +1496,8 @@ export default function App() {
                   favorites.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                       <Heart className="w-16 h-16 mb-4" />
-                      <p className="font-bold uppercase italic">Belum ada favorit</p>
-                      <p className="text-xs mt-2">Klik ikon hati pada menu untuk menambahkan</p>
+                      <p className="font-bold uppercase italic">{t.noFavorites}</p>
+                      <p className="text-xs mt-2">{t.addFavoriteHint}</p>
                     </div>
                   ) : (
                     favorites.map((item) => (
@@ -1512,7 +1524,7 @@ export default function App() {
                             className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-4 py-2 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-colors active:scale-95 flex items-center gap-2"
                           >
                             <Plus className="w-3 h-3" />
-                            Tambah
+                            {t.addButton}
                           </button>
                         </div>
                       </div>
@@ -1526,12 +1538,12 @@ export default function App() {
                 <div className="p-6 bg-white dark:bg-brand-black border-t-4 border-brand-black dark:border-brand-yellow shadow-[0_-10px_30px_rgba(0,0,0,0.1)] shrink-0 z-20">
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-black uppercase opacity-40 dark:text-white">Estimasi Total</span>
+                      <span className="text-[10px] font-black uppercase opacity-40 dark:text-white">{t.estimatedTotal}</span>
                       <span className="text-xl font-black dark:text-brand-yellow">{formatPrice(totalPrice)}</span>
                     </div>
                     {isCheckoutPhase && (
                       <p className="text-[9px] font-bold opacity-40 uppercase tracking-widest text-center">
-                        Sudah termasuk ongkir & diskon promo
+                        {t.includesShippingPromo}
                       </p>
                     )}
                   </div>
@@ -1541,7 +1553,7 @@ export default function App() {
                       onClick={() => setIsCheckoutPhase(true)}
                       className="w-full py-4 rounded-2xl bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black font-black uppercase italic flex items-center justify-center gap-3 transition-all shadow-xl hover:scale-[1.02] active:scale-95 group"
                     >
-                      <span className="text-sm">Lanjut ke Pembayaran</span>
+                      <span className="text-sm">{t.continueToPayment}</span>
                       <ArrowUp className="w-5 h-5 rotate-90 group-hover:translate-x-1 transition-transform" />
                     </button>
                   ) : (
@@ -1549,11 +1561,11 @@ export default function App() {
                       <button
                         onClick={() => {
                           if (!customerName.trim()) {
-                            alert("Mohon masukkan nama Anda.");
+                            alert(t.enterNameAlert);
                             return;
                           }
                           if (deliveryMethod === 'delivery' && !customerAddress.trim()) {
-                            alert("Mohon masukkan alamat lengkap pengiriman.");
+                            alert(t.enterAddressAlert);
                             return;
                           }
                           setIsOrderConfirmationOpen(true);
@@ -1565,10 +1577,10 @@ export default function App() {
                           }`}
                       >
                         <MessageCircle className="w-6 h-6" />
-                        <span className="text-sm">{isHoliday ? 'Kami Sedang Libur' : distance > MAX_SHIPPING_DISTANCE ? 'Lokasi Terlalu Jauh' : 'Konfirmasi via WhatsApp'}</span>
+                        <span className="text-sm">{isHoliday ? t.holidayNow : distance > MAX_SHIPPING_DISTANCE ? t.locationTooFar : t.confirmViaWhatsApp}</span>
                       </button>
                       <p className="text-[9px] text-center opacity-40 font-bold uppercase tracking-widest">
-                        Klik tombol di atas untuk mengirim pesanan secara otomatis
+                        {t.autoOrderHint}
                       </p>
                     </div>
                   )}
@@ -1618,9 +1630,9 @@ export default function App() {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow leading-tight">
-                      Opsi Tambahan <span className="text-sm font-bold text-brand-orange lowercase not-italic">(Opsional)</span>
+                      {t.extraOptions} <span className="text-sm font-bold text-brand-orange lowercase not-italic">{t.optional}</span>
                     </h3>
-                    <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-1">Pilih topping ekstra supaya makin mantap Kak!</p>
+                    <p className="text-[10px] font-bold opacity-60 dark:text-brand-yellow/80 mt-1 mb-1">{t.extraToppingHint}</p>
                     <p className="text-xs font-bold text-brand-orange uppercase tracking-wider mb-2">{selectedItemForAddon.name}</p>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -1632,7 +1644,7 @@ export default function App() {
                         setTimeout(() => setCopied(false), 2000);
                       }}
                       className="p-2 hover:bg-brand-black/5 dark:hover:bg-white/10 rounded-full transition-colors dark:text-white"
-                      title="Salin Link Menu"
+                      title={t.copyMenuLink}
                     >
                       {copied ? <Check className="w-5 h-5 text-green-500" /> : <Share2 className="w-5 h-5" />}
                     </button>
@@ -1738,7 +1750,7 @@ export default function App() {
               >
                 <div className="flex items-center gap-3">
                   <ShoppingBag className="w-5 h-5" />
-                  Tambah ke Keranjang
+                  {t.addToCart}
                 </div>
                 <div className="text-brand-orange dark:text-brand-black/70">
                   {formatPrice(selectedItemForAddon.price + selectedAddons.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0))}
@@ -1768,8 +1780,8 @@ export default function App() {
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Bagikan Menu</h3>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">Kirim ke teman via WhatsApp</p>
+                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">{t.shareMenuTitle}</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">{t.sendToWhatsApp}</p>
                 </div>
                 <button
                   onClick={() => setShareItem(null)}
@@ -1791,7 +1803,7 @@ export default function App() {
                   className="w-full bg-[#25D366] text-white py-4 rounded-xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
                 >
                   <MessageCircle className="w-5 h-5" />
-                  Kirim ke WhatsApp
+                  {t.sendToWhatsApp}
                 </button>
                 <button
                   onClick={() => {
@@ -1801,7 +1813,7 @@ export default function App() {
                   className="w-full bg-brand-black text-white py-4 rounded-xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
                 >
                   {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                  {copied ? "Berhasil Disalin!" : "Salin Pesan"}
+                  {copied ? t.copiedSuccess : t.copyMessage}
                 </button>
               </div>
             </motion.div>
@@ -1828,8 +1840,8 @@ export default function App() {
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Bagikan Katalog</h3>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">Ajak teman jajan Martabak!</p>
+                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">{t.shareCatalogTitle}</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">{t.inviteFriends}</p>
                 </div>
                 <button
                   onClick={() => setIsGeneralShareOpen(false)}
@@ -1866,23 +1878,23 @@ export default function App() {
                   className="bg-brand-orange text-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:scale-105 transition-transform"
                 >
                   {copied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
-                  <span className="text-[10px] font-bold uppercase">{copied ? "Disalin!" : "Salin Link"}</span>
+                  <span className="text-[10px] font-bold uppercase">{copied ? t.copiedShort : t.copyLink}</span>
                 </button>
               </div>
 
               <div className="text-center space-y-2">
-                <p className="text-[10px] font-bold uppercase opacity-40 dark:text-white/40">Atau bagikan via:</p>
+                <p className="text-[10px] font-bold uppercase opacity-40 dark:text-white/40">{t.orShareVia}</p>
                 <div className="flex justify-center gap-4">
                   <button 
                     onClick={() => shareGeneral("instagram")} 
-                    title="Bagikan ke Instagram"
+                    title={t.shareInstagram}
                     className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white"
                   >
                     <Instagram className="w-5 h-5" />
                   </button>
                   <button 
                     onClick={() => shareGeneral("tiktok")} 
-                    title="Bagikan ke TikTok"
+                    title={t.shareTikTok}
                     className="p-2 bg-white dark:bg-brand-black rounded-full border-2 border-brand-black dark:border-brand-yellow hover:bg-brand-orange hover:text-white transition-all dark:text-white"
                   >
                     <Music2 className="w-5 h-5" />
@@ -1912,8 +1924,8 @@ export default function App() {
             >
               <div className="p-6 bg-brand-black dark:bg-black text-white flex justify-between items-center shrink-0">
                 <div>
-                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Konfirmasi Pesanan</h3>
-                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">Periksa kembali pesanan Anda</p>
+                  <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">{t.orderConfirmationTitle}</h3>
+                  <p className="text-xs font-bold opacity-40 uppercase tracking-wider dark:text-white/40">{t.reviewOrder}</p>
                 </div>
                 <button
                   onClick={() => setIsOrderConfirmationOpen(false)}
@@ -1926,14 +1938,14 @@ export default function App() {
               <div className="flex-grow overflow-y-auto p-6 space-y-6">
                 {/* Order Summary */}
                 <div className="space-y-4">
-                  <h4 className="font-black uppercase italic text-sm border-b-2 border-brand-black dark:border-brand-yellow pb-2 dark:text-brand-yellow">Ringkasan Menu:</h4>
+                  <h4 className="font-black uppercase italic text-sm border-b-2 border-brand-black dark:border-brand-yellow pb-2 dark:text-brand-yellow">{t.menuSummary}</h4>
                   <div className="space-y-3">
                     {cart.map((item) => (
                       <div key={item.id} className="flex justify-between items-start gap-4">
                         <div className="flex-grow">
                           <p className="font-bold text-sm leading-tight dark:text-white">{item.name}</p>
                           {item.category && <p className="text-[10px] uppercase font-bold opacity-40 dark:text-brand-yellow/60">{item.category}</p>}
-                          {item.note && <p className="text-[10px] italic opacity-60 dark:text-white/40">Catatan: {item.note}</p>}
+                          {item.note && <p className="text-[10px] italic opacity-60 dark:text-white/40">{t.noteLabel}: {item.note}</p>}
                           <p className="text-xs opacity-60 dark:text-white/40">{item.quantity}x {formatPrice(item.price)}</p>
                         </div>
                         <span className="font-black text-sm shrink-0 dark:text-white">{formatPrice(item.price * item.quantity)}</span>
@@ -1941,14 +1953,14 @@ export default function App() {
                     ))}
                   </div>
                   <div className="pt-4 border-t-2 border-dashed border-brand-black/20 dark:border-brand-yellow/20 flex justify-between items-center">
-                    <span className="font-black uppercase dark:text-brand-yellow/60">Total Bayar</span>
+                    <span className="font-black uppercase dark:text-brand-yellow/60">{t.totalPayment}</span>
                     <span className="text-xl font-black text-brand-orange">{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
 
                 {/* QRIS Section */}
                 <div className="bg-brand-yellow/20 p-6 rounded-3xl border-2 border-brand-black/10 flex flex-col items-center text-center">
-                  <h4 className="font-black uppercase italic text-sm mb-4 dark:text-brand-yellow">Pembayaran QRIS:</h4>
+                  <h4 className="font-black uppercase italic text-sm mb-4 dark:text-brand-yellow">{t.qrisPayment}</h4>
                   <div className="bg-white p-4 rounded-2xl border-2 border-brand-black shadow-inner mb-4">
                     <img
                       src="/qris.png"
@@ -1963,12 +1975,12 @@ export default function App() {
                     className="mb-4 bg-brand-black text-white px-6 py-3 rounded-xl font-bold text-sm uppercase flex items-center gap-2 hover:bg-brand-orange transition-colors active:scale-95 shadow-md"
                   >
                     <Download className="w-4 h-4" />
-                    Download QRIS
+                    {t.downloadQris}
                   </a>
 
                   <p className="text-[10px] font-bold uppercase opacity-60 leading-tight">
-                    Scan kode QR di atas untuk melakukan pembayaran.<br />
-                    Simpan bukti bayar untuk dikirim via WhatsApp.
+                    {t.scanQrisHint}<br />
+                    {t.saveProofHint}
                   </p>
                 </div>
               </div>
@@ -1982,7 +1994,7 @@ export default function App() {
                   className="w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase italic flex items-center justify-center gap-3 hover:scale-[1.02] transition-transform active:scale-95 shadow-xl"
                 >
                   <MessageCircle className="w-6 h-6" />
-                  Konfirmasi & Kirim WhatsApp
+                  {t.confirmAndSendWhatsApp}
                 </button>
               </div>
             </motion.div>
@@ -2032,7 +2044,8 @@ export default function App() {
         {activeLegalPage && activeLegalPage !== 'about' && activeLegalPage !== 'faq' && (
           <LegalPages 
             type={activeLegalPage as any} 
-            onClose={() => setActiveLegalPage(null)} 
+            onClose={() => setActiveLegalPage(null)}
+            uiLang={uiLang}
           />
         )}
         {activeLegalPage === 'about' && (
@@ -2048,11 +2061,11 @@ export default function App() {
                className="bg-white dark:bg-brand-black rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
              >
                <div className="p-6 bg-brand-black text-white flex justify-between items-center shrink-0">
-                 <h3 className="text-xl font-black uppercase italic tracking-tighter">Bantuan & FAQ</h3>
+                 <h3 className="text-xl font-black uppercase italic tracking-tighter">{t.helpFaqTitle}</h3>
                  <button onClick={() => setActiveLegalPage(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
                </div>
                <div className="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
-                 <FAQ />
+                 <FAQ uiLang={uiLang} />
                </div>
              </motion.div>
           </div>
@@ -2114,7 +2127,7 @@ export default function App() {
                   className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-8 py-3 rounded-2xl font-black uppercase italic text-sm flex items-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  Buka di Google Maps
+                  {t.openInGoogleMaps}
                 </a>
               </div>
             </motion.div>

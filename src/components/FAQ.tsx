@@ -1,41 +1,13 @@
 import React from "react";
 import { motion } from "motion/react";
 import { ChevronDown, HelpCircle } from "lucide-react";
+import type { UiLang } from "../hooks/useUiLanguage";
+import { FAQS_BY_LANG, FAQ_UI_TEXT } from "../data/i18n/faqCopy";
 
-interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-const faqs: FAQItem[] = [
-  {
-    question: "Apa itu Martabak Gresik?",
-    answer: "Martabak Gresik adalah spesialis Terang Bulan (Martabak Manis) dan Martabak Telor yang berlokasi di Jl. Usman Sadar No. 10, Gresik. Kami menyajikan menu dengan bahan premium sejak tahun 2020."
-  },
-  {
-    question: "Bagaimana cara melakukan pemesanan?",
-    answer: "Kakak bisa memesan langsung melalui katalog digital ini dengan menekan tombol 'Pesan' pada menu yang diinginkan, lalu kirim pesanan melalui WhatsApp. Kami juga tersedia di GrabFood, GoFood, dan ShopeeFood."
-  },
-  {
-    question: "Apakah ada promo untuk pembelian pertama?",
-    answer: "Tentu! Gunakan kode promo 'MARTABAKBARU' untuk mendapatkan diskon 10% khusus pembelian pertama melalui katalog ini."
-  },
-  {
-    question: "Berapa ongkos kirim ke lokasi saya?",
-    answer: "Ongkos kirim dihitung berdasarkan jarak (per KM) dari outlet kami di Jl. Usman Sadar No 10. Sistem di keranjang akan mendeteksi lokasi Kakak secara otomatis untuk menghitung estimasi ongkir."
-  },
-  {
-    question: "Jam berapa Martabak Gresik buka?",
-    answer: "Kami buka setiap hari mulai pukul 16:00 sampai 23:00 WIB. Pantau status 'BUKA/TUTUP' di bagian atas katalog ini untuk info real-time."
-  },
-  {
-    question: "Apakah menerima pesanan partai besar?",
-    answer: "Ya, kami menerima pesanan untuk acara selamatan, ulang tahun, atau rapat kantor. Silakan hubungi admin via WhatsApp untuk mendapatkan harga paket spesial."
-  }
-];
-
-export const FAQ = () => {
+export const FAQ = ({ uiLang = "id" }: { uiLang?: UiLang }) => {
   const [openIndex, setOpenIndex] = React.useState<number | null>(null);
+  const faqs = FAQS_BY_LANG[uiLang];
+  const text = FAQ_UI_TEXT[uiLang];
 
   return (
     <div className="space-y-4 max-w-2xl mx-auto py-4">
@@ -44,8 +16,8 @@ export const FAQ = () => {
           <HelpCircle className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-xl font-black uppercase tracking-tight dark:text-brand-yellow">Tanya Jawab (FAQ)</h2>
-          <p className="text-xs font-bold text-brand-black/40 dark:text-white/40">Hal yang sering ditanyakan pelanggan kami</p>
+          <h2 className="text-xl font-black uppercase tracking-tight dark:text-brand-yellow">{text.title}</h2>
+          <p className="text-xs font-bold text-brand-black/40 dark:text-white/40">{text.subtitle}</p>
         </div>
       </div>
 
@@ -85,13 +57,13 @@ export const FAQ = () => {
       </div>
       
       <div className="mt-8 p-6 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-[2rem] text-center space-y-3">
-        <p className="text-sm font-bold">Masih punya pertanyaan lain?</p>
+        <p className="text-sm font-bold">{text.moreQuestions}</p>
         <a 
           href="https://wa.me/6281330763633?text=Halo%20Admin,%20saya%20ingin%20bertanya..."
           target="_blank"
           className="inline-flex items-center gap-2 px-6 py-2 bg-brand-orange text-white rounded-full font-black text-xs uppercase tracking-wider hover:scale-105 transition-transform"
         >
-          Hubungi Admin
+          {text.contactAdmin}
         </a>
       </div>
     </div>
