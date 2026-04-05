@@ -56,6 +56,22 @@ const UI_COPY = {
     openingHours: "Jam Buka",
     backToTop: "Kembali ke Atas",
     viewOrder: "Lihat Pesanan",
+    footerDescription: "Nikmati kelezatan martabak autentik dengan bahan berkualitas. Buka setiap hari untuk menemani waktu santai Anda.",
+    downloadCatalog: "Download Katalog",
+    priceNote: "catatan: *Harga dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.",
+    blogLink: "Blog Martabak",
+    terms: "Ketentuan Layanan",
+    privacy: "Kebijakan Privasi",
+    deletion: "Penghapusan Data",
+    faq: "Tanya Jawab (FAQ)",
+    feedback: "Kritik & Saran? Chat Kami",
+    shippingTitle: "PENGIRIMAN",
+    yourMenuTitle: "MENU ANDA",
+    favoritesTitle: "MENU FAVORIT",
+    completeOrderData: "Lengkapi Data Pesanan",
+    selectedProducts: (count: number) => `${count} Produk Terpilih`,
+    savedItems: (count: number) => `${count} Item Simpanan`,
+    helpFaqTitle: "Bantuan & FAQ",
   },
   en: {
     promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
@@ -69,6 +85,22 @@ const UI_COPY = {
     openingHours: "Opening Hours",
     backToTop: "Back to Top",
     viewOrder: "View Order",
+    footerDescription: "Enjoy authentic martabak made with quality ingredients. Open every day to make your relaxing moments even better.",
+    downloadCatalog: "Download Catalog",
+    priceNote: "note: *Prices may change at any time without prior notice.",
+    blogLink: "Martabak Blog",
+    terms: "Terms of Service",
+    privacy: "Privacy Policy",
+    deletion: "Data Deletion",
+    faq: "FAQ",
+    feedback: "Feedback? Chat Us",
+    shippingTitle: "SHIPPING",
+    yourMenuTitle: "YOUR MENU",
+    favoritesTitle: "FAVORITES",
+    completeOrderData: "Complete Order Details",
+    selectedProducts: (count: number) => `${count} Products Selected`,
+    savedItems: (count: number) => `${count} Saved Items`,
+    helpFaqTitle: "Help & FAQ",
   },
 } as const;
 
@@ -993,8 +1025,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto text-center relative z-10 flex flex-col items-center">
           <h2 className="text-3xl font-display font-black text-brand-yellow uppercase mb-4">Martabak Gresik</h2>
           <p className="opacity-60 text-sm max-w-md mb-8">
-            Nikmati kelezatan martabak autentik dengan bahan berkualitas.
-            Buka setiap hari untuk menemani waktu santai Anda.
+            {t.footerDescription}
           </p>
 
           <div className="flex flex-wrap justify-center gap-4 mb-8">
@@ -1004,14 +1035,14 @@ export default function App() {
               className="bg-brand-orange text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-white hover:text-brand-orange transition-all shadow-lg text-sm uppercase tracking-wider active:scale-95"
             >
               <Download className="w-4 h-4" />
-              Download Katalog
+              {t.downloadCatalog}
             </a>
           </div>
 
           <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] md:text-xs opacity-40">
             <div className="flex flex-col items-center md:items-start gap-1">
               <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
-              <p className="italic font-medium">catatan: *Harga dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.</p>
+              <p className="italic font-medium">{t.priceNote}</p>
             </div>
             
             <div className="flex flex-col items-center md:items-end gap-2">
@@ -1047,28 +1078,28 @@ export default function App() {
                 className="text-brand-orange hover:underline transition-all flex items-center gap-1"
                 type="button"
               >
-                <BookOpen className="w-3 h-3" /> Blog Martabak
+                <BookOpen className="w-3 h-3" /> {t.blogLink}
               </button>
               <button 
                 onClick={() => { setCurrentView('catalog'); setActiveLegalPage('tos'); }}
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Ketentuan Layanan
+                {t.terms}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('privacy')}
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Kebijakan Privasi
+                {t.privacy}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('deletion')}
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Penghapusan Data
+                {t.deletion}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('about')}
@@ -1082,14 +1113,14 @@ export default function App() {
                 className="hover:text-brand-orange transition-colors"
                 type="button"
               >
-                Tanya Jawab (FAQ)
+                {t.faq}
               </button>
             </div>
             
             <div className="flex gap-6">
               <a href="https://wa.me/6281330763633" target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5 font-bold">
                 <MessageCircleQuestionIcon className="w-3.5 h-3.5" />
-                Kritik & Saran? Chat Kami
+                {t.feedback}
               </a>
             </div>
           </div>
@@ -1185,10 +1216,10 @@ export default function App() {
                   )}
                   <div>
                     <h3 className="text-xl font-black uppercase italic tracking-tighter">
-                      {activeTab === "cart" ? (isCheckoutPhase ? "PENGIRIMAN" : "MENU ANDA") : "MENU FAVORIT"}
+                      {activeTab === "cart" ? (isCheckoutPhase ? t.shippingTitle : t.yourMenuTitle) : t.favoritesTitle}
                     </h3>
                     <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest">
-                      {activeTab === "cart" ? (isCheckoutPhase ? "Lengkapi Data Pesanan" : `${totalItems} Produk Terpilih`) : `${favorites.length} Item Simpanan`}
+                      {activeTab === "cart" ? (isCheckoutPhase ? t.completeOrderData : t.selectedProducts(totalItems)) : t.savedItems(favorites.length)}
                     </p>
                   </div>
                 </div>
@@ -2089,7 +2120,7 @@ export default function App() {
                className="bg-white dark:bg-brand-black rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
              >
                <div className="p-6 bg-brand-black text-white flex justify-between items-center shrink-0">
-                 <h3 className="text-xl font-black uppercase italic tracking-tighter">Bantuan & FAQ</h3>
+                 <h3 className="text-xl font-black uppercase italic tracking-tighter">{t.helpFaqTitle}</h3>
                  <button onClick={() => setActiveLegalPage(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
                </div>
                <div className="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
