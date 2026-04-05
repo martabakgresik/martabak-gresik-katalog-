@@ -72,6 +72,11 @@ const UI_COPY = {
     selectedProducts: (count: number) => `${count} Produk Terpilih`,
     savedItems: (count: number) => `${count} Item Simpanan`,
     helpFaqTitle: "Bantuan & FAQ",
+    cartTab: (count: number) => `Keranjang (${count})`,
+    favoritesTab: (count: number) => `Favorit (${count})`,
+    emptyCart: "Keranjang Kosong",
+    pickMenu: "Pilih menu favoritmu sekarang!",
+    openInGoogleMaps: "Buka di Google Maps",
   },
   en: {
     promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
@@ -101,6 +106,11 @@ const UI_COPY = {
     selectedProducts: (count: number) => `${count} Products Selected`,
     savedItems: (count: number) => `${count} Saved Items`,
     helpFaqTitle: "Help & FAQ",
+    cartTab: (count: number) => `Cart (${count})`,
+    favoritesTab: (count: number) => `Favorites (${count})`,
+    emptyCart: "Cart is Empty",
+    pickMenu: "Pick your favorite menu now!",
+    openInGoogleMaps: "Open in Google Maps",
   },
 } as const;
 
@@ -1238,13 +1248,13 @@ export default function App() {
                     onClick={() => setActiveTab("cart")}
                     className={`flex-1 py-3 text-xs font-black uppercase italic tracking-wider transition-all border-b-4 ${activeTab === "cart" ? "border-brand-black dark:border-brand-yellow opacity-100" : "border-transparent opacity-30"}`}
                   >
-                    Keranjang ({totalItems})
+                    {t.cartTab(totalItems)}
                   </button>
                   <button
                     onClick={() => setActiveTab("favorites")}
                     className={`flex-1 py-3 text-xs font-black uppercase italic tracking-wider transition-all border-b-4 ${activeTab === "favorites" ? "border-brand-black dark:border-brand-yellow opacity-100" : "border-transparent opacity-30"}`}
                   >
-                    Favorit ({favorites.length})
+                    {t.favoritesTab(favorites.length)}
                   </button>
                 </div>
               )}
@@ -1254,8 +1264,8 @@ export default function App() {
                   cart.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
                       <ShoppingBag className="w-16 h-16 mb-4" />
-                      <p className="font-bold uppercase italic">Keranjang Kosong</p>
-                      <p className="text-xs mt-2">Pilih menu favoritmu sekarang!</p>
+                      <p className="font-bold uppercase italic">{t.emptyCart}</p>
+                      <p className="text-xs mt-2">{t.pickMenu}</p>
                     </div>
                   ) : (
                     isCheckoutPhase ? (
@@ -2186,7 +2196,7 @@ export default function App() {
                   className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-8 py-3 rounded-2xl font-black uppercase italic text-sm flex items-center gap-2 hover:scale-[1.02] transition-transform active:scale-95 shadow-lg"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  Buka di Google Maps
+                  {t.openInGoogleMaps}
                 </a>
               </div>
             </motion.div>
