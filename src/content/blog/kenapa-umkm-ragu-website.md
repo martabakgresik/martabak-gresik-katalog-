@@ -2,7 +2,7 @@
 title: "Kenapa Pelaku UMKM Masih Ragu Punya Website Sendiri?"
 date: "2026-03-25"
 excerpt: "Menganalisis alasan di balik keraguan pelaku UMKM untuk beralih ke website mandiri dan perbandingannya dengan media sosial."
-thumbnail: "/logo.webp"
+thumbnail: "/images/blog/kenapa-umkm-ragu-website.webp"
 author: "Martabak Gresik Admin"
 ---
 

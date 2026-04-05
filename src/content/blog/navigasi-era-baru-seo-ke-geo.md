@@ -2,7 +2,7 @@
 title: "Navigasi Era Baru: Dari SEO ke GEO (Generative Engine Optimization)"
 date: "2026-03-28"
 excerpt: "Memahami transisi dari SEO konvensional menuju GEO (Generative Engine Optimization) untuk memenangkan persaingan di era kecerdasan buatan."
-thumbnail: "/logo.webp"
+thumbnail: "/images/blog/navigasi-era-baru-seo-ke-geo.webp"
 author: "Martabak Gresik Admin"
 ---
 
