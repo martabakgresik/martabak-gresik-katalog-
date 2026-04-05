@@ -50,8 +50,8 @@ export const SEO: React.FC<SEOProps> = ({
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": -7.1593,
-      "longitude": 112.6565
+      "latitude": -7.1535973,
+      "longitude": 112.6504935
     },
     "openingHoursSpecification": [
       {
