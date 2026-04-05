@@ -980,7 +980,7 @@ export default function App() {
           exit={{ opacity: 0, x: -20 }}
           className="w-full min-h-screen"
         >
-          <BlogView onClose={() => setCurrentView('catalog')} />
+          <BlogView onClose={() => setCurrentView('catalog')} uiLang={uiLang} />
         </motion.main>
       )}
       </AnimatePresence>
