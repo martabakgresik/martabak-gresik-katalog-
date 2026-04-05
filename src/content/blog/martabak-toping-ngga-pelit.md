@@ -1,4 +1,3 @@
----
 title: "Martabak yang Topingnya Ngga Pelit: Definisi Kebahagiaan Hakiki!"
 date: "2026-04-05"
 excerpt: "Lagi nyari martabak yang topingnya barbar dan ngga pelit? Simak kenapa Martabak Gresik jadi pelarian terbaik buat lidah kamu yang haus kemewahan!"

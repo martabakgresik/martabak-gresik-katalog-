@@ -2,7 +2,7 @@
 title: "Too Good to Be True: Mengapa Janji Manis Sering Berujung Petaka"
 date: "2026-03-26"
 excerpt: "Mengenal istilah too good to be true, mekanisme psikologis di baliknya, dan mengapa tawaran semacam ini sangat berbahaya bagi finansial Anda."
-thumbnail: "/logo.webp"
+thumbnail: "/images/blog/too-good-to-be-true.webp"
 author: "Martabak Gresik Admin"
 ---
 
