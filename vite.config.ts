@@ -3,13 +3,6 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 
-// Test secret keys resmi dari Cloudflare
-const CLOUDFLARE_TEST_SECRET_KEYS = [
-  '1x0000000000000000000000000000000AA',
-  '2x0000000000000000000000000000000AB',
-  '3x0000000000000000000000000000000FF',
-];
-
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const apiKey = env.POLLINATIONS_API_KEY || env.VITE_POLLINATIONS_API_KEY;
@@ -18,22 +11,13 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
-      // Dev-only: mock /api/verify-turnstile agar tidak perlu vercel dev
       {
         name: 'local-api-mock',
         configureServer(server) {
           server.middlewares.use('/api/verify-turnstile', (req, res, next) => {
             if (req.method !== 'POST') { next(); return; }
-            const secretKey = env.TURNSTILE_SECRET_KEY;
-            if (CLOUDFLARE_TEST_SECRET_KEYS.includes(secretKey)) {
-              console.log('[Dev Mock] Turnstile bypass - test key detected');
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true, note: 'dev-mock' }));
-            } else {
-              // Jika bukan test key, tetap pass di lokal (dev mode)
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true, note: 'dev-passthrough' }));
-            }
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, note: 'dev-mock' }));
           });
         }
       }
@@ -47,33 +31,44 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      port: 3000,
       proxy: {
+        // PROXY CHAT Professional
         '/api/chat': {
           target: 'https://gen.pollinations.ai',
           changeOrigin: true,
           headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
           rewrite: (path) => path.replace(/^\/api\/chat/, '/v1/chat/completions')
         },
+        // PROXY IMAGE DOUBLE-SAFE (v11.0)
         '/api/generate-image': {
           target: 'https://gen.pollinations.ai',
           changeOrigin: true,
+          bypass: (req, res, proxyOptions) => {
+             // Jika ini adalah POST, gunakan jalur OpenAI-Compatible
+             if (req.method === 'POST') return null;
+             return null; // Biarkan proxy menangani
+          },
           headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
-          rewrite: (path) => path.replace(/^\/api\/generate-image/, '/v1/images/generations')
+          rewrite: (path) => {
+            // Jalur Utama: POST base URL
+            if (path === '/api/generate-image') {
+              return '/v1/images/generations';
+            }
+            // Jalur Cadangan: Menangani browser yang masih menggunakan format GET /api/generate-image/{prompt}
+            const cleanPath = path.replace(/^\/api\/generate-image/, '/image');
+            const separator = cleanPath.includes('?') ? '&' : '?';
+            return apiKey ? `${cleanPath}${separator}key=${apiKey}` : cleanPath;
+          }
         },
+        // PROXY DYNAMIC MODELS
         '/api/image-models': {
           target: 'https://gen.pollinations.ai',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/image-models/, '/image/models')
-        },
-        '/api/text-models': {
-          target: 'https://gen.pollinations.ai',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/text-models/, '/text/models')
+          rewrite: (path) => path.replace(/^\/api\/image-models/, '/v1/models')
         }
       },
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };
 });
-

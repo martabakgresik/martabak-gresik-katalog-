@@ -8,51 +8,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { messages, prompt, systemPrompt, model } = req.body;
   const apiKey = process.env.POLLINATIONS_API_KEY || process.env.VITE_POLLINATIONS_API_KEY;
 
-  if (!apiKey) {
-    return res.status(500).json({ error: 'API Key not configured on server' });
-  }
-
-  // Construct messages: prioritize 'messages' array, then 'prompt'
-  let apiMessages = Array.isArray(messages) ? messages : null;
-  
-  if (!apiMessages && prompt) {
-    apiMessages = [
-      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-      { role: 'user', content: prompt }
-    ];
-  }
-
-  if (!apiMessages || apiMessages.length === 0) {
-    return res.status(400).json({ error: 'Missing messages or prompt' });
-  }
-
   try {
-    const selectedModel = model || 'openai'; // default to openai as per docs
+    const selectedModel = model || 'openai';
     
-    const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        messages: apiMessages,
-        model: selectedModel,
-        seed: -1 // randomize by default
-      })
-    });
+    // Normalization logic: handle both 'messages' (OpenAI) or 'prompt' (Legacy/Custom)
+    let finalPrompt = '';
+    let finalSystem = systemPrompt || 'You are a professional translator.';
 
-    const data = await response.json();
-    
-    if (!response.ok) {
-      console.error('API Error:', data);
-      return res.status(response.status).json(data);
+    if (Array.isArray(messages)) {
+      // If messages array exists, extract prompt and system prompt
+      const sysMsg = messages.find((m: any) => m.role === 'system');
+      const userMsg = messages.find((m: any) => m.role === 'user');
+      if (sysMsg) finalSystem = sysMsg.content;
+      if (userMsg) finalPrompt = userMsg.content;
+    } else {
+      finalPrompt = prompt || '';
     }
 
-    return res.status(200).json(data);
-  } catch (error) {
-    console.error('Error in AI Proxy:', error);
-    return res.status(500).json({ error: 'Failed to communicate with AI provider' });
+    const encodedPrompt = encodeURIComponent(finalPrompt);
+    const encodedSystem = encodeURIComponent(finalSystem);
+    
+    // EXCLUSIVE GET ROUTE for maximum stability in Vercel environment
+    let getUrl = `https://text.pollinations.ai/${encodedPrompt}?model=${selectedModel}&system=${encodedSystem}`;
+    if (apiKey) getUrl += `&key=${apiKey}`;
+    
+    const response = await fetch(getUrl);
+    
+    if (response.ok) {
+      const textResult = await response.text();
+      return res.status(200).json({
+        choices: [{ message: { content: textResult } }]
+      });
+    }
+
+    const errorText = await response.text();
+    return res.status(response.status).json({
+      error: `Pollinations Error: ${response.status} - ${errorText}`,
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({ error: `Fatal Proxy Error: ${error.message}` });
   }
 }
-
