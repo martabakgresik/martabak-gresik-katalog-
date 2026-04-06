@@ -19,6 +19,8 @@ import {
   Instagram,
   MessageCircle
 } from 'lucide-react';
+import { useUiLanguage } from '../hooks/useUiLanguage';
+import { UI_COPY } from '../data/i18n/appCopy';
 
 const PRESETS = [
   { 
@@ -48,6 +50,9 @@ const PRESETS = [
 ];
 
 export const QrGenerator: React.FC = () => {
+  const { uiLang } = useUiLanguage();
+  const t = UI_COPY[uiLang];
+
   const [text, setText] = useState('https://martabakgresik.my.id');
   const [size, setSize] = useState(300);
   const [bgColor, setBgColor] = useState('#ffffff');
@@ -104,13 +109,13 @@ export const QrGenerator: React.FC = () => {
           onClick={() => window.history.back()}
           className="flex items-center gap-2 font-bold uppercase tracking-tighter hover:text-brand-orange transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" /> Kembali
+          <ArrowLeft className="w-5 h-5" /> {t.back}
         </button>
         <div className="flex items-center gap-2">
           <div className="bg-brand-orange p-2 rounded-xl">
             <QrCode className="w-6 h-6 text-white" />
           </div>
-          <h1 className="text-2xl font-black uppercase italic tracking-tighter">QR Generator</h1>
+          <h1 className="text-2xl font-black uppercase italic tracking-tighter">{t.qrTitle}</h1>
         </div>
         <div className="w-20 hidden md:block" /> {/* Spacer */}
       </motion.div>
@@ -128,12 +133,12 @@ export const QrGenerator: React.FC = () => {
           <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl border border-brand-black/5 dark:border-white/10 p-6 rounded-[2.5rem] shadow-xl">
             <div className="flex items-center gap-2 mb-4 text-brand-orange">
               <Type className="w-5 h-5" />
-              <h2 className="font-black uppercase italic tracking-wider text-sm">Konten QR Code</h2>
+              <h2 className="font-black uppercase italic tracking-wider text-sm">{t.qrContent}</h2>
             </div>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Masukkan URL atau Teks di sini..."
+              placeholder="..."
               className="w-full max-w-md bg-white/50 dark:bg-black/50 border-2 border-brand-black/10 dark:border-white/10 p-4 rounded-2xl font-bold focus:border-brand-orange outline-none transition-all h-24 resize-none text-sm"
             />
             <div className="flex flex-wrap items-center justify-between mt-4 gap-4">
@@ -154,7 +159,7 @@ export const QrGenerator: React.FC = () => {
                 className="flex items-center gap-2 text-xs font-black uppercase tracking-widest opacity-60 hover:opacity-100 transition-opacity"
               >
                 {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-                {copied ? 'Tersalin' : 'Salin Teks'}
+                {copied ? t.copiedShort : t.copyMessage}
               </button>
             </div>
           </div>
@@ -169,7 +174,7 @@ export const QrGenerator: React.FC = () => {
               >
                 <div className="flex items-center gap-2">
                   <Palette className="w-5 h-5" />
-                  <h2 className="font-black uppercase italic tracking-wider text-sm">Tampilan</h2>
+                  <h2 className="font-black uppercase italic tracking-wider text-sm">{t.qrAppearance}</h2>
                 </div>
                 <motion.div
                   animate={{ rotate: isAppearanceOpen ? 180 : 0 }}
@@ -189,25 +194,25 @@ export const QrGenerator: React.FC = () => {
                     className="space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase opacity-60">Gaya QR</label>
+                      <label className="text-[10px] font-black uppercase opacity-60">{t.qrStyle}</label>
                       <div className="flex gap-2 p-1 bg-black/5 dark:bg-white/5 rounded-lg">
                         <button 
                           onClick={() => setQrStyle('squares')}
                           className={`px-3 py-1 text-[9px] font-black uppercase rounded-md transition-all ${qrStyle === 'squares' ? 'bg-brand-orange text-white shadow-md' : 'opacity-40'}`}
                         >
-                          Kotak
+                          Squares
                         </button>
                         <button 
                           onClick={() => setQrStyle('dots')}
                           className={`px-3 py-1 text-[9px] font-black uppercase rounded-md transition-all ${qrStyle === 'dots' ? 'bg-brand-orange text-white shadow-md' : 'opacity-40'}`}
                         >
-                          Bulat
+                          Dots
                         </button>
                       </div>
                     </div>
                     <div className="space-y-2">
                        <div className="flex justify-between">
-                        <label className="text-[10px] font-black uppercase opacity-60">Kelengkungan Mata</label>
+                        <label className="text-[10px] font-black uppercase opacity-60">{t.qrEyeRadius}</label>
                         <span className="text-[10px] font-bold">{eyeRadius}px</span>
                       </div>
                       <input 
@@ -221,7 +226,7 @@ export const QrGenerator: React.FC = () => {
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase opacity-60">Warna Utama</label>
+                      <label className="text-[10px] font-black uppercase opacity-60">{t.qrFgColor}</label>
                       <input 
                         type="color" 
                         value={fgColor} 
@@ -230,7 +235,7 @@ export const QrGenerator: React.FC = () => {
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] font-black uppercase opacity-60">Background</label>
+                      <label className="text-[10px] font-black uppercase opacity-60">{t.qrBgColor}</label>
                       <input 
                         type="color" 
                         value={bgColor} 
@@ -240,7 +245,7 @@ export const QrGenerator: React.FC = () => {
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <label className="text-[10px] font-black uppercase opacity-60">Ukuran</label>
+                        <label className="text-[10px] font-black uppercase opacity-60">{t.qrSize}</label>
                         <span className="text-[10px] font-bold">{size}px</span>
                       </div>
                       <input 
@@ -263,7 +268,7 @@ export const QrGenerator: React.FC = () => {
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2 text-brand-orange">
                   <ImageIcon className="w-5 h-5" />
-                  <h2 className="font-black uppercase italic tracking-wider text-sm">Logo</h2>
+                  <h2 className="font-black uppercase italic tracking-wider text-sm">{t.qrLogo}</h2>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input 
@@ -285,14 +290,14 @@ export const QrGenerator: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <label className="w-full bg-brand-orange text-white text-[10px] font-black uppercase py-2 px-4 rounded-xl cursor-pointer hover:scale-105 transition-transform flex items-center justify-center gap-2">
-                       Pilih Logo
+                       {t.qrSelectLogo}
                       <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} disabled={!includeImage} />
                     </label>
                     <button 
                       onClick={() => setImageSrc('/metaseo.webp')}
                       className="w-full mt-2 text-[9px] font-black uppercase opacity-40 hover:opacity-100 transition-opacity"
                     >
-                      Reset Ke Default
+                      {t.qrResetLogo}
                     </button>
                   </div>
                 </div>
@@ -310,7 +315,7 @@ export const QrGenerator: React.FC = () => {
         >
           <div className="sticky top-24 w-full flex flex-col items-center">
             <div className="bg-brand-black text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] mb-6 shadow-xl border border-white/10">
-              Live Preview
+              {t.qrLivePreview}
             </div>
 
             <motion.div 
@@ -348,7 +353,7 @@ export const QrGenerator: React.FC = () => {
                 className="bg-brand-orange text-white py-4 rounded-3xl font-black uppercase italic flex items-center justify-center gap-3 shadow-xl shadow-brand-orange/20"
               >
                 {isDownloading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-                Download Image
+                {t.qrDownload}
               </motion.button>
               
               <motion.button
@@ -373,12 +378,12 @@ export const QrGenerator: React.FC = () => {
                 className="bg-brand-black dark:bg-white text-white dark:text-brand-black py-4 rounded-3xl font-black uppercase italic flex items-center justify-center gap-3 shadow-xl"
               >
                 <Share2 className="w-5 h-5" />
-                Share
+                {t.qrShare}
               </motion.button>
             </div>
 
             <p className="mt-8 text-[10px] font-black uppercase opacity-40 text-center max-w-xs leading-relaxed">
-              QR Code yang dihasilkan kompatibel dengan semua scanner smartphone. Level koreksi kesalahan diset ke High (H) untuk memastikan logo tidak mengganggu pembacaan.
+              {t.qrNote}
             </p>
           </div>
         </motion.div>

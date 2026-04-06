@@ -1007,6 +1007,13 @@ export default function App() {
                   <QrCode className="w-3 h-3 text-brand-orange" />
                   QR Generator
                 </Link>
+                <Link 
+                  to="/converter" 
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-orange/20 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+                >
+                  <ImageIcon className="w-3 h-3 text-brand-orange" />
+                  {t.converterTitle}
+                </Link>
               </div>
             </div>
             
@@ -2138,6 +2145,65 @@ export default function App() {
           </>
         )}
       </AnimatePresence>
+
+      {/* Footer */}
+      <footer className="bg-brand-black dark:bg-black text-white pt-20 pb-10 px-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-16 bg-brand-yellow dark:bg-brand-black rounded-b-[100%] -translate-y-8" />
+        
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <img src="/logo.webp" alt="Logo" className="w-12 h-12" />
+              <h3 className="text-xl font-black uppercase italic tracking-tighter">Martabak <span className="text-brand-yellow">Gresik</span></h3>
+            </div>
+            <p className="text-sm opacity-60 leading-relaxed max-w-xs">{t.footerDescription}</p>
+            <div className="flex gap-4">
+              <a href="https://instagram.com/martabakgresik" className="p-2 bg-white/10 hover:bg-brand-orange rounded-lg transition-colors"><Instagram className="w-5 h-5" /></a>
+              <a href={`https://wa.me/${storePhone.replace(/\s/g, '')}`} className="p-2 bg-white/10 hover:bg-brand-orange rounded-lg transition-colors"><MessageCircle className="w-5 h-5" /></a>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <h4 className="font-black uppercase italic tracking-wider text-sm text-brand-yellow">Utility Tools</h4>
+            <div className="flex flex-col gap-3">
+              <Link to="/converter" className="group flex items-center justify-between p-4 bg-white/5 hover:bg-brand-orange rounded-2xl border border-white/10 transition-all">
+                <div className="flex items-center gap-3">
+                  <ImageIcon className="w-5 h-5 text-brand-yellow" />
+                  <span className="text-xs font-bold uppercase">{t.converterTitle}</span>
+                </div>
+                <ArrowUp className="w-4 h-4 rotate-90 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+              </Link>
+              <Link to="/qr" className="group flex items-center justify-between p-4 bg-white/5 hover:bg-brand-orange rounded-2xl border border-white/10 transition-all">
+                <div className="flex items-center gap-3">
+                  <QrCode className="w-5 h-5 text-brand-yellow" />
+                  <span className="text-xs font-bold uppercase">{t.qrTitle}</span>
+                </div>
+                <ArrowUp className="w-4 h-4 rotate-90 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <h4 className="font-black uppercase italic tracking-wider text-sm text-brand-yellow">Link Terkait</h4>
+            <div className="flex flex-col gap-2">
+              <button onClick={() => setActiveLegalPage('faq')} className="text-left text-xs font-bold opacity-60 hover:opacity-100 hover:text-brand-orange transition-all uppercase tracking-widest">{t.faq}</button>
+              <button onClick={() => setActiveLegalPage('about')} className="text-left text-xs font-bold opacity-60 hover:opacity-100 hover:text-brand-orange transition-all uppercase tracking-widest">Tentang Kami</button>
+              <button onClick={() => setActiveLegalPage('tos')} className="text-left text-xs font-bold opacity-60 hover:opacity-100 hover:text-brand-orange transition-all uppercase tracking-widest">{t.terms}</button>
+              <button onClick={() => setActiveLegalPage('privacy')} className="text-left text-xs font-bold opacity-60 hover:opacity-100 hover:text-brand-orange transition-all uppercase tracking-widest">{t.privacy}</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.2em]">© {new Date().getFullYear()} Martabak Gresik. All Rights Reserved.</p>
+          <div className="flex items-center gap-6">
+            <button onClick={() => setUiLang(uiLang === 'id' ? 'en' : 'id')} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-brand-yellow transition-colors italic">
+              <Languages className="w-4 h-4" />
+              {uiLang === 'id' ? 'English' : 'Indonesia'}
+            </button>
+          </div>
+        </div>
+      </footer>
 
       {/* Cookie Consent Banner */}
       <CookieConsent 
