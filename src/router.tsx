@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import App from './App';
 import { QrGenerator } from './components/QrGenerator';
 import { Gallery } from './components/Gallery';
+import { ImageConverter } from './components/ImageConverter';
 
 function RootLayout() {
   return <Outlet />;
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
       {
         path: 'gallery',
         element: <Gallery />,
+      },
+      {
+        path: 'converter',
+        element: <ImageConverter />,
       },
       {
         path: '*',

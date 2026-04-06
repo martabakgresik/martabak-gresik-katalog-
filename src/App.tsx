@@ -982,7 +982,7 @@ export default function App() {
             </a>
           </div>
 
-          <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] md:text-xs opacity-40">
+          <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] md:text-xs text-white/40">
             <div className="flex flex-col items-center md:items-start gap-1">
               <p>© {new Date().getFullYear()} Martabak Gresik. All rights reserved.</p>
               <p className="italic font-medium">{t.priceNote}</p>
@@ -990,22 +990,29 @@ export default function App() {
             
             <div className="flex flex-col items-center md:items-end gap-2">
               <p className="font-bold">
-                Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-orange hover:opacity-80 transition-opacity cursor-pointer">Arif Tirtana</a>
+                Deliciously Coded by <a href="https://ariftirtana.my.id" target="_blank" rel="noopener noreferrer" className="text-brand-yellow hover:text-brand-orange transition-colors cursor-pointer">Arif Tirtana</a>
               </p>
               <div className="flex items-center gap-2">
                 <Link 
                   to="/gallery" 
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-orange/20 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-yellow/20 hover:text-brand-yellow rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 group"
                 >
-                  <ImageIcon className="w-3 h-3 text-brand-orange" />
+                  <ImageIcon className="w-3 h-3 text-brand-white group-hover:text-brand-yellow transition-colors" />
                   Gallery
                 </Link>
                 <Link 
                   to="/qr" 
-                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-orange/20 rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-yellow/20 hover:text-brand-yellow rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 group"
                 >
-                  <QrCode className="w-3 h-3 text-brand-orange" />
+                  <QrCode className="w-3 h-3 text-brand-white group-hover:text-brand-yellow transition-colors" />
                   QR Generator
+                </Link>
+                <Link 
+                  to="/converter" 
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-brand-yellow/20 hover:text-brand-yellow rounded-full border border-white/10 text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95 group"
+                >
+                  <ImageIcon className="w-3 h-3 text-brand-white group-hover:text-brand-yellow transition-colors" />
+                  {t.converterTitle}
                 </Link>
               </div>
             </div>
@@ -1018,42 +1025,42 @@ export default function App() {
                     document.getElementById('blog-top-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }, 100);
                 }}
-                className="text-brand-orange hover:underline transition-all flex items-center gap-1"
+                className="text-brand-white hover:text-brand-yellow hover:underline transition-all flex items-center gap-1"
                 type="button"
               >
                 <BookOpen className="w-3 h-3" /> {t.blogLink}
               </button>
               <button 
                 onClick={() => { setCurrentView('catalog'); setActiveLegalPage('tos'); }}
-                className="hover:text-brand-orange transition-colors"
+                className="hover:text-brand-yellow transition-colors"
                 type="button"
               >
                 {t.terms}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('privacy')}
-                className="hover:text-brand-orange transition-colors"
+                className="hover:text-brand-yellow transition-colors"
                 type="button"
               >
                 {t.privacy}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('deletion')}
-                className="hover:text-brand-orange transition-colors"
+                className="hover:text-brand-yellow transition-colors"
                 type="button"
               >
                 {t.deletion}
               </button>
               <button 
                 onClick={() => setActiveLegalPage('about')}
-                className="hover:text-brand-orange transition-colors"
+                className="hover:text-brand-yellow transition-colors"
                 type="button"
               >
                 About Me
               </button>
               <button 
                 onClick={() => setActiveLegalPage('faq')}
-                className="hover:text-brand-orange transition-colors"
+                className="hover:text-brand-yellow transition-colors"
                 type="button"
               >
                 {t.faq}
@@ -2138,6 +2145,8 @@ export default function App() {
           </>
         )}
       </AnimatePresence>
+
+
 
       {/* Cookie Consent Banner */}
       <CookieConsent 
