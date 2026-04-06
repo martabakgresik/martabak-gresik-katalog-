@@ -230,15 +230,15 @@ export const ImageConverter: React.FC = () => {
         <div className="w-20 hidden md:block" />
       </motion.div>
 
-      <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Left: Controls & Upload */}
-        <motion.div 
-          initial={{ x: -30, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          className="space-y-6"
-        >
+      <div className="w-full max-w-5xl space-y-8">
+        {/* Top Section: Settings & Upload */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Settings Card */}
-          <div className="bg-white/40 dark:bg-white/5 backdrop-blur-xl border-4 border-brand-black dark:border-brand-yellow/20 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group">
+          <motion.div 
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="bg-white/40 dark:bg-white/5 backdrop-blur-xl border-4 border-brand-black dark:border-brand-yellow/20 p-8 rounded-[2.5rem] shadow-2xl relative overflow-hidden group"
+          >
             <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/5 rounded-full -translate-y-16 translate-x-16 blur-3xl group-hover:bg-brand-orange/10 transition-colors" />
             
             <div className="flex items-center gap-2 mb-6 text-brand-orange">
@@ -319,15 +319,17 @@ export const ImageConverter: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Upload Dropzone */}
-          <div 
+          <motion.div 
+            initial={{ x: 30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
             onClick={() => fileInputRef.current?.click()}
             onDragOver={(e) => { e.preventDefault(); setIsDragActive(true); }}
             onDragLeave={() => setIsDragActive(false)}
             onDrop={(e) => { e.preventDefault(); setIsDragActive(false); addFiles(Array.from(e.dataTransfer.files)); }}
-            className={`cursor-pointer border-4 border-dashed rounded-[3rem] p-12 flex flex-col items-center justify-center transition-all duration-300 group relative overflow-hidden h-[250px] ${
+            className={`cursor-pointer border-4 border-dashed rounded-[3rem] p-12 flex flex-col items-center justify-center transition-all duration-300 group relative overflow-hidden h-full min-h-[300px] lg:min-h-full ${
               isDragActive 
                 ? 'border-brand-orange bg-brand-orange/5 shadow-2xl scale-[1.01]' 
                 : 'border-brand-black/10 dark:border-white/10 hover:border-brand-orange/40 hover:bg-white/20 dark:hover:bg-white/5 shadow-xl'
@@ -346,15 +348,15 @@ export const ImageConverter: React.FC = () => {
               ref={fileInputRef}
               onChange={handleFileSelect}
             />
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
-        {/* Right: Files List */}
+        {/* Bottom Section: Files List / Queue */}
         <motion.div 
-          initial={{ x: 30, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="bg-white/40 dark:bg-white/5 backdrop-blur-xl border-4 border-brand-black dark:border-brand-yellow/20 rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-auto min-h-[500px]"
+          className="bg-white/40 dark:bg-white/5 backdrop-blur-xl border-4 border-brand-black dark:border-brand-yellow/20 rounded-[3rem] shadow-2xl overflow-hidden flex flex-col h-auto"
         >
           <div className="p-8 border-b-2 border-brand-black/5 dark:border-white/5 flex items-center justify-between bg-brand-black/5">
             <div className="flex items-center gap-3">
