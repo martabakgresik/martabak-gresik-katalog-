@@ -18,6 +18,13 @@ export const BLOG_I18N: Record<UiLang, {
   otherArticles: string;
   notFoundTitle: string;
   notFoundDesc: string;
+  allCategories: string;
+  relatedPosts: string;
+  prevPost: string;
+  nextPost: string;
+  backBtn: string;
+  categories: Record<string, string>;
+  readingTime: (min: number) => string;
 }> = {
   id: {
     backCatalog: 'Kembali ke Katalog',
@@ -37,6 +44,19 @@ export const BLOG_I18N: Record<UiLang, {
     otherArticles: 'Lihat Artikel Lainnya',
     notFoundTitle: 'Opps! Artikel Hilang',
     notFoundDesc: 'Maaf Kak, artikel yang Kakak cari sepertinya sudah dipindahkan atau dihapus. Jangan sedih, masih banyak cerita lezat lainnya!',
+    allCategories: 'Semua',
+    relatedPosts: 'Baca Juga',
+    prevPost: 'Sebelumnya',
+    nextPost: 'Berikutnya',
+    backBtn: 'Kembali',
+    categories: {
+      Tips: 'Tips',
+      Menu: 'Menu',
+      Info: 'Info',
+      UMKM: 'UMKM',
+      Lainnya: 'Lainnya'
+    },
+    readingTime: (min: number) => `${min} mnt baca`
   },
   en: {
     backCatalog: 'Back to Catalog',
@@ -56,5 +76,18 @@ export const BLOG_I18N: Record<UiLang, {
     otherArticles: 'See Other Articles',
     notFoundTitle: 'Oops! Article Missing',
     notFoundDesc: 'Sorry, the article you are looking for was moved or removed. There are still many other tasty stories!',
+    allCategories: 'All',
+    relatedPosts: 'Related Posts',
+    prevPost: 'Previous',
+    nextPost: 'Next',
+    backBtn: 'Back',
+    categories: {
+      Tips: 'Tips',
+      Menu: 'Menu',
+      Info: 'Info',
+      UMKM: 'SME',
+      Lainnya: 'Others'
+    },
+    readingTime: (min: number) => `${min} min read`
   },
 };

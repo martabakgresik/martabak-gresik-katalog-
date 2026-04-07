@@ -4,6 +4,7 @@ date: "2026-03-26"
 excerpt: "Membuat website hanyalah langkah awal. Pelajari panduan komprehensif mulai dari optimasi dasar hingga strategi lanjutan untuk mengubah website menjadi mesin pertumbuhan bisnis."
 thumbnail: "/images/blog/strategi-mengelola-website.webp"
 author: "Martabak Gresik Admin"
+category: "UMKM"
 ---
 
 # Panduan Lengkap: Strategi Mengelola Website Bisnis Agar Tidak Sekadar Jadi Pajangan

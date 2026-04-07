@@ -11,6 +11,9 @@ interface SEOProps {
   category?: string;
   noindex?: boolean;
   phone?: string;
+  date?: string;
+  author?: string;
+  lang?: string;
 }
 
 export const SEO: React.FC<SEOProps> = ({
@@ -22,13 +25,17 @@ export const SEO: React.FC<SEOProps> = ({
   price,
   category,
   noindex = false,
-  phone = "+6281330763633"
+  phone = "+6281330763633",
+  date,
+  author = "Martabak Gresik",
+  lang = "id"
 }) => {
   const siteTitle = title.includes("Martabak Gresik") ? title : `${title} | Martabak Gresik`;
   const SITE_NAME = "Martabak Gresik";
   const BASE_URL = "https://martabakgresik.my.id";
+  const locale = lang === 'en' ? 'en_US' : 'id_ID';
 
-  // Restaurant Schema — lengkap dengan semua field
+  // Restaurant Schema
   const restaurantSchema = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
@@ -69,12 +76,7 @@ export const SEO: React.FC<SEOProps> = ({
       "reviewCount": "87",
       "bestRating": "5",
       "worstRating": "1"
-    },
-    "sameAs": [
-      "https://www.instagram.com/martabakgresik",
-      "https://www.facebook.com/martabakgresik",
-      "https://maps.app.goo.gl/martabakgresik"
-    ]
+    }
   };
 
   const productSchema = price ? {
@@ -101,21 +103,54 @@ export const SEO: React.FC<SEOProps> = ({
     "category": category
   } : null;
 
+  const blogSchema = type === 'article' ? {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": title,
+    "description": description,
+    "image": image,
+    "datePublished": date,
+    "author": {
+      "@type": "Organization",
+      "name": SITE_NAME,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${BASE_URL}/logo.webp`
+      }
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": SITE_NAME,
+      "logo": {
+        "@type": "ImageObject",
+        "url": `${BASE_URL}/logo.webp`
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": url
+    }
+  } : null;
+
   return (
     <Helmet>
       {/* Standard metadata tags */}
       <title>{siteTitle}</title>
       <meta name="description" content={description} />
-      <meta name="author" content={SITE_NAME} />
+      <meta name="author" content={author} />
 
-      {/* Structured Data — Restaurant */}
+      {/* Structured Data */}
       <script type="application/ld+json">
         {JSON.stringify(restaurantSchema)}
       </script>
-      {/* Structured Data — Product (jika ada item) */}
       {productSchema && (
         <script type="application/ld+json">
           {JSON.stringify(productSchema)}
+        </script>
+      )}
+      {blogSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(blogSchema)}
         </script>
       )}
 
@@ -127,9 +162,17 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:image" content={image} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:locale" content="id_ID" />
+      <meta property="og:locale" content={locale} />
       <meta property="og:site_name" content={SITE_NAME} />
       {phone && <meta property="og:phone_number" content={phone} />}
+      
+      {/* Article Specific Meta */}
+      {type === 'article' && date && (
+        <meta property="article:published_time" content={new Date(date).toISOString()} />
+      )}
+      {type === 'article' && author && (
+        <meta property="article:author" content={author} />
+      )}
 
       {/* Twitter / X */}
       <meta name="twitter:card" content="summary_large_image" />

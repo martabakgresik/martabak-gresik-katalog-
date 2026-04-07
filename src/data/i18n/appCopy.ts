@@ -139,6 +139,10 @@ export const UI_COPY: Record<UiLang, any> = {
     qrShare: "Bagikan QR",
     qrNote: "QR Code yang dihasilkan kompatibel dengan semua smartphone.",
     qrTitle: "QR Generator",
+    searchHint: "Cari menu (Misal: Keju, Ayam, Sapi, Pandan)...",
+    scrollMenu: "Scroll Menu di Bawah",
+    sweetTitle: "Terang Bulan",
+    savoryTitle: "Martabak Telor",
   },
   en: {
     promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
@@ -278,5 +282,9 @@ export const UI_COPY: Record<UiLang, any> = {
     qrShare: "Share QR",
     qrNote: "The generated QR Code is compatible with all smartphones.",
     qrTitle: "QR Generator",
+    searchHint: "Search menu (E.g. Cheese, Chicken, Beef, Pandan)...",
+    scrollMenu: "Scroll Menu Below",
+    sweetTitle: "Sweet Martabak",
+    savoryTitle: "Savory Egg Martabak",
   },
 } as const;
