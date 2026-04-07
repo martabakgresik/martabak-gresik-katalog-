@@ -62,6 +62,17 @@ export function getBlogPosts(): BlogPost[] {
         content: body || '',
       } as BlogPost;
     })
+    .filter(post => {
+      // Di mode development, tampilkan semua artikel (termasuk draf masa depan)
+      if (import.meta.env.DEV) return true;
+      
+      if (!post.date) return false;
+      const now = new Date();
+      // Mendapatkan tanggal hari ini dalam format YYYY-MM-DD sesuai waktu Jakarta
+      const today = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        
+      return post.date <= today;
+    })
     .sort((a, b) => {
       const dateA = new Date(a.date).getTime() || 0;
       const dateB = new Date(b.date).getTime() || 0;
