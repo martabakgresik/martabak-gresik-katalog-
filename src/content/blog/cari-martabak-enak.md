@@ -3,7 +3,6 @@ title: "Mencari Martabak Enak? Ini Rahasia Tekstur dan Topping yang Bikin Nagih"
 date: "2026-04-07"
 description: "Panduan menemukan martabak enak dengan kriteria adonan sempurna dan topping melimpah ala Martabak Gresik."
 image: "/images/blog/martabak-enak-gresik.webp"
-category: "Kuliner"
 author: "Martabak Gresik Admin"
 ---
 
