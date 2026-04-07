@@ -291,7 +291,7 @@ export default function App() {
 
   const shareGeneral = async (platform: string) => {
     const title = "Martabak Gresik";
-    const text = "Cek Martabak Gresik - {t.heroSubtitle} Terenak!";
+    const text = `Cek Martabak Gresik - ${t.heroSubtitle} Terenak!`;
     const url = APP_URL;
 
     // Use Web Share API if available (best for mobile)
@@ -603,7 +603,7 @@ export default function App() {
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Cari menu (Misal: Keju, Ayam, sapi, Pandan)..."
+                placeholder={t.searchHint}
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -654,7 +654,7 @@ export default function App() {
               }}
               className="flex flex-col items-center"
             >
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] mb-1">Scroll Menu Below</span>
+              <span className="text-[9px] font-black uppercase tracking-[0.3em] mb-1">{t.scrollMenu}</span>
               <ChevronDown className="w-5 h-5 animate-pulse" />
             </motion.div>
           </motion.div>
@@ -680,7 +680,7 @@ export default function App() {
           <section className="space-y-6 md:space-y-8">
             <div className="flex items-center gap-4 mb-2">
               <div className="h-1 w-12 bg-brand-black dark:bg-brand-yellow rounded-full" />
-              <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">Terang Bulan</h2>
+              <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">{t.sweetTitle}</h2>
             </div>
             <div className="relative flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
               {!imagesLoaded['/terang-bulan.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}
@@ -790,7 +790,7 @@ export default function App() {
           <section className="space-y-6 md:space-y-8">
             <div className="flex items-center gap-4 mb-2">
               <div className="h-1 w-12 bg-brand-black dark:bg-brand-yellow rounded-full" />
-              <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">Martabak Telor</h2>
+              <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">{t.savoryTitle}</h2>
             </div>
             <div className="relative flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
               {!imagesLoaded['/martabak.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check, Search, Filter } from 'lucide-react';
+import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check, Search,Clock, Tag, ChevronLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getBlogPosts, type BlogPost } from '../data/blogUtils';
@@ -20,9 +20,16 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [displayLimit, setDisplayLimit] = useState(6);
   const t = BLOG_I18N[uiLang];
   const dateLocale = uiLang === 'en' ? 'en-US' : 'id-ID';
+
+  // Category Translation Helper
+  const getCategoryLabel = (cat: string) => {
+    if (cat === 'All') return t.allCategories;
+    return (t.categories as any)[cat] || cat;
+  };
 
   // Fetch posts dari file markdown lokal
   useEffect(() => {
@@ -34,15 +41,23 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
     }
   }, []);
 
+  // Get unique categories
+  const categories = useMemo(() => {
+    const cats = posts.map(p => p.category || 'Lainnya');
+    return ['All', ...Array.from(new Set(cats))];
+  }, [posts]);
+
   // Filter and Pagination Logic
   const filteredPosts = useMemo(() => {
     const q = searchQuery.toLowerCase();
-    return posts.filter(post => 
-      post.title.toLowerCase().includes(q) ||
-      post.excerpt.toLowerCase().includes(q) ||
-      post.content.toLowerCase().includes(q)
-    );
-  }, [posts, searchQuery]);
+    return posts.filter(post => {
+      const matchesSearch = post.title.toLowerCase().includes(q) ||
+        post.excerpt.toLowerCase().includes(q) ||
+        post.content.toLowerCase().includes(q);
+      const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [posts, searchQuery, selectedCategory]);
 
   const visiblePosts = useMemo(() => {
     return filteredPosts.slice(0, displayLimit);
@@ -56,14 +71,14 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
 
   const blogContainerRef = React.useRef<HTMLDivElement>(null);
 
-  // Initial scroll to blog header when mounting the view
+  // Initial scroll to blog header
   React.useEffect(() => {
     if (blogContainerRef.current && !window.location.pathname.includes('/blog/')) {
       blogContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
 
-  // Computed SEO values berdasarkan state
+  // SEO
   const BASE_URL = 'https://martabakgresik.my.id';
   const seoProps = React.useMemo(() => {
     if (selectedPost) {
@@ -71,34 +86,27 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
         ? selectedPost.thumbnail
         : `${BASE_URL}${selectedPost.thumbnail}`;
       return {
-        title: `${selectedPost.title} | Blog Martabak Gresik`,
+        title: `${selectedPost.title} | ${t.blogTitle}`,
         description: selectedPost.excerpt,
         image: thumbUrl,
         url: `${BASE_URL}/blog/${selectedPost.slug}`,
         type: 'article' as const,
-      };
-    }
-    if (isNotFound) {
-      return {
-        title: 'Artikel Tidak Ditemukan | Blog Martabak Gresik',
-        description: 'Maaf, artikel yang Anda cari tidak dapat ditemukan.',
-        url: `${BASE_URL}/blog`,
-        noindex: true,
+        date: selectedPost.date,
+        author: selectedPost.author,
       };
     }
     return {
-      title: 'Blog Martabak Gresik - Tips Kuliner & Info UMKM',
-      description: 'Baca artikel seputar kuliner, tips UMKM, dan informasi terbaru dari Martabak Gresik.',
+      title: `${t.blogTitle} - ${t.blogSubtitle}`,
+      description: t.blogSubtitle,
       url: `${BASE_URL}/blog`,
       image: `${BASE_URL}/metaseo.webp`,
     };
-  }, [selectedPost, isNotFound]);
+  }, [selectedPost]);
 
-  // Sync with URL slug on mount and popstate
+  // Sync with URL
   React.useEffect(() => {
     const handleUrlChange = () => {
       const pathname = window.location.pathname;
-      console.log(`[URL] Path changed: ${pathname}`);
       if (pathname.startsWith('/blog/')) {
         const slug = pathname.split('/blog/')[1];
         if (!slug) {
@@ -108,11 +116,9 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
         }
         const post = posts.find(p => p.slug === slug);
         if (post) {
-          console.log(`[BLOG] Post found: ${post.slug}`);
           setSelectedPost(post);
           setIsNotFound(false);
         } else {
-          console.log(`[BLOG] Post not found for slug: ${slug}`);
           setSelectedPost(null);
           setIsNotFound(true);
         }
@@ -138,7 +144,6 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
       setIsNotFound(false);
       updateUrl(null);
     } else {
-      // Clear blog path when going back to catalog
       window.history.pushState({}, '', '/');
       onClose();
     }
@@ -148,239 +153,317 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
   const handleShare = () => {
     if (!selectedPost) return;
     const url = new URL(window.location.origin + `/blog/${selectedPost.slug}`);
-    
     navigator.clipboard.writeText(url.toString());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Related Posts Logic
+  const relatedPosts = useMemo(() => {
+    if (!selectedPost) return [];
+    return posts
+      .filter(p => p.slug !== selectedPost.slug && (p.category === selectedPost.category || posts.indexOf(p) < 5))
+      .slice(0, 3);
+  }, [selectedPost, posts]);
+
+  // Next/Prev Navigation
+  const navigation = useMemo(() => {
+    if (!selectedPost) return { next: null, prev: null };
+    const idx = posts.findIndex(p => p.slug === selectedPost.slug);
+    return {
+      next: idx > 0 ? posts[idx - 1] : null,
+      prev: idx < posts.length - 1 ? posts[idx + 1] : null
+    };
+  }, [selectedPost, posts]);
+
   return (
-    <div className="min-h-screen bg-brand-yellow dark:bg-brand-black transition-colors duration-300 font-sans">
-      {/* SEO — dikelola via react-helmet-async */}
-      <SEO {...seoProps} />
-      <div ref={blogContainerRef} className="max-w-4xl mx-auto px-4 py-12 focus:outline-none">
+    <div className="min-h-screen bg-neutral-50 dark:bg-brand-black transition-colors duration-300 font-sans pb-20">
+      <SEO {...seoProps} lang={uiLang} />
+      
+      <div ref={blogContainerRef} className="max-w-7xl mx-auto px-4 focus:outline-none">
+        
         <AnimatePresence mode="wait">
-          {isNotFound ? (
-            <motion.div
-              key="404"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="py-20 text-center space-y-8 bg-white/10 rounded-[3rem] border-2 border-dashed border-brand-black/10 dark:border-white/10 backdrop-blur-sm"
-            >
-              <div className="space-y-4">
-                <div className="text-8xl md:text-9xl font-black text-brand-black/10 dark:text-brand-yellow/10">404</div>
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight">{t.notFoundTitle}</h2>
-                <p className="text-brand-black/60 dark:text-brand-yellow/60 font-medium max-w-md mx-auto px-6">
-                  {t.notFoundDesc}
-                </p>
-              </div>
-              <button
-                onClick={handleBack}
-                className="bg-brand-orange text-white px-10 py-4 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50 mx-auto active:scale-95"
-              >
-                <BookOpen className="w-5 h-5" /> Lihat Artikel Lainnya
-              </button>
-            </motion.div>
-          ) : !selectedPost ? (
+          {!selectedPost && !isNotFound ? (
             <motion.div
               key="list"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="space-y-12 relative"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-12 py-12"
             >
-              <div id="blog-top-anchor" className="absolute -top-32" />
-              <div className="flex flex-col items-center gap-4">
+              {/* Compact Header */}
+              <div className="flex flex-col items-center text-center space-y-6">
                 <button
                   onClick={onClose}
-                  className="flex items-center gap-2 font-black uppercase text-xs tracking-widest text-brand-orange hover:gap-3 transition-all p-2 rounded-full hover:bg-brand-orange/10"
+                  className="flex items-center gap-2 font-black uppercase text-[10px] tracking-widest text-brand-orange hover:bg-brand-orange/10 px-4 py-2 rounded-full transition-all"
                 >
-                  <ArrowLeft className="w-4 h-4" /> {t.backCatalog}
+                  <ArrowLeft className="w-3 h-3" /> {t.backCatalog}
                 </button>
-                <div className="text-center space-y-4">
-                  <h2 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">
+                
+                <div className="space-y-2">
+                  <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">
                     {t.blogTitle}
                   </h2>
-                <p className="text-brand-black/60 dark:text-brand-yellow/60 font-medium">
-                  {t.blogSubtitle}
-                </p>
-              </div>
+                  <p className="text-neutral-500 dark:text-neutral-400 font-medium max-w-lg mx-auto text-sm md:text-base">
+                    {t.blogSubtitle}
+                  </p>
+                </div>
 
-              {/* Search Bar */}
-              <div className="max-w-md mx-auto w-full relative group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-black/30 group-focus-within:text-brand-orange transition-colors" />
-                <input
-                  type="text"
-                  placeholder={t.searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setDisplayLimit(6); // Reset limit when searching
-                  }}
-                  className="w-full bg-white/40 dark:bg-white/5 backdrop-blur-md border-2 border-brand-black/5 dark:border-white/10 rounded-2xl py-3 pl-12 pr-4 font-bold text-sm focus:border-brand-orange outline-none transition-all placeholder:text-brand-black/30 shadow-lg"
-                />
-              </div>
-            </div>
-
-              <div className="grid gap-8">
-                {visiblePosts.length > 0 ? (
-                  visiblePosts.map((post) => (
-                    <motion.article
-                      key={post.slug}
-                      whileHover={{ scale: 1.02 }}
-                      className="bg-white/40 dark:bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-brand-black/5 dark:border-white/5 shadow-xl cursor-pointer group"
-                      onClick={() => {
-                        setSelectedPost(post);
-                        updateUrl(post.slug);
-                        // Explicit scroll to top using the ref
-                        blogContainerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }}
-                    >
-                      <div className="flex flex-col md:flex-row h-full">
-                        <div className="md:w-1/3 h-48 md:h-auto overflow-hidden">
-                          <img
-                            src={post.thumbnail}
-                            alt={post.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
-                        </div>
-                        <div className="md:w-2/3 p-6 md:p-8 space-y-4 flex flex-col justify-center">
-                          <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-widest text-brand-orange">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" /> {new Date(post.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </span>
-                          </div>
-                          <h3 className="text-2xl md:text-3xl font-black leading-tight group-hover:text-brand-orange transition-colors">
-                            {post.title}
-                          </h3>
-                          <p className="text-brand-black/60 dark:text-brand-yellow/60 line-clamp-2 md:line-clamp-3">
-                            {post.excerpt}
-                          </p>
-                          <div className="pt-2 flex items-center text-brand-orange font-black uppercase text-xs tracking-widest gap-1 group-hover:gap-2 transition-all">
-                            {t.readMore} <ChevronRight className="w-4 h-4" />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.article>
-                  ))
-                ) : posts.length === 0 ? (
-                  <div className="text-center py-20 bg-white/10 rounded-3xl border-2 border-dashed border-brand-black/10 dark:border-white/10">
-                    <p className="text-2xl font-bold opacity-50">{t.noPosts}</p>
-                    <p className="text-sm opacity-40 mt-2 font-medium">{t.noPostsHint}</p>
+                {/* Filters & Search Row */}
+                <div className="w-full max-w-4xl flex flex-col md:flex-row items-center gap-4 pt-4">
+                  <div className="flex-1 w-full relative group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 group-focus-within:text-brand-orange transition-colors" />
+                    <input
+                      type="text"
+                      placeholder={t.searchPlaceholder}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl py-3 pl-11 pr-4 text-sm focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all shadow-sm dark:text-white"
+                    />
                   </div>
-                ) : null}
+                  
+                  <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar w-full md:w-auto">
+                    {categories.map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                          selectedCategory === cat 
+                            ? 'bg-brand-orange border-brand-orange text-white shadow-lg shadow-brand-orange/20' 
+                            : 'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:border-brand-orange/50'
+                        }`}
+                      >
+                        {getCategoryLabel(cat)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              {/* Load More Button */}
+              {/* Grid List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {visiblePosts.map((post, idx) => (
+                  <motion.article
+                    key={post.slug}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    whileHover={{ y: -8 }}
+                    className="bg-white dark:bg-neutral-900 rounded-[2.5rem] overflow-hidden border border-neutral-100 dark:border-neutral-800 shadow-sm hover:shadow-2xl transition-all cursor-pointer group flex flex-col"
+                    onClick={() => {
+                      setSelectedPost(post);
+                      updateUrl(post.slug);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  >
+                    <div className="aspect-[16/10] overflow-hidden relative">
+                      <img
+                        src={post.thumbnail}
+                        alt={post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span className="bg-white/90 dark:bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-brand-orange shadow-sm">
+                          {getCategoryLabel(post.category || 'Lainnya')}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-8 flex flex-col flex-1 space-y-4">
+                      <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3" /> {new Date(post.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'short' })}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {t.readingTime(post.readingTime || 0)}
+                        </span>
+                      </div>
+                      
+                      <h3 className="text-xl font-black leading-tight group-hover:text-brand-orange transition-colors line-clamp-2 dark:text-white">
+                        {post.title}
+                      </h3>
+                      
+                      <p className="text-neutral-500 dark:text-neutral-400 text-sm line-clamp-3 leading-relaxed flex-1">
+                        {post.excerpt}
+                      </p>
+                      
+                      <div className="pt-4 flex items-center text-brand-orange font-black uppercase text-[10px] tracking-widest gap-2 group-hover:gap-3 transition-all">
+                        {t.readMore} <ChevronRight className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </motion.article>
+                ))}
+              </div>
+
               {hasMore && (
                 <div className="flex justify-center pt-8">
                   <button
                     onClick={handleLoadMore}
-                    className="group flex items-center gap-3 bg-white dark:bg-zinc-900 border-2 border-brand-orange text-brand-orange px-8 py-3 rounded-2xl font-black uppercase italic tracking-wider hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95"
+                    className="bg-white dark:bg-neutral-900 border-2 border-brand-orange text-brand-orange px-10 py-4 rounded-2xl font-black uppercase tracking-wider hover:bg-brand-orange hover:text-white transition-all shadow-xl active:scale-95 text-xs"
                   >
-                    {t.loadMore} <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    {t.loadMore}
                   </button>
                 </div>
               )}
-
-              {/* No Results Found */}
-              {filteredPosts.length === 0 && posts.length > 0 && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-20 bg-white/10 rounded-3xl border-2 border-dashed border-brand-black/10 dark:border-white/10"
-                >
-                  <Search className="w-12 h-12 mx-auto mb-4 text-brand-black/20" />
-                  <p className="text-xl font-bold opacity-50 italic uppercase tracking-tighter">{t.noResultsTitle}</p>
-                  <p className="text-sm opacity-40 mt-2 font-medium">{t.noResultsHint}</p>
-                  <button 
-                    onClick={() => setSearchQuery('')}
-                    className="mt-6 text-brand-orange font-black text-xs uppercase tracking-widest hover:underline"
-                  >
-                    {t.resetSearch}
-                  </button>
-                </motion.div>
-              )}
             </motion.div>
+          ) : isNotFound ? (
+            <div className="py-32 text-center space-y-8">
+               <h2 className="text-8xl font-black opacity-10">404</h2>
+               <p className="text-xl font-bold">{t.notFoundTitle}</p>
+               <button onClick={handleBack} className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase text-xs">
+                 {t.backBtn}
+               </button>
+            </div>
           ) : (
             <motion.div
               key="detail"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-4xl mx-auto py-12 space-y-12"
             >
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-2 font-black uppercase text-xs tracking-widest text-brand-orange hover:gap-3 transition-all p-2 rounded-full hover:bg-brand-orange/10"
-              >
-                <ArrowLeft className="w-4 h-4" /> {selectedPost ? t.backBlogList : t.backCatalog}
-              </button>
-
-              <div className="space-y-6">
-                <img
-                  src={selectedPost.thumbnail}
-                  alt={selectedPost.title}
-                  className="w-full h-64 md:h-96 object-cover rounded-[2rem] shadow-2xl"
-                />
-                
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-6 text-xs font-bold uppercase tracking-widest text-brand-black/40 dark:text-brand-yellow/40">
-                    <span className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-brand-orange" /> {new Date(selectedPost.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-brand-orange" /> {selectedPost.author}
-                    </span>
-                  </div>
+              {/* Article Header */}
+              <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={handleBack}
+                    className="flex items-center gap-2 font-black uppercase text-[10px] tracking-widest text-brand-orange hover:bg-brand-orange/10 px-4 py-2 rounded-full transition-all"
+                  >
+                    <ArrowLeft className="w-3 h-3" /> {t.backBlogList}
+                  </button>
                   
                   <button
                     onClick={handleShare}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold uppercase text-[10px] tracking-widest ${
-                      copied 
-                        ? 'bg-green-500 border-green-500 text-white' 
-                        : 'border-brand-orange text-brand-orange hover:bg-brand-orange hover:text-white'
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all font-black uppercase text-[10px] tracking-widest ${
+                      copied ? 'bg-green-500 border-green-500 text-white' : 'border-neutral-200 dark:border-neutral-800 text-neutral-500 hover:border-brand-orange hover:text-brand-orange'
                     }`}
                   >
                     {copied ? <Check className="w-3 h-3" /> : <Share2 className="w-3 h-3" />}
                     {copied ? t.copied : t.shareLink}
                   </button>
                 </div>
+
+                <div className="space-y-6 text-center">
+                  <div className="flex items-center justify-center gap-3">
+                    <span className="bg-brand-orange/10 text-brand-orange px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">
+                      {getCategoryLabel(selectedPost.category || 'Lainnya')}
+                    </span>
+                    <span className="text-neutral-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {t.readingTime(selectedPost.readingTime || 0)}
+                    </span>
+                  </div>
                   
-                  <h1 className="text-4xl md:text-6xl font-black leading-tight uppercase tracking-tighter">
+                  <h1 className="text-4xl md:text-6xl font-black leading-[1.1] uppercase tracking-tighter dark:text-white max-w-3xl mx-auto">
                     {selectedPost.title}
                   </h1>
+
+                  <div className="flex items-center justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-brand-orange" /> {new Date(selectedPost.date).toLocaleDateString(dateLocale, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                    <span className="flex items-center gap-2">
+                       <User className="w-4 h-4 text-brand-orange" /> {selectedPost.author}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="markdown-content space-y-6 text-brand-black/80 dark:text-brand-yellow/80 leading-relaxed
-                  [&>h1]:text-3xl [&>h1]:font-black [&>h1]:uppercase [&>h1]:tracking-tight [&>h1]:text-brand-black [&>h1]:dark:text-brand-yellow
-                  [&>h2]:text-2xl [&>h2]:font-black [&>h2]:uppercase [&>h2]:tracking-tight [&>h2]:text-brand-black [&>h2]:dark:text-brand-yellow [&>h2]:pt-4
-                  [&>h3]:text-xl [&>h3]:font-bold [&>h3]:text-brand-orange [&>h3]:pt-2
-                  [&>p]:font-medium
-                  [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-2
-                  [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-2
-                  [&>blockquote]:border-l-4 [&>blockquote]:border-brand-orange [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:bg-brand-orange/5 [&>blockquote]:py-2 [&>blockquote]:rounded-r-xl
-                  [&>strong]:text-brand-orange [&>strong]:font-bold
-                  [&>hr]:border-brand-black/10 [&>hr]:dark:border-white/10 [&>hr]:my-8
-                  [&>img]:rounded-3xl [&>img]:shadow-xl [&>img]:mx-auto
-                  [&>table]:w-full [&>table]:border-collapse [&>table]:my-6 [&>table]:text-[10px] md:[&>table]:text-sm
-                  [&>table_th]:bg-brand-orange/10 [&>table_th]:text-brand-orange [&>table_th]:p-2 md:[&>table_th]:p-3 [&>table_th]:text-left [&>table_th]:border [&>table_th]:border-brand-black/10 [&>table_th]:dark:border-white/10
-                  [&>table_td]:p-2 md:[&>table_td]:p-3 [&>table_td]:border [&>table_td]:border-brand-black/10 [&>table_td]:dark:border-white/10
+                <div className="aspect-video rounded-[3rem] overflow-hidden shadow-2xl">
+                  <img
+                    src={selectedPost.thumbnail}
+                    alt={selectedPost.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+
+              {/* Reading Mode Content */}
+              <div className="max-w-3xl mx-auto">
+                <div className="markdown-content space-y-8 text-neutral-700 dark:text-neutral-300 leading-relaxed text-lg
+                  [&>h2]:text-3xl [&>h2]:font-black [&>h2]:uppercase [&>h2]:tracking-tight [&>h2]:text-neutral-900 [&>h2]:dark:text-white [&>h2]:pt-8 [&>h2]:pb-2
+                  [&>h3]:text-xl [&>h3]:font-black [&>h3]:text-brand-orange [&>h3]:pt-4
+                  [&>p]:mb-6
+                  [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-3 [&>ul]:mb-6
+                  [&>blockquote]:border-l-8 [&>blockquote]:border-brand-orange [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:bg-brand-orange/5 [&>blockquote]:py-6 [&>blockquote]:rounded-r-3xl [&>blockquote]:text-xl [&>blockquote]:my-10
+                  [&>strong]:text-brand-orange [&>strong]:font-black
+                  [&>img]:rounded-[2.5rem] [&>img]:shadow-2xl [&>img]:my-12
                 ">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {selectedPost.content}
                   </ReactMarkdown>
                 </div>
-                
-                <div className="pt-12 border-t border-brand-black/10 dark:border-white/10">
-                  <button
-                    onClick={handleBack}
-                    className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50 mx-auto"
-                  >
-                    <BookOpen className="w-5 h-5" /> {t.otherArticles}
-                  </button>
+
+                {/* Next/Prev Navigation */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-20 border-t border-neutral-100 dark:border-neutral-800">
+                  {navigation.prev && (
+                    <button 
+                      onClick={() => {
+                        setSelectedPost(navigation.prev);
+                        updateUrl(navigation.prev!.slug);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:border-brand-orange transition-all text-left group"
+                    >
+                      <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2">
+                        <ChevronLeft className="w-3 h-3" /> {t.prevPost}
+                      </div>
+                      <div className="font-bold dark:text-white group-hover:text-brand-orange transition-colors line-clamp-1">{navigation.prev.title}</div>
+                    </button>
+                  )}
+                  {navigation.next && (
+                    <button 
+                      onClick={() => {
+                        setSelectedPost(navigation.next);
+                        updateUrl(navigation.next!.slug);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="p-6 rounded-3xl bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 hover:border-brand-orange transition-all text-right group"
+                    >
+                      <div className="flex items-center justify-end gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 mb-2">
+                        {t.nextPost} <ChevronRight className="w-3 h-3" />
+                      </div>
+                      <div className="font-bold dark:text-white group-hover:text-brand-orange transition-colors line-clamp-1">{navigation.next.title}</div>
+                    </button>
+                  )}
                 </div>
+              </div>
+
+              {/* Related Posts Section */}
+              <div className="pt-20 space-y-8">
+                <div className="flex items-center gap-4">
+                  <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+                  <h4 className="text-sm font-black uppercase tracking-[0.3em] text-neutral-400">{t.relatedPosts}</h4>
+                  <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {relatedPosts.map(post => (
+                    <div 
+                      key={post.slug}
+                      onClick={() => {
+                        setSelectedPost(post);
+                        updateUrl(post.slug);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="group cursor-pointer space-y-3"
+                    >
+                      <div className="aspect-video rounded-2xl overflow-hidden">
+                        <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                      <h5 className="font-bold dark:text-white group-hover:text-brand-orange transition-colors text-sm leading-tight line-clamp-2">
+                        {post.title}
+                      </h5>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-center pt-20">
+                <button
+                  onClick={handleBack}
+                  className="bg-brand-orange text-white px-10 py-4 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50 active:scale-95 text-xs"
+                >
+                  <BookOpen className="w-5 h-5" /> {t.otherArticles}
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -388,3 +471,4 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
     </div>
   );
 }
+

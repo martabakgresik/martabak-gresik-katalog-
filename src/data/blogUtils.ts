@@ -6,6 +6,15 @@ export interface BlogPost {
   thumbnail: string;
   author: string;
   content: string;
+  category?: string;
+  readingTime?: number;
+}
+
+function calculateReadingTime(text: string): number {
+  const wordsPerMinute = 200;
+  const wordCount = text.split(/\s+/).length;
+  const minutes = Math.ceil(wordCount / wordsPerMinute);
+  return minutes;
 }
 
 function parseFrontMatter(allContent: string) {
@@ -48,6 +57,8 @@ export function getBlogPosts(): BlogPost[] {
         excerpt: data.excerpt || '',
         thumbnail: data.thumbnail || '/logo.webp',
         author: data.author || 'Admin',
+        category: data.category || 'Lainnya',
+        readingTime: calculateReadingTime(body || ''),
         content: body || '',
       } as BlogPost;
     })
