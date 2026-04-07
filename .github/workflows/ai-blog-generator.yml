@@ -2,8 +2,8 @@ name: Scheduled AI Blog Generation
 
 on:
   schedule:
-    # Run every Monday at 01:00 UTC (08:00 WIB)
-    - cron: '0 1 * * 1'
+    # Run every day at 01:00 UTC (08:00 WIB)
+    - cron: '0 1 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
