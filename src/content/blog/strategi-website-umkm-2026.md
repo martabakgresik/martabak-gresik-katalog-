@@ -4,6 +4,7 @@ date: "2026-03-25"
 excerpt: "Analisis mendalam tentang bagaimana website menjadi pondasi krusial bagi pertumbuhan UMKM di tengah ledakan ekonomi digital Indonesia."
 thumbnail: "/images/blog/strategi-website-umkm-2026.webp"
 author: "Martabak Gresik Admin"
+category: "UMKM"
 ---
 
 # Sinergi Website & Bisnis: Strategi Melejitkan Omzet UMKM di Tahun 2026

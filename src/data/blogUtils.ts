@@ -55,7 +55,7 @@ export function getBlogPosts(): BlogPost[] {
         title: data.title || 'Untitled',
         date: data.date || '',
         excerpt: data.excerpt || '',
-        thumbnail: data.thumbnail || '/logo.webp',
+        thumbnail: data.thumbnail || data.image || '/logo.webp',
         author: data.author || 'Admin',
         category: data.category || 'Lainnya',
         readingTime: calculateReadingTime(body || ''),

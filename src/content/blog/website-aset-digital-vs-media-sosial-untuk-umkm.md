@@ -4,6 +4,7 @@ date: "2026-04-03"
 excerpt: "Mengapa UMKM perlu punya website sendiri sebagai aset digital jangka panjang, bukan hanya mengandalkan media sosial."
 thumbnail: "/images/blog/website-aset-digital-vs-media-sosial-untuk-umkm.webp"
 author: "Martabak Gresik Admin"
+category: "UMKM"
 ---
 
 # Website Bukan Sekadar Pajangan, Tapi Aset Bisnis
