@@ -2,7 +2,7 @@
 title: "Jejak Mutabbaq: Rahasia Transformasi Martabak dari Gurun Pasir ke Piring Nusantara"
 date: "2026-04-08"
 excerpt: "Menelusuri sejarah panjang martabak, dari akar budayanya di Timur Tengah hingga menjadi camilan malam favorit nomor satu yang tak tergantikan di Indonesia."
-thumbnail: "/logo.webp"
+thumbnail: "/jejak-mutabbaq-rahasia-transformasi-martabak.webp"
 author: "Martabak Gresik AI"
 category: "Info"
 ---
