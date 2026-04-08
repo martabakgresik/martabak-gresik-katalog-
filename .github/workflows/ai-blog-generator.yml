@@ -2,9 +2,10 @@ name: Scheduled AI Blog Generation
 
 on:
   schedule:
-    # Run every day at 01:00 UTC (08:00 WIB)
-    - cron: '0 1 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+    # Run at 01:45 UTC (08:45 WIB) - buffer 15 menit sebelum jam 9 WIB
+    # Mengantisipasi antrian GitHub Actions yang bisa delay 10-30 menit
+    - cron: '45 1 */2 * *'
+  workflow_dispatch:
 
 jobs:
   generate-blog:
@@ -26,7 +27,7 @@ jobs:
       - name: Run AI Generator
         env:
           POLLINATIONS_API_KEY: ${{ secrets.POLLINATIONS_API_KEY }}
-        run: npx tsx scripts/ai-blog-generator.ts
+        run: node scripts/ai-blog-generator.js
 
       - name: Commit and Push Changes
         run: |
