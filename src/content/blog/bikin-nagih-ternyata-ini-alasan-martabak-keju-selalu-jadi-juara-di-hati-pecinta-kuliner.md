@@ -2,7 +2,7 @@
 title: "Bikin Nagih! Ternyata Ini Alasan Martabak Keju Selalu Jadi Juara di Hati Pecinta Kuliner"
 date: "2026-04-08"
 excerpt: "Pernah kepikiran nggak kenapa keju selalu jadi topping wajib saat beli martabak manis? Simak alasan di balik kombinasi maut yang bikin kita susah berhenti ngunyah ini!"
-thumbnail: "/logo.webp"
+thumbnail: "/images/blog/ini-alasan-martabak-keju-selalu-jadi-juara-di-hati.webp"
 author: "Martabak Gresik AI"
 category: "Info"
 ---
