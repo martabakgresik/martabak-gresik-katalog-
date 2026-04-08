@@ -10,7 +10,7 @@ const ENV_PATH = path.join(__dirname, '../.env.local');
 const BLOG_DIR = path.join(__dirname, '../src/content/blog');
 const IMG_DIR = path.join(__dirname, '../public/images/blog');
 
-// Topics to choose from
+// Topics to choose from (fallback)
 const TOPICS = [
   "Rahasia Martabak Telor Gurih & Renyah",
   "Perbedaan Terang Bulan vs Martabak Manis",
@@ -21,6 +21,40 @@ const TOPICS = [
   "Inovasi Rasa Martabak: Dari Klasik hingga Kekinian",
   "Martabak Gresik: Kenapa Harus Coba Sekarang?",
 ];
+
+// === FITUR BARU: Dynamic Topic Generator ===
+async function generateDynamicTopic(apiKey, category = "kuliner") {
+  const prompt = `
+  Buat 1 judul artikel blog menarik dalam Bahasa Indonesia tentang martabak, dengan fokus pada kategori: ${category}.
+  Judul harus unik, kekinian, dan belum umum dibahas.
+  Contoh gaya: "Martabak ala Street Food Bangkok", "Panduan Jualan Martabak Modal Kecil", dll.
+  Output HANYA judul, tanpa nomor atau teks tambahan.
+  `;
+
+  try {
+    const response = await fetch('https://gen.pollinations.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'gemini',
+        jsonFallback: false
+      })
+    });
+
+    const data = await response.json();
+    let topic = data.choices[0].message.content.trim();
+    // Bersihkan kutip jika ada
+    topic = topic.replace(/^["']|["']$/g, '');
+    return topic;
+  } catch (err) {
+    console.warn('Gagal generate topik dinamis, akan pakai TOPICS array.', err.message);
+    return null;
+  }
+}
 
 async function generateBlog() {
   console.log('--- Starting AI Blog Generation ---');
@@ -43,9 +77,27 @@ async function generateBlog() {
     process.exit(1);
   }
 
-  // 2. Select Topic
-  const topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-  console.log(`Generating content for topic: "${topic}"...`);
+  // 2. Pilih metode topik (true = pakai AI dynamic, false = pakai TOPICS array)
+  const useDynamicTopic = true; // <-- ubah ke false jika ingin pakai topik manual
+  let topic = "";
+
+  if (useDynamicTopic) {
+    console.log("Menghasilkan topik dinamis dengan AI...");
+    const categories = ["Tips", "Resep", "Sejarah", "UMKM", "Perbandingan"];
+    const randomCat = categories[Math.floor(Math.random() * categories.length)];
+    const dynamicTopic = await generateDynamicTopic(apiKey, randomCat);
+    if (dynamicTopic && dynamicTopic.length > 10) {
+      topic = dynamicTopic;
+      console.log(`Topik AI dinamis (${randomCat}): "${topic}"`);
+    } else {
+      console.log("Gagal dapat topik dinamis, beralih ke TOPICS array.");
+      topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+      console.log(`Topik dari daftar tetap: "${topic}"`);
+    }
+  } else {
+    topic = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+    console.log(`Topik dari daftar tetap: "${topic}"`);
+  }
 
   // 3. Generate Content using Pollinations Text API
   const prompt = `
@@ -75,10 +127,9 @@ async function generateBlog() {
       })
     });
 
-    const data = await response.json() as any;
+    const data = await response.json();
     const text = data.choices[0].message.content;
     
-    // Pencarian JSON yang lebih tangguh (mencari kurung kurawal pertama dan terakhir)
     const jsonStart = text.indexOf('{');
     const jsonEnd = text.lastIndexOf('}');
     
@@ -98,7 +149,7 @@ async function generateBlog() {
     // 4. Generate Slug
     const slug = result.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').trim();
 
-    // 5. Save Markdown (Using default logo for thumbnail)
+    // 5. Save Markdown
     const date = new Date().toISOString().split('T')[0];
     const mdContent = `---
 title: "${result.title}"
