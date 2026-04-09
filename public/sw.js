@@ -7,7 +7,13 @@ const ASSETS = [
   '/chef.ico',
   '/logo.ico',
   '/martabak.webp',
+  '/martabak-320w.webp',
+  '/martabak-640w.webp',
+  '/martabak-960w.webp',
   '/terang-bulan.webp',
+  '/terang-bulan-320w.webp',
+  '/terang-bulan-640w.webp',
+  '/terang-bulan-960w.webp',
   '/manifest.json',
   '/ariftitana.webp'
 ];

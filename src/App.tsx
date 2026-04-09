@@ -731,6 +731,8 @@ export default function App() {
                   {!imagesLoaded['/terang-bulan.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}
                   <img
                     src="/terang-bulan.webp"
+                    srcSet="/terang-bulan-320w.webp 320w, /terang-bulan-640w.webp 640w, /terang-bulan-960w.webp 960w"
+                    sizes="(max-width: 768px) 90vw, 450px"
                     alt="Ilustrasi Terang Bulan"
                     className={`w-full h-full object-contain transition-opacity duration-500 ${imagesLoaded['/terang-bulan.webp'] ? 'opacity-100' : 'opacity-0'}`}
                     onLoad={() => handleImageLoad('/terang-bulan.webp')}
@@ -842,6 +844,8 @@ export default function App() {
               {!imagesLoaded['/martabak.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}
               <img
                 src="/martabak.webp"
+                srcSet="/martabak-320w.webp 320w, /martabak-640w.webp 640w, /martabak-960w.webp 960w"
+                sizes="(max-width: 768px) 90vw, 450px"
                 alt="Ilustrasi Martabak Telor"
                 className={`w-full h-full object-contain transition-opacity duration-500 ${imagesLoaded['/martabak.webp'] ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => handleImageLoad('/martabak.webp')}
