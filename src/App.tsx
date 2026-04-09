@@ -1178,7 +1178,7 @@ export default function App() {
   className="hover:text-brand-yellow transition-colors flex items-center gap-1"
 >
   <ExternalLink className="w-3 h-3" />
-  Invoice
+  InvoiceGenerator
 </a>
             </div>
             
