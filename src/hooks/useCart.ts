@@ -146,7 +146,14 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: `Sistem ahli geocoding dan validasi wilayah Gresik. 
+          messages: [
+            { 
+              role: 'system', 
+              content: "You are a geocoding expert for Gresik region." 
+            },
+            { 
+              role: 'user', 
+              content: `Sistem ahli geocoding dan validasi wilayah Gresik. 
           LOKASI TOKO: Jl. Usman Sadar No. 10, Gresik (Pusat Kota).
           
           TUGAS: 
@@ -158,8 +165,10 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
           4. Jika VALID (Gresik, <= 10KM, & Ada No Rumah): Return JSON: {"success": true, "beautifiedAddress": "Alamat yang diperbaiki", "googleMapsLink": "https://www.google.com/maps/search/...", "distance": [angka_km_presisi]}.
           5. Jika INVALID (Luar Gresik, > 10KM, atau TANPA No Rumah): Return JSON: {"success": false, "error": "Pesan peringatan dalam Bahasa Indonesia yang spesifik (misal: 'Mohon cantumkan nomor rumah' atau 'Di luar wilayah Gresik') dan minta konfirmasi admin"}.
           
-          ATURAN: Return HANYA JSON tersebut. Tanpa markdown backticks, tanpa penjelasan.`,
-          systemPrompt: "You are a geocoding expert for Gresik region."
+          ATURAN: Return HANYA JSON tersebut. Tanpa markdown backticks, tanpa penjelasan.`
+            }
+          ],
+          model: 'openai'
         })
       });
 
@@ -174,9 +183,9 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
       
       const aiContent = data.choices[0].message.content.trim();
       
-      // Attempt to parse JSON
       try {
-        const result = JSON.parse(aiContent.replace(/```json|```/g, ''));
+        const cleanedContent = aiContent.replace(/```json\n?|```/g, '').trim();
+        const result = JSON.parse(cleanedContent);
         return result;
       } catch (parseError) {
         console.error("AI JSON Parse Error:", parseError, aiContent);
@@ -184,7 +193,7 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
         if (isGoogleMapsLink(aiContent)) {
           return { success: true, googleMapsLink: aiContent };
         }
-        return { success: false, error: "Format respons AI tidak valid. Coba lagi atau hubungi admin." };
+        return { success: false, error: "Format rerespons AI tidak valid. Coba lagi atau hubungi admin." };
       }
     } catch (error) {
       console.error("AI Address Processing Error:", error);

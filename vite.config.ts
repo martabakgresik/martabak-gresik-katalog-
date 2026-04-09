@@ -74,6 +74,22 @@ export default defineConfig(({ mode }) => {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       hmr: process.env.DISABLE_HMR !== 'true',
     },
+    preview: {
+      proxy: {
+        '/api/chat': {
+          target: 'https://gen.pollinations.ai',
+          changeOrigin: true,
+          headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+          rewrite: (path) => path.replace(/^\/api\/chat/, '/v1/chat/completions')
+        },
+        '/api/generate-image': {
+          target: 'https://gen.pollinations.ai',
+          changeOrigin: true,
+          headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+          rewrite: (path) => path.replace(/^\/api\/generate-image/, '/v1/images/generations')
+        }
+      }
+    }
   };
 });
 

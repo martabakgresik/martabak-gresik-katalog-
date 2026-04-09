@@ -15,9 +15,6 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/gallery", "destination": "/gallery/index.html" },
-    { "source": "/blog", "destination": "/blog/index.html" },
-    { "source": "/blog/:slug", "destination": "/blog/:slug/index.html" },
     { "source": "/((?!api/|src/|node_modules/|@vite/|@fs/|openapi.json|.well-known/|images/|katalog|logo|favicon|sw.js|manifest.json).*)", "destination": "/index.html" }
   ]
 }

@@ -47,7 +47,9 @@ export function getBlogPosts(): BlogPost[] {
 
   return Object.entries(modules)
     .map(([filepath, content]) => {
-      const slug = filepath.split('/').pop()?.replace('.md', '') || '';
+      // Slug is filename without .md and without potential ?raw query suffix
+      const filename = filepath.split('/').pop() || '';
+      const slug = filename.replace('.md', '').split('?')[0];
       const { data, body } = parseFrontMatter(content as string);
 
       return {

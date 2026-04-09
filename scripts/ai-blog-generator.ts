@@ -83,7 +83,7 @@ async function generateBlog() {
 
   if (useDynamicTopic) {
     console.log("Menghasilkan topik dinamis dengan AI...");
-    const categories = ["Tips", "Resep", "Sejarah", "UMKM", "Perbandingan"];
+    const categories = ["Tips", "Menu", "Promo", "Info", "UMKM", "Sejarah"];
     const randomCat = categories[Math.floor(Math.random() * categories.length)];
     const dynamicTopic = await generateDynamicTopic(apiKey, randomCat);
     if (dynamicTopic && dynamicTopic.length > 10) {
@@ -108,7 +108,7 @@ async function generateBlog() {
     "title": "Judul Artikel Menarik",
     "excerpt": "Ringkasan singkat artikel (1-2 kalimat)",
     "content": "Isi lengkap artikel dalam format Markdown",
-    "category": "Salah satu dari: Tips, Menu, Info, UMKM"
+    "category": "Salah satu dari: Tips, Menu, Promo, Info, UMKM, Sejarah"
   }
   Berikan HANYA JSON tersebut tanpa teks lain.
   `;

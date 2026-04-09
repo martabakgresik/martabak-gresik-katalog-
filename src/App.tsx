@@ -8,7 +8,7 @@ import {
   MessageCircleQuestionIcon, Music2, Sparkles, Trophy, Send, Info, BookOpen, Maximize2, Settings,
   QrCode, Image as ImageIcon, Languages
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
 import { 
   MENU_SWEET, 
@@ -36,6 +36,7 @@ import { SEO } from "./components/SEO";
 import { FAQ } from "./components/FAQ";
 import { useUiLanguage } from "./hooks/useUiLanguage";
 import { UI_COPY } from "./data/i18n/appCopy";
+import { SEO_COPY } from "./data/i18n/seoCopy";
 
 interface FavoriteItem {
   id: string;
@@ -45,6 +46,8 @@ interface FavoriteItem {
 }
 
 export default function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { uiLang, setUiLang } = useUiLanguage();
   const t = UI_COPY[uiLang];
 
@@ -123,9 +126,17 @@ export default function App() {
   const [isCheckoutPhase, setIsCheckoutPhase] = useState(false);
 
   // Legal & Privacy State
-  const [activeLegalPage, setActiveLegalPage] = useState<'tos' | 'privacy' | 'deletion' | 'about' | 'faq' | null>(null);
   const [showCookieConsent, setShowCookieConsent] = useState(false);
-  const [currentView, setCurrentView] = useState<'catalog' | 'blog'>('catalog');
+  const [currentView, setCurrentView] = useState<'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion'>(() => {
+    const path = window.location.pathname;
+    if (path.startsWith('/blog')) return 'blog';
+    if (path === '/about') return 'about';
+    if (path === '/faq') return 'faq';
+    if (path === '/terms') return 'terms';
+    if (path === '/privacy') return 'privacy';
+    if (path === '/deletion') return 'deletion';
+    return 'catalog';
+  });
   
 
   useEffect(() => {
@@ -166,9 +177,10 @@ export default function App() {
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
 
   const closeAddonModal = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('item');
-    window.history.replaceState({}, '', url.toString());
+    const params = new URLSearchParams(location.search);
+    params.delete('item');
+    const newSearch = params.toString();
+    navigate({ search: newSearch ? `?${newSearch}` : '' }, { replace: true });
     setSelectedItemForAddon(null);
   };
 
@@ -182,6 +194,11 @@ export default function App() {
       setCurrentView('blog');
       return;
     }
+    if (pathname === '/about') { setCurrentView('about'); return; }
+    if (pathname === '/faq') { setCurrentView('faq'); return; }
+    if (pathname === '/terms') { setCurrentView('terms'); return; }
+    if (pathname === '/privacy') { setCurrentView('privacy'); return; }
+    if (pathname === '/deletion') { setCurrentView('deletion'); return; }
 
     if (itemName && !selectedItemForAddon) {
       // Find item in sweet menu
@@ -210,22 +227,21 @@ export default function App() {
         }
       }
     }
-  }, [menuSweet, menuSavory, selectedItemForAddon]);
+  }, [menuSweet, menuSavory, selectedItemForAddon, location.pathname, location.search]);
 
   // Sync URL with Selected Item
   useEffect(() => {
-    const url = new URL(window.location.href);
-    if (selectedItemForAddon) {
-      url.searchParams.set('item', selectedItemForAddon.name);
-    } else {
-      url.searchParams.delete('item');
-    }
+    const params = new URLSearchParams(location.search);
+    const currentItem = params.get('item');
     
-    // Only push if different from current search
-    if (url.search !== window.location.search) {
-      window.history.pushState({}, '', url.toString());
+    if (selectedItemForAddon && selectedItemForAddon.name !== currentItem) {
+      params.set('item', selectedItemForAddon.name);
+      navigate({ search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
+    } else if (!selectedItemForAddon && currentItem) {
+      params.delete('item');
+      navigate({ search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
     }
-  }, [selectedItemForAddon]);
+  }, [selectedItemForAddon, location.search, navigate]);
   // Image loading state
   const [imagesLoaded, setImagesLoaded] = useState<Record<string, boolean>>({});
   const handleImageLoad = (src: string) => {
@@ -415,7 +431,8 @@ export default function App() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
+      {currentView === 'catalog' && (
+        <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
         {/* Share Button (Left) */}
         <div className="absolute top-6 left-6 z-20">
           <motion.button
@@ -482,7 +499,7 @@ export default function App() {
                 onClick={() => {
                   setCurrentView('catalog');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                  window.history.pushState({}, '', '/');
+                  navigate('/');
                 }}
               >
                 <span className="sr-only">Martabak Gresik - Terang Bulan Gresik</span>
@@ -660,11 +677,36 @@ export default function App() {
           </motion.div>
         </div>
       </header>
+      )}
 
-
+      {currentView === 'blog' && (
+        <header className="bg-brand-black dark:bg-black text-white py-4 px-6 sticky top-0 z-50 shadow-lg">
+           <div className="max-w-7xl mx-auto flex justify-between items-center">
+             <div 
+               className="flex items-center gap-2 cursor-pointer"
+               onClick={() => {
+                 setCurrentView('catalog');
+                 navigate('/');
+               }}
+             >
+               <img src="/logo.webp" alt="Logo" className="w-10 h-10 object-contain" />
+               <span className="font-display font-black uppercase text-brand-yellow">Martabak Gresik</span>
+             </div>
+             <button 
+               onClick={() => {
+                 setCurrentView('catalog');
+                 navigate('/');
+               }}
+               className="text-[10px] font-black uppercase tracking-widest text-brand-orange hover:text-white transition-colors"
+             >
+               {UI_COPY[uiLang].backCatalog}
+             </button>
+           </div>
+         </header>
+      )}
       {/* Main Content */}
       <AnimatePresence mode="wait">
-        {currentView === 'catalog' ? (
+        {currentView === 'catalog' && (
           <motion.main 
             key="catalog"
             initial={{ opacity: 0, x: -20 }}
@@ -673,40 +715,44 @@ export default function App() {
             id="menu-section" 
             className="max-w-7xl mx-auto px-4 py-8 md:py-12 scroll-mt-8"
           >
+            <SEO 
+              title={SEO_COPY[uiLang].catalog.title}
+              description={SEO_COPY[uiLang].catalog.description}
+              url="https://martabakgresik.my.id"
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+              {/* Sweet Martabak Column */}
+              <section className="space-y-6 md:space-y-8">
+                <div className="flex items-center gap-4 mb-2">
+                  <div className="h-1 w-12 bg-brand-black dark:bg-brand-yellow rounded-full" />
+                  <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">{t.sweetTitle}</h2>
+                </div>
+                <div className="relative flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
+                  {!imagesLoaded['/terang-bulan.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}
+                  <img
+                    src="/terang-bulan.webp"
+                    alt="Ilustrasi Terang Bulan"
+                    className={`w-full h-full object-contain transition-opacity duration-500 ${imagesLoaded['/terang-bulan.webp'] ? 'opacity-100' : 'opacity-0'}`}
+                    onLoad={() => handleImageLoad('/terang-bulan.webp')}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
-
-          {/* Sweet Martabak Column */}
-          <section className="space-y-6 md:space-y-8">
-            <div className="flex items-center gap-4 mb-2">
-              <div className="h-1 w-12 bg-brand-black dark:bg-brand-yellow rounded-full" />
-              <h2 className="text-4xl font-display font-black uppercase tracking-tight dark:text-brand-yellow">{t.sweetTitle}</h2>
-            </div>
-            <div className="relative flex justify-center w-full max-w-md h-48 md:h-64 mx-auto -mt-2 mb-4 drop-shadow-xl hover:scale-105 transition-transform duration-500">
-              {!imagesLoaded['/terang-bulan.webp'] && <div className="absolute inset-0 bg-black/5 dark:bg-white/5 animate-pulse rounded-3xl" />}
-              <img
-                src="/terang-bulan.webp"
-                alt="Ilustrasi Terang Bulan"
-                className={`w-full h-full object-contain transition-opacity duration-500 ${imagesLoaded['/terang-bulan.webp'] ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => handleImageLoad('/terang-bulan.webp')}
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-              />
-            </div>
-
-            <div className="space-y-6">
-              {filteredSweet.map((section, idx) => (
-                <motion.div
-                  key={section.category}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="bg-white/40 dark:bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-brand-black/5 dark:border-white/5"
-                >
-                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-brand-orange rounded-full" />
-                    {section.category}
-                  </h3>
+                <div className="space-y-6">
+                  {filteredSweet.map((section, idx) => (
+                    <motion.div
+                      key={section.category}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="bg-white/40 dark:bg-white/5 backdrop-blur-sm p-6 rounded-3xl border border-brand-black/5 dark:border-white/5"
+                    >
+                      <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-brand-orange rounded-full" />
+                        {section.category}
+                      </h3>
                   <div className="space-y-3">
                     {section.items.map((item) => (
                       <div key={item.name} className="flex flex-col gap-2 group relative">
@@ -946,18 +992,76 @@ export default function App() {
             </motion.div>
           </section>
         </div>
-      </motion.main>
-      ) : (
-        <motion.main
-          key="blog"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          className="w-full min-h-screen"
-        >
-          <BlogView onClose={() => setCurrentView('catalog')} uiLang={uiLang} />
-        </motion.main>
-      )}
+          </motion.main>
+        )}
+
+        {currentView === 'blog' && (
+          <motion.main
+            key="blog"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="w-full min-h-screen"
+          >
+            <BlogView onClose={() => { setCurrentView('catalog'); navigate('/'); }} uiLang={uiLang} />
+          </motion.main>
+        )}
+
+        {currentView === 'about' && (
+          <motion.main
+            key="about"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full min-h-screen"
+          >
+            <SEO 
+              title={SEO_COPY[uiLang].about.title}
+              description={SEO_COPY[uiLang].about.description}
+              url="https://martabakgresik.my.id/about"
+            />
+            <AboutMe onClose={() => { setCurrentView('catalog'); navigate('/'); }} uiLang={uiLang} isPage={true} />
+          </motion.main>
+        )}
+
+        {currentView === 'faq' && (
+          <motion.main
+            key="faq"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full min-h-screen"
+          >
+            <SEO 
+              title={SEO_COPY[uiLang].faq.title}
+              description={SEO_COPY[uiLang].faq.description}
+              url="https://martabakgresik.my.id/faq"
+            />
+            <FAQ uiLang={uiLang} isPage={true} onClose={() => { setCurrentView('catalog'); navigate('/'); }} />
+          </motion.main>
+        )}
+
+        {['terms', 'privacy', 'deletion'].includes(currentView) && (
+          <motion.main
+            key={currentView}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="w-full min-h-screen"
+          >
+            <SEO 
+              title={SEO_COPY[uiLang][currentView].title}
+              description={SEO_COPY[uiLang][currentView].description}
+              url={`https://martabakgresik.my.id/${currentView}`}
+            />
+            <LegalPages 
+              type={currentView === 'terms' ? 'tos' : currentView as any} 
+              onClose={() => { setCurrentView('catalog'); navigate('/'); }} 
+              uiLang={uiLang} 
+              isPage={true} 
+            />
+          </motion.main>
+        )}
       </AnimatePresence>
 
       {/* Footer */}
@@ -1018,53 +1122,51 @@ export default function App() {
             </div>
             
             <div className="flex flex-wrap justify-center gap-6 mt-4 md:mt-0 font-bold uppercase tracking-widest text-[9px] md:text-[10px]">
-              <button 
+              <Link 
+                to="/blog"
                 onClick={() => { 
                   setCurrentView('blog'); 
-                  setTimeout(() => {
-                    document.getElementById('blog-top-anchor')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }, 100);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 className="text-brand-white hover:text-brand-yellow hover:underline transition-all flex items-center gap-1"
-                type="button"
               >
                 <BookOpen className="w-3 h-3" /> {t.blogLink}
-              </button>
-              <button 
-                onClick={() => { setCurrentView('catalog'); setActiveLegalPage('tos'); }}
+              </Link>
+              <Link 
+                to="/terms"
+                onClick={() => { setCurrentView('terms'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="hover:text-brand-yellow transition-colors"
-                type="button"
               >
                 {t.terms}
-              </button>
-              <button 
-                onClick={() => setActiveLegalPage('privacy')}
+              </Link>
+              <Link 
+                to="/privacy"
+                onClick={() => { setCurrentView('privacy'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="hover:text-brand-yellow transition-colors"
-                type="button"
               >
                 {t.privacy}
-              </button>
-              <button 
-                onClick={() => setActiveLegalPage('deletion')}
+              </Link>
+              <Link 
+                to="/deletion"
+                onClick={() => { setCurrentView('deletion'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="hover:text-brand-yellow transition-colors"
-                type="button"
               >
                 {t.deletion}
-              </button>
-              <button 
-                onClick={() => setActiveLegalPage('about')}
+              </Link>
+              <Link 
+                to="/about"
+                onClick={() => { setCurrentView('about'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="hover:text-brand-yellow transition-colors"
-                type="button"
               >
                 About Me
-              </button>
-              <button 
-                onClick={() => setActiveLegalPage('faq')}
+              </Link>
+              <Link 
+                to="/faq"
+                onClick={() => { setCurrentView('faq'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                 className="hover:text-brand-yellow transition-colors"
-                type="button"
               >
                 {t.faq}
-              </button>
+              </Link>
             </div>
             
             <div className="flex gap-6">
@@ -2049,39 +2151,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* Legal Pages Overlay */}
-      <AnimatePresence>
-        {activeLegalPage && activeLegalPage !== 'about' && activeLegalPage !== 'faq' && (
-          <LegalPages 
-            type={activeLegalPage as any} 
-            onClose={() => setActiveLegalPage(null)}
-            uiLang={uiLang}
-          />
-        )}
-        {activeLegalPage === 'about' && (
-          <AboutMe 
-            onClose={() => setActiveLegalPage(null)}
-            uiLang={uiLang}
-          />
-        )}
-        {activeLegalPage === 'faq' && (
-          <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-brand-black/60 backdrop-blur-sm p-4">
-             <motion.div 
-               initial={{ opacity: 0, scale: 0.9, y: 20 }}
-               animate={{ opacity: 1, scale: 1, y: 0 }}
-               className="bg-white dark:bg-brand-black rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
-             >
-               <div className="p-6 bg-brand-black text-white flex justify-between items-center shrink-0">
-                 <h3 className="text-xl font-black uppercase italic tracking-tighter">{t.helpFaqTitle}</h3>
-                 <button onClick={() => setActiveLegalPage(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="w-5 h-5" /></button>
-               </div>
-               <div className="flex-grow overflow-y-auto p-6 md:p-8 custom-scrollbar">
-                 <FAQ uiLang={uiLang} />
-               </div>
-             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+
 
       {/* Map Modal */}
       <AnimatePresence>
@@ -2153,7 +2223,8 @@ export default function App() {
         isVisible={showCookieConsent}
         onAccept={handleAcceptCookies}
         onViewPrivacy={() => {
-          setActiveLegalPage('privacy');
+          setCurrentView('privacy');
+          navigate('/privacy');
           handleAcceptCookies();
         }}
       />

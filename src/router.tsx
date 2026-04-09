@@ -29,7 +29,27 @@ export const router = createBrowserRouter([
         errorElement: <ErrorPage />
       },
       {
-        path: 'blog',
+        path: 'blog/:slug?',
+        element: <App />,
+      },
+      {
+        path: 'about',
+        element: <App />,
+      },
+      {
+        path: 'faq',
+        element: <App />,
+      },
+      {
+        path: 'terms',
+        element: <App />,
+      },
+      {
+        path: 'privacy',
+        element: <App />,
+      },
+      {
+        path: 'deletion',
         element: <App />,
       },
       {

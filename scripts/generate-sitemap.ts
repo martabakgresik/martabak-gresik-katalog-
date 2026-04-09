@@ -27,7 +27,14 @@ function generateSitemap() {
   const routes = [
     { loc: '/', priority: '1.0', changefreq: 'daily' },
     { loc: '/blog', priority: '0.8', changefreq: 'weekly' },
-    { loc: '/gallery', priority: '0.7', changefreq: 'monthly' }
+    { loc: '/gallery', priority: '0.7', changefreq: 'monthly' },
+    { loc: '/about', priority: '0.5', changefreq: 'monthly' },
+    { loc: '/faq', priority: '0.5', changefreq: 'monthly' },
+    { loc: '/qr', priority: '0.6', changefreq: 'monthly' },
+    { loc: '/converter', priority: '0.6', changefreq: 'monthly' },
+    { loc: '/terms', priority: '0.3', changefreq: 'monthly' },
+    { loc: '/privacy', priority: '0.3', changefreq: 'monthly' },
+    { loc: '/deletion', priority: '0.3', changefreq: 'monthly' }
   ];
 
   // Add individual blog posts

@@ -18,6 +18,8 @@ import {
 import JSZip from 'jszip';
 import { useUiLanguage } from '../hooks/useUiLanguage';
 import { UI_COPY } from '../data/i18n/appCopy';
+import { SEO } from './SEO';
+import { SEO_COPY } from '../data/i18n/seoCopy';
 
 interface FileItem {
   id: string;
@@ -209,6 +211,11 @@ export const ImageConverter: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow p-4 md:p-8 flex flex-col items-center selection:bg-brand-orange selection:text-white transition-colors duration-300">
+      <SEO 
+        title={SEO_COPY[uiLang].converter.title}
+        description={SEO_COPY[uiLang].converter.description}
+        url="https://martabakgresik.my.id/converter"
+      />
       {/* Header */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}

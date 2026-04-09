@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, ArrowLeft, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { UiLang } from '../hooks/useUiLanguage';
 import { LEGAL_CONTENT } from '../data/i18n/legalCopy';
 
@@ -8,25 +9,31 @@ interface LegalPagesProps {
   type: 'tos' | 'privacy' | 'deletion';
   onClose: () => void;
   uiLang?: UiLang;
+  isPage?: boolean;
 }
 
-export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, uiLang = 'id' }) => {
+export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, uiLang = 'id', isPage = false }) => {
   const contentByLang = LEGAL_CONTENT;
 
   const activeLang = contentByLang[uiLang];
   const activeContent = activeLang.content[type];
 
+  const Container = isPage ? 'div' : motion.div;
+  const innerClasses = isPage 
+    ? "relative w-full max-w-4xl mx-auto bg-white dark:bg-brand-black min-h-screen pt-12"
+    : "relative w-full max-w-3xl bg-white dark:bg-brand-black rounded-[2rem] shadow-2xl overflow-hidden border border-white/20";
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md overflow-y-auto"
+    <Container
+      initial={isPage ? undefined : { opacity: 0 }}
+      animate={isPage ? undefined : { opacity: 1 }}
+      exit={isPage ? undefined : { opacity: 0 }}
+      className={isPage ? "min-h-screen bg-neutral-50 dark:bg-brand-black pb-20 mt-16 md:mt-24" : "fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md overflow-y-auto"}
     >
       <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        className="relative w-full max-w-3xl bg-white dark:bg-brand-black rounded-[2rem] shadow-2xl overflow-hidden border border-white/20"
+        initial={isPage ? { opacity: 0, y: 10 } : { scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className={innerClasses}
       >
         {/* Header */}
         <div className="sticky top-0 z-10 bg-brand-yellow dark:bg-brand-black/90 dark:backdrop-blur-md p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
@@ -50,7 +57,7 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, uiLang = 
         </div>
 
         {/* Content Body */}
-        <div className="p-6 md:p-10 space-y-8 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className={`p-6 md:p-10 space-y-8 overflow-y-auto custom-scrollbar ${isPage ? '' : 'max-h-[70vh]'}`}>
           {activeContent.sections.map((section, idx) => (
             <motion.div
               key={idx}
@@ -78,16 +85,17 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, uiLang = 
               </div>
             </div>
             
-            <button
+            <Link
+              to="/"
               onClick={onClose}
-              className="flex items-center gap-2 px-8 py-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-full font-black uppercase tracking-wider text-sm hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-all shadow-lg active:scale-95"
+              className="flex items-center gap-2 px-8 py-3 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-full font-black uppercase tracking-wider text-sm hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-all shadow-lg active:scale-95 no-underline"
             >
               <ArrowLeft className="w-4 h-4" />
               {activeLang.backToCatalog}
-            </button>
+            </Link>
           </div>
         </div>
       </motion.div>
-    </motion.div>
+    </Container>
   );
 };

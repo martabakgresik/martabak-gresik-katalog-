@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { useUiLanguage } from '../hooks/useUiLanguage';
 import { UI_COPY } from '../data/i18n/appCopy';
+import { SEO } from './SEO';
+import { SEO_COPY } from '../data/i18n/seoCopy';
 
 const PRESETS = [
   { 
@@ -99,6 +101,11 @@ export const QrGenerator: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow p-4 md:p-8 flex flex-col items-center">
+      <SEO 
+        title={SEO_COPY[uiLang].qr.title}
+        description={SEO_COPY[uiLang].qr.description}
+        url="https://martabakgresik.my.id/qr"
+      />
       {/* Header */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}

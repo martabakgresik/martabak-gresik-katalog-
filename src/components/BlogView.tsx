@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check, Search,Clock, Tag, ChevronLeft } from 'lucide-react';
+import { Calendar, User, ArrowLeft, ChevronRight, BookOpen, Share2, Check, Search, Clock, Tag, ChevronLeft } from 'lucide-react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getBlogPosts, type BlogPost } from '../data/blogUtils';
@@ -14,6 +15,9 @@ interface BlogViewProps {
 }
 
 export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { slug } = useParams<{ slug?: string }>();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -103,48 +107,32 @@ export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
     };
   }, [selectedPost]);
 
-  // Sync with URL
   React.useEffect(() => {
-    const handleUrlChange = () => {
-      const pathname = window.location.pathname;
-      if (pathname.startsWith('/blog/')) {
-        const slug = pathname.split('/blog/')[1];
-        if (!slug) {
-          setSelectedPost(null);
-          setIsNotFound(false);
-          return;
-        }
-        const post = posts.find(p => p.slug === slug);
-        if (post) {
-          setSelectedPost(post);
-          setIsNotFound(false);
-        } else {
-          setSelectedPost(null);
-          setIsNotFound(true);
-        }
-      } else {
-        setSelectedPost(null);
+    if (slug) {
+      const post = posts.find(p => p.slug === slug);
+      if (post) {
+        setSelectedPost(post);
         setIsNotFound(false);
+      } else if (posts.length > 0) {
+        setSelectedPost(null);
+        setIsNotFound(true);
       }
-    };
+    } else {
+      setSelectedPost(null);
+      setIsNotFound(false);
+    }
+  }, [posts, slug]);
 
-    handleUrlChange();
-    window.addEventListener('popstate', handleUrlChange);
-    return () => window.removeEventListener('popstate', handleUrlChange);
-  }, [posts]);
-
-  const updateUrl = (slug: string | null) => {
-    const path = slug ? `/blog/${slug}` : '/blog';
-    window.history.pushState({}, '', path);
+  const updateUrl = (newSlug: string | null) => {
+    const path = newSlug ? `/blog/${newSlug}` : '/blog';
+    navigate(path);
   };
 
   const handleBack = () => {
     if (selectedPost || isNotFound) {
-      setSelectedPost(null);
-      setIsNotFound(false);
-      updateUrl(null);
+      navigate('/blog');
     } else {
-      window.history.pushState({}, '', '/');
+      navigate('/');
       onClose();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
