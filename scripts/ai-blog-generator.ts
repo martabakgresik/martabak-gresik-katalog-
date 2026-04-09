@@ -25,10 +25,15 @@ const TOPICS = [
 // === FITUR BARU: Dynamic Topic Generator ===
 async function generateDynamicTopic(apiKey, category = "kuliner") {
   const prompt = `
-  Buat 1 judul artikel blog menarik dalam Bahasa Indonesia tentang martabak, dengan fokus pada kategori: ${category}.
-  Judul harus unik, kekinian, dan belum umum dibahas.
-  Contoh gaya: "Martabak ala Street Food Bangkok", "Panduan Jualan Martabak Modal Kecil", dll.
-  Output HANYA judul, tanpa nomor atau teks tambahan.
+  Buat 1 judul artikel blog yang sangat menarik, SEO friendly, dan Geo-relevant (fokus wilayah Gresik) tentang martabak atau terang bulan.
+  Fokus kategori: ${category}.
+  
+  Kriteria:
+  - Harus mengandung kata kunci lokal (misal: "Gresik", "Kuliner Gresik", "Jajan Gresik", dll).
+  - Judul harus unik, kekinian (Clickbait yang elegan), dan relevan dengan UMKM Martabak Gresik.
+  - Gunakan gaya bahasa yang sedang tren di kalangan pecinta kuliner Indonesia.
+  
+  Output HANYA judul saja, tanpa nomor, tanda kutip, atau teks tambahan.
   `;
 
   try {
@@ -101,16 +106,28 @@ async function generateBlog() {
 
   // 3. Generate Content using Pollinations Text API
   const prompt = `
-  Tulis sebuah artikel blog menarik dalam Bahasa Indonesia tentang "${topic}". 
-  Gunakan gaya bahasa santai tapi informatif (ala pecinta kuliner).
-  Format output harus JSON dengan struktur:
+  Tulis sebuah artikel blog profesional namun santai (SEO & Geo Optimized) dalam Bahasa Indonesia tentang "${topic}".
+  
+  Panduan Penulisan WAJIB:
+  1. SEO & Geo Focus: Sertakan kata kunci "Martabak Gresik", "Gresik", dan sebutkan area layanan (Gresik Kota, Manyar, Kebomas, dsb) secara natural.
+  2. Struktur & Visual: 
+     - Gunakan sub-heading (H2, H3) yang informatif.
+     - WAJIB gunakan TABEL MARKDOWN untuk membandingkan varian, harga, atau nutrisi jika relevan.
+     - Gunakan LIST (Bullet points) untuk langkah-langkah atau tips.
+     - Gunakan BOLD untuk penekanan kata kunci.
+  3. Link & Referensi:
+     - Sertakan LINK (Internal atau Eksternal) yang relevan jika memungkinkan (misal: link ke katalog https://martabakgresik.my.id atau referensi kuliner).
+  4. Call to Action: Ajak pembaca untuk berkunjung ke Martabak Gresik di Jl. Usman Sadar No. 10 atau pesan via WhatsApp.
+  
+  Format output harus JSON murni dengan struktur:
   {
-    "title": "Judul Artikel Menarik",
-    "excerpt": "Ringkasan singkat artikel (1-2 kalimat)",
+    "title": "Judul Artikel yang Menarik & SEO Optimized",
+    "excerpt": "Ringkasan meta deskripsi (140-160 karakter) yang mengandung kata kunci utama",
     "content": "Isi lengkap artikel dalam format Markdown",
-    "category": "Salah satu dari: Tips, Menu, Promo, Info, UMKM, Sejarah"
+    "category": "Pilih yang paling cocok: Tips, Menu, Promo, Info, UMKM, Sejarah"
   }
-  Berikan HANYA JSON tersebut tanpa teks lain.
+  
+  Berikan HANYA JSON tersebut. Jangan sertakan teks lain di luar blok JSON.
   `;
 
   try {
