@@ -757,7 +757,7 @@ export default function App() {
                       </h3>
                   <div className="space-y-3">
                     {section.items.map((item) => (
-                      <div key={item.name} className="flex flex-col gap-2 group relative">
+                       <article key={item.name} className="flex flex-col gap-2 group relative">
                          <div className="flex justify-between items-center gap-2">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
                             {('image' in item) && (
@@ -773,7 +773,7 @@ export default function App() {
                                 )}
                               </div>
                             )}
-                              <span className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5 min-w-0`}>
+                              <h4 className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5 min-w-0 text-base`}>
                                <span className="whitespace-normal leading-tight">{item.name}</span>
                                <button 
                                  onClick={(e) => {
@@ -785,7 +785,7 @@ export default function App() {
                                >
                                  <Info className="w-3.5 h-3.5" />
                                </button>
-                             </span>
+                             </h4>
                           </div>
                           <div className="hidden sm:block flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-2 group-hover:border-brand-orange/50 transition-colors" />
                           <div className="flex flex-col items-end flex-shrink-0 ml-auto mr-1">
@@ -826,7 +826,7 @@ export default function App() {
                              <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase italic tracking-widest shadow-lg shadow-red-500/20">Stok Habis</span>
                           </div>
                         )}
-                      </div>
+                        </article>
                     ))}
                   </div>
                 </motion.div>
@@ -875,7 +875,7 @@ export default function App() {
                         </h4>
                         <div className="space-y-3">
                           {variant.prices.map((p) => (
-                             <div key={p.qty} className="flex justify-between items-center gap-2 bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors shadow-sm relative">
+                             <article key={p.qty} className="flex justify-between items-center gap-2 bg-white/5 p-2 rounded-xl hover:bg-white/10 transition-colors shadow-sm relative">
                               <div className="flex items-center gap-2 min-w-0 flex-1">
                                 {('image' in p) && (
                                   <div 
@@ -890,7 +890,7 @@ export default function App() {
                                     )}
                                   </div>
                                 )}
-                                <span className="text-sm font-medium opacity-90 flex items-center gap-1.5 min-w-0">
+                                <h5 className="text-sm font-medium opacity-90 flex items-center gap-1.5 min-w-0">
                                   <span className="whitespace-normal leading-tight">{p.desc ? p.desc : `${p.qty} Telor`}</span>
                                   <button 
                                     onClick={(e) => {
@@ -907,7 +907,7 @@ export default function App() {
                                   >
                                     <Info className="w-3 h-3" />
                                   </button>
-                                </span>
+                                </h5>
                               </div>
                               <div className="flex flex-col items-end flex-shrink-0 ml-auto">
                                 <div className="flex items-center gap-1.5">
@@ -952,7 +952,7 @@ export default function App() {
                                   <span className="text-[10px] font-black text-red-500 tracking-[0.2em] italic uppercase bg-white/90 dark:bg-zinc-950 px-2 py-0.5 rounded shadow-sm border border-red-500/20 underline decoration-red-500">HABIS</span>
                                 </div>
                               )}
-                            </div>
+                             </article>
                           ))}
                         </div>
                       </div>

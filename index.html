@@ -32,52 +32,86 @@
     <link rel="canonical" href="https://martabakgresik.my.id/" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     
-    <!-- JSON-LD Structured Data (BreadcrumbList - fallback untuk crawler tanpa JS) -->
+    <!-- JSON-LD Structured Data (Advanced for AI/LLM Discovery) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Restaurant",
-      "name": "Martabak Gresik",
-      "description": "Terang Bulan (Manis) dan Martabak Telor (Asin) Autentik dengan cita rasa premium. Buka setiap hari pukul 16.00\u201323.00 WIB.",
-      "url": "https://martabakgresik.my.id/",
-      "logo": "https://martabakgresik.my.id/logo.webp",
-      "image": "https://martabakgresik.my.id/metaseo.webp",
-      "telephone": "+6281330763633",
-      "priceRange": "Rp",
-      "servesCuisine": ["Indonesian", "Martabak", "Terang Bulan", "Martabak Telor"],
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "Jl. Usman Sadar No 10",
-        "addressLocality": "Gresik",
-        "addressRegion": "Jawa Timur",
-        "postalCode": "61118",
-        "addressCountry": "ID"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": -7.1535973,
-        "longitude": 112.6504935
-      },
-      "openingHoursSpecification": [
+      "@graph": [
         {
-          "@type": "OpeningHoursSpecification",
-          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-          "opens": "16:00",
-          "closes": "23:00"
+          "@type": "Restaurant",
+          "@id": "https://martabakgresik.my.id/#restaurant",
+          "name": "Martabak Gresik",
+          "description": "Terang Bulan (Manis) dan Martabak Telor (Asin) Autentik dengan cita rasa premium. Spesialis martabak dengan adonan lembut dan topping melimpah.",
+          "url": "https://martabakgresik.my.id/",
+          "logo": "https://martabakgresik.my.id/logo.webp",
+          "image": "https://martabakgresik.my.id/metaseo.webp",
+          "telephone": "+6281330763633",
+          "priceRange": "Rp",
+          "servesCuisine": ["Indonesian", "Martabak", "Terang Bulan", "Martabak Telor"],
+          "areaServed": "Gresik",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Jl. Usman Sadar No 10",
+            "addressLocality": "Gresik",
+            "addressRegion": "Jawa Timur",
+            "postalCode": "61118",
+            "addressCountry": "ID"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": -7.1535973,
+            "longitude": 112.6504935
+          },
+          "openingHoursSpecification": [
+            {
+              "@type": "OpeningHoursSpecification",
+              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+              "opens": "16:00",
+              "closes": "23:00"
+            }
+          ],
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "reviewCount": "87",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "hasMenu": {
+            "@type": "Menu",
+            "name": "Menu Martabak Gresik",
+            "hasMenuSection": [
+              {
+                "@type": "MenuSection",
+                "name": "Terang Bulan (Manis)",
+                "hasMenuItem": [
+                  { "@type": "MenuItem", "name": "Keju", "description": "Keju cheddar pilihan yang melimpah, lumer, dan super gurih.", "offers": { "@type": "Offer", "price": "17000", "priceCurrency": "IDR" } },
+                  { "@type": "MenuItem", "name": "Kacang + Coklat + Keju", "description": "Trio maut! Kacang, coklat, dan keju dalam satu balutan adonan lembut.", "offers": { "@type": "Offer", "price": "19000", "priceCurrency": "IDR" } },
+                  { "@type": "MenuItem", "name": "Pandan Keju", "description": "Favorit pelanggan! Wangi pandan alami dengan keju melimpah.", "offers": { "@type": "Offer", "price": "20000", "priceCurrency": "IDR" } }
+                ]
+              },
+              {
+                "@type": "MenuSection",
+                "name": "Martabak Telor (Asin)",
+                "hasMenuItem": [
+                  { "@type": "MenuItem", "name": "Martabak Sapi Telor Ayam", "description": "Martabak telor klasik dengan isian daging sapi bumbu rempah.", "offers": { "@type": "Offer", "price": "25000", "priceCurrency": "IDR" } },
+                  { "@type": "MenuItem", "name": "Samyang Sapi Pedas", "description": "Sensasi pedas Samyang berpadu dengan daging sapi gurih.", "offers": { "@type": "Offer", "price": "32000", "priceCurrency": "IDR" } }
+                ]
+              }
+            ]
+          },
+          "sameAs": [
+            "https://www.instagram.com/martabakgresik",
+            "https://www.facebook.com/martabakgresik"
+          ]
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Beranda", "item": "https://martabakgresik.my.id/" },
+            { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://martabakgresik.my.id/blog" }
+          ]
         }
-      ],
-      "hasMenu": "https://martabakgresik.my.id/",
-      "mainEntityOfPage": "https://martabakgresik.my.id/",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "87",
-        "bestRating": "5",
-        "worstRating": "1"
-      },
-      "sameAs": [
-        "https://www.instagram.com/martabakgresik",
-        "https://www.facebook.com/martabakgresik"
       ]
     }
     </script>
