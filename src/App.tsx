@@ -1171,6 +1171,15 @@ export default function App() {
               >
                 {t.faq}
               </Link>
+              <a 
+  href="https://invoice.martabakgresik.my.id/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="hover:text-brand-yellow transition-colors flex items-center gap-1"
+>
+  <ExternalLink className="w-3 h-3" />
+  InvoiceGenerator
+</a>
             </div>
             
             <div className="flex gap-6">
