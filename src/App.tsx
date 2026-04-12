@@ -1147,7 +1147,7 @@ export default function App() {
               {t.downloadCatalog}
             </a>
             <a
-              href="/app-release.apk"
+              href="/martabak-gresik.apk"
               download
               className="bg-brand-yellow text-brand-black px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-brand-orange hover:text-white transition-all shadow-lg text-sm uppercase tracking-wider active:scale-95"
             >
