@@ -33,20 +33,20 @@ export const LEGAL_CONTENT: Record<UiLang, any> = {
       icon: <ShieldCheck className="w-8 h-8 text-green-500" />,
       sections: [
         {
-          heading: '1. Data Yang Kami Kumpulkan',
-          body: 'Kami hanya mengumpulkan informasi dasar yang Anda berikan secara sukarela untuk memproses pesanan, seperti Nama, Nomor HP, dan Alamat pengiriman.'
+          heading: '1. Sifat Aplikasi',
+          body: 'Aplikasi Martabak Gresik adalah aplikasi resmi Martabak Gresik. Aplikasi ini berfungsi sebagai WebView yang mempermudah akses ke katalog online kami tanpa mengumpulkan data perangkat secara tersembunyi.'
         },
         {
-          heading: '2. Penggunaan Data',
-          body: 'Informasi Anda digunakan semata-mata untuk keperluan pengiriman pesanan dan komunikasi terkait pesanan tersebut. Kami tidak akan menjual atau menyebarkan data Anda ke pihak lain untuk tujuan komersial.'
+          heading: '2. Data Yang Kami Kumpulkan',
+          body: 'Kami hanya mengumpulkan informasi yang Anda berikan secara sukarela untuk memproses pesanan saat bertransaksi di dalam katalog, seperti Nama, Nomor HP, dan Alamat pengiriman.'
         },
         {
-          heading: '3. Keamanan Data',
-          body: 'Kami menggunakan penyimpanan lokal (local storage) pada perangkat Anda untuk menyimpan keranjang belanja dan preferensi tema. Data pesanan yang dikirim melalui WhatsApp mengikuti protokol keamanan dari aplikasi tersebut.'
+          heading: '3. Penggunaan & Keamanan Data',
+          body: 'Data Anda digunakan semata-mata untuk keperluan pengiriman pesanan dan komunikasi terkait pesanan melalui WhatsApp. Kami tidak membagikan, menjual, atau menyalahgunakan data pribadi Anda kepada pihak ketiga.'
         },
         {
-          heading: '4. Kontak Kami',
-          body: 'Jika Anda memiliki pertanyaan mengenai kebijakan privasi ini, silakan hubungi kami melalui email: martabakgresik@gmail.com.'
+          heading: '4. Tautan Pihak Ketiga',
+          body: 'Aplikasi ini menggunakan tautan eksternal untuk pemesanan (WhatsApp) dan penunjuk lokasi (Google Maps). Keamanan data pada tautan tersebut mengikuti kebijakan privasi masing-masing platform.'
         }
       ]
     },
@@ -101,20 +101,20 @@ export const LEGAL_CONTENT: Record<UiLang, any> = {
           icon: <ShieldCheck className="w-8 h-8 text-green-500" />,
           sections: [
             {
-              heading: '1. Data We Collect',
-              body: 'We only collect basic information you voluntarily provide to process orders, such as Name, Phone Number, and Delivery Address.'
+              heading: '1. App Nature',
+              body: 'The Martabak Gresik App is the official app for Martabak Gresik. This app functions as a WebView to simplify access to our online catalog without secretly collecting device data.'
             },
             {
-              heading: '2. Data Usage',
-              body: 'Your information is used solely for order delivery and communication related to the order. We do not sell or distribute your data for commercial purposes.'
+              heading: '2. Data We Collect',
+              body: 'We only collect information you voluntarily provide to process orders when transacting within the catalog, such as Name, Phone Number, and Delivery Address.'
             },
             {
-              heading: '3. Data Security',
-              body: 'We use local storage on your device to store cart and theme preferences. Order data sent via WhatsApp follows that application’s security protocols.'
+              heading: '3. Data Usage & Security',
+              body: 'Your information is used solely for order delivery and communication related to the order via WhatsApp. We do not share, sell, or abuse your personal data with third parties.'
             },
             {
-              heading: '4. Contact Us',
-              body: 'If you have questions about this privacy policy, please contact us via email: martabakgresik@gmail.com.'
+              heading: '4. Third-Party Links',
+              body: 'This app uses external links for ordering (WhatsApp) and location guidance (Google Maps). Data security on these links follows the privacy policies of the respective platforms.'
             }
           ]
         },

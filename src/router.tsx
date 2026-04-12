@@ -65,6 +65,10 @@ export const router = createBrowserRouter([
         element: <ImageConverter />,
       },
       {
+        path: 'app-download',
+        element: <App />,
+      },
+      {
         path: '*',
         element: <Navigate to="/" replace />
       }

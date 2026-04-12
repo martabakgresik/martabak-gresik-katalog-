@@ -127,7 +127,7 @@ export default function App() {
 
   // Legal & Privacy State
   const [showCookieConsent, setShowCookieConsent] = useState(false);
-  const [currentView, setCurrentView] = useState<'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion'>(() => {
+  const [currentView, setCurrentView] = useState<'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion' | 'app-download'>(() => {
     const path = window.location.pathname;
     if (path.startsWith('/blog')) return 'blog';
     if (path === '/about') return 'about';
@@ -135,6 +135,7 @@ export default function App() {
     if (path === '/terms') return 'terms';
     if (path === '/privacy') return 'privacy';
     if (path === '/deletion') return 'deletion';
+    if (path === '/app-download') return 'app-download';
     return 'catalog';
   });
   
@@ -199,6 +200,7 @@ export default function App() {
     if (pathname === '/terms') { setCurrentView('terms'); return; }
     if (pathname === '/privacy') { setCurrentView('privacy'); return; }
     if (pathname === '/deletion') { setCurrentView('deletion'); return; }
+    if (pathname === '/app-download') { setCurrentView('app-download'); return; }
 
     if (itemName && !selectedItemForAddon) {
       // Find item in sweet menu
@@ -1066,6 +1068,62 @@ export default function App() {
             />
           </motion.main>
         )}
+
+        {currentView === 'app-download' && (
+          <motion.main
+            key="app-download"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full min-h-screen pt-20 pb-12 px-6 flex flex-col items-center justify-center text-center"
+          >
+             <div className="max-w-xl w-full bg-white dark:bg-white/5 p-8 md:p-12 rounded-[3rem] border-4 border-brand-black dark:border-brand-yellow/20 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-yellow/10 rounded-full -translate-y-12 translate-x-12 blur-2xl" />
+                
+                <div className="w-24 h-24 bg-brand-orange rounded-3xl mx-auto mb-8 flex items-center justify-center shadow-lg transform -rotate-6">
+                   <ShoppingBag className="w-12 h-12 text-white" />
+                </div>
+
+                <h1 className="text-3xl md:text-5xl font-display font-black uppercase text-brand-black dark:text-brand-yellow mb-6">
+                   {t.downloadApp}
+                </h1>
+                
+                <p className="text-lg opacity-80 mb-10 leading-relaxed">
+                   {t.downloadAppDesc}
+                </p>
+
+                <div className="space-y-4 mb-10">
+                   <div className="p-4 bg-brand-yellow/20 rounded-2xl border-2 border-brand-black/5 flex items-start gap-4 text-left">
+                      <div className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-black shrink-0">1</div>
+                      <p className="text-sm font-bold">Kirim pesan WhatsApp untuk meminta file APK official (akan segera tersedia di Play Store).</p>
+                   </div>
+                   <div className="p-4 bg-brand-yellow/20 rounded-2xl border-2 border-brand-black/5 flex items-start gap-4 text-left">
+                      <div className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-black shrink-0">2</div>
+                      <p className="text-sm font-bold">Instal file APK di Android kamu (Izinkan "Install from Unknown Sources").</p>
+                   </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <a 
+                    href={`https://wa.me/${storePhone.replace(/\s/g, '').replace('+', '')}?text=${encodeURIComponent("Halo Martabak Gresik! Saya mau request link download aplikasi Android-nya dong.")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-[#25D366] text-white py-5 rounded-full font-black uppercase italic text-lg flex items-center justify-center gap-3 hover:scale-105 transition-transform active:scale-95 shadow-xl"
+                  >
+                    <MessageCircle className="w-7 h-7" />
+                    Request Link via WA
+                  </a>
+                  
+                  <button 
+                    onClick={() => { setCurrentView('catalog'); navigate('/'); }}
+                    className="text-sm font-bold opacity-60 hover:opacity-100 transition-opacity uppercase tracking-widest"
+                  >
+                    {t.backCatalog}
+                  </button>
+                </div>
+             </div>
+          </motion.main>
+        )}
       </AnimatePresence>
 
       {/* Footer */}
@@ -1088,7 +1146,18 @@ export default function App() {
               <Download className="w-4 h-4" />
               {t.downloadCatalog}
             </a>
+            <a
+              href="/app-release.apk"
+              download
+              className="bg-brand-yellow text-brand-black px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-brand-orange hover:text-white transition-all shadow-lg text-sm uppercase tracking-wider active:scale-95"
+            >
+              <Download className="w-4 h-4" />
+              {t.downloadApp}
+            </a>
           </div>
+          <p className="text-[10px] font-bold opacity-30 mt-4 max-w-xs mx-auto">
+             *Instal APK secara manual jika belum tersedia di Play Store.
+          </p>
 
           <div className="w-full pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] md:text-xs text-white/40">
             <div className="flex flex-col items-center md:items-start gap-1">

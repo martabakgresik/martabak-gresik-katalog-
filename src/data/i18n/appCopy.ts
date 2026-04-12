@@ -144,6 +144,8 @@ export const UI_COPY: Record<UiLang, any> = {
     scrollMenu: "Scroll Menu di Bawah",
     sweetTitle: "Terang Bulan",
     savoryTitle: "Martabak Telor",
+    downloadApp: "Download Aplikasi Android",
+    downloadAppDesc: "Dapatkan pengalaman memesan yang lebih cepat dan mudah langsung dari ponsel Anda.",
   },
   en: {
     promoText: (code: string, pct: number) => `🔥 ${pct}% OFF for First Order via Catalog! (Use code: ${code})`,
@@ -288,5 +290,7 @@ export const UI_COPY: Record<UiLang, any> = {
     scrollMenu: "Scroll Menu Below",
     sweetTitle: "Sweet Martabak",
     savoryTitle: "Savory Egg Martabak",
+    downloadApp: "Download Android App",
+    downloadAppDesc: "Get a faster and easier ordering experience directly from your phone.",
   },
 } as const;
