@@ -2,17 +2,18 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { X, ArrowLeft, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import type { UiLang } from '../hooks/useUiLanguage';
+import { useAppStore } from '../store/useAppStore';
 import { LEGAL_CONTENT } from '../data/i18n/legalCopy';
 
 interface LegalPagesProps {
   type: 'tos' | 'privacy' | 'deletion';
   onClose: () => void;
-  uiLang?: UiLang;
   isPage?: boolean;
 }
 
-export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, uiLang = 'id', isPage = false }) => {
+export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, isPage = false }) => {
+  const { uiState } = useAppStore();
+  const { uiLang } = uiState;
   const contentByLang = LEGAL_CONTENT;
 
   const activeLang = contentByLang[uiLang];

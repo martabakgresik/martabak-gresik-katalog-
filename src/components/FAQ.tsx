@@ -2,10 +2,12 @@ import React from "react";
 import { motion } from "motion/react";
 import { ChevronDown, HelpCircle, X, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { UiLang } from "../hooks/useUiLanguage";
+import { useAppStore } from "../store/useAppStore";
 import { FAQS_BY_LANG, FAQ_UI_TEXT } from "../data/i18n/faqCopy";
 
-export const FAQ = ({ uiLang = "id", isPage = false, onClose }: { uiLang?: UiLang, isPage?: boolean, onClose?: () => void }) => {
+export const FAQ = ({ isPage = false, onClose }: { isPage?: boolean, onClose?: () => void }) => {
+  const { uiState } = useAppStore();
+  const { uiLang } = uiState;
   const [openIndex, setOpenIndex] = React.useState<number | null>(null);
   const faqs = FAQS_BY_LANG[uiLang];
   const text = FAQ_UI_TEXT[uiLang];
@@ -41,7 +43,7 @@ export const FAQ = ({ uiLang = "id", isPage = false, onClose }: { uiLang?: UiLan
                  onClick={onClose}
                  className="flex items-center gap-2 font-black uppercase text-[10px] tracking-widest text-brand-orange hover:bg-brand-orange/10 px-4 py-2 rounded-full transition-all no-underline"
                >
-                 <ArrowLeft className="w-3 h-3" /> Back to Catalog
+                 <ArrowLeft className="w-3 h-3" /> {uiLang === 'id' ? 'Kembali ke Katalog' : 'Back to Catalog'}
                </Link>
             </div>
           )}

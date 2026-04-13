@@ -1,4 +1,4 @@
-import type { UiLang } from "../../hooks/useUiLanguage";
+import type { UiLang } from "../../store/useAppStore";
 
 export interface FAQItem {
   question: string;

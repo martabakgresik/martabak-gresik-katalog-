@@ -16,7 +16,7 @@ import {
   Utensils
 } from 'lucide-react';
 import { SEO } from './SEO';
-import { useUiLanguage } from '../hooks/useUiLanguage';
+import { useAppStore } from '../store/useAppStore';
 import { GALLERY_TEXT } from '../data/i18n/galleryCopy';
 
 type Category = 'all' | 'savory' | 'sweet' | 'promo' | 'sticker';
@@ -84,7 +84,8 @@ const GALLERY_ITEMS: GalleryItem[] = [
 
 export const Gallery: React.FC = () => {
   const navigate = useNavigate();
-  const { uiLang } = useUiLanguage();
+  const { uiState } = useAppStore();
+  const { uiLang } = uiState;
   const [activeCategory, setActiveCategory] = useState<Category>('all');
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
 

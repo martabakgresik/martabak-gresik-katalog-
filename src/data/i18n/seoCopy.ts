@@ -1,4 +1,4 @@
-import type { UiLang } from "../../hooks/useUiLanguage";
+import type { UiLang } from "../../store/useAppStore";
 
 export const SEO_COPY: Record<UiLang, Record<string, { title: string; description: string }>> = {
   id: {

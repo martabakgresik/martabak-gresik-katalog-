@@ -1,12 +1,11 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { X, ArrowLeft, Mail, Globe, Github, Instagram, MessageCircle } from 'lucide-react';
-import type { UiLang } from '../hooks/useUiLanguage';
 import { Link } from 'react-router-dom';
+import { useAppStore, UiLang } from '../store/useAppStore';
 
 interface AboutMeProps {
   onClose: () => void;
-  uiLang: UiLang;
   isPage?: boolean;
 }
 
@@ -59,7 +58,9 @@ const ABOUT_COPY: Record<UiLang, {
   }
 };
 
-export const AboutMe: React.FC<AboutMeProps> = ({ onClose, uiLang, isPage = false }) => {
+export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => {
+  const { uiState } = useAppStore();
+  const { uiLang } = uiState;
   const content = ABOUT_COPY[uiLang];
 
   const Container = isPage ? 'div' : motion.div;

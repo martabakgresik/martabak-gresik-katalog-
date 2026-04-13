@@ -1,5 +1,5 @@
 import { FileText, ShieldCheck, Trash2 } from "lucide-react";
-import type { UiLang } from "../../hooks/useUiLanguage";
+import type { UiLang } from "../../store/useAppStore";
 
 export const LEGAL_CONTENT: Record<UiLang, any> = {
     id: {

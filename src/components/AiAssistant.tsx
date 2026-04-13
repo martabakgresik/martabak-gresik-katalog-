@@ -8,24 +8,23 @@ import {
   OPEN_HOUR, CLOSE_HOUR, PROMO_CODE, PROMO_PERCENT,
   SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, HOLIDAYS
 } from "../data/config";
-import { formatPrice, type CartItem } from "../hooks/useCart";
-import { debounce } from "../lib/debounce";
-import type { UiLang } from "../hooks/useUiLanguage";
+import { useAppStore } from "../store/useAppStore";
 import { AI_TEXTS } from "../data/i18n/aiAssistantCopy";
+import { type CartItem } from "../hooks/useCart";
 
-const detectUiLanguage = (): UiLang => {
-  if (typeof navigator === "undefined") return "id";
-  return navigator.language?.toLowerCase().startsWith("en") ? "en" : "id";
+// Helper utilities
+const debounce = (fn: Function, ms: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: any[]) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
 };
 
 interface AiAssistantProps {
   onAddToCart?: (item: Omit<CartItem, 'id' | 'quantity'>) => void;
-  isOpen?: boolean;
-  promoCode?: string;
-  promoPercent?: number;
   menuSweet?: any[];
   menuSavory?: any[];
-  uiLang?: UiLang;
 }
 
 interface TextModelOption {
@@ -67,17 +66,16 @@ const normalizeModelList = (data: any) => {
 
 export const AiAssistant = ({
   onAddToCart,
-  isOpen = false,
-  promoCode = PROMO_CODE,
-  promoPercent = PROMO_PERCENT,
   menuSweet = MENU_SWEET,
   menuSavory = MENU_SAVORY,
-  uiLang: uiLangProp
 }: AiAssistantProps) => {
+  const { uiState, storeSettings } = useAppStore();
+  const { uiLang, isOpen } = uiState;
+  const { activePromoCode, activePromoPercent } = storeSettings;
+
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiInput, setAiInput] = useState("");
-  const uiLang = uiLangProp ?? detectUiLanguage();
   const aiText = AI_TEXTS[uiLang];
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([
     { role: 'assistant', content: aiText.greeting(STORE_NAME) }
@@ -260,9 +258,9 @@ INFORMASI TOKO:
 - Alamat: ${STORE_ADDRESS}
 - WhatsApp: ${STORE_PHONE}
 - Berdiri sejak: ${SINCE_YEAR}
-- Jam Buka: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
+- Jan Buka: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
 - Ongkir: Rp${SHIPPING_RATE_PER_KM}/km (maks ${MAX_SHIPPING_DISTANCE} km)
-- Promo: Diskon ${promoPercent}% dengan kode "${promoCode}"
+- Promo: Diskon ${activePromoPercent}% dengan kode "${activePromoCode}"
 
 DATA MENU AKTIF:
 ${getMenuContext()}

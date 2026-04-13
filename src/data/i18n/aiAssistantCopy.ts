@@ -1,4 +1,4 @@
-import type { UiLang } from "../../hooks/useUiLanguage";
+import type { UiLang } from "../../store/useAppStore";
 
 export const AI_TEXTS: Record<UiLang, { suggestions: string[]; greeting: (storeName: string) => string; error: string; askUs: string; sendMessage: string }> = {
   id: {

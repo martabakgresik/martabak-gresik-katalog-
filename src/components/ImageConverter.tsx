@@ -16,7 +16,7 @@ import {
   Archive
 } from 'lucide-react';
 import JSZip from 'jszip';
-import { useUiLanguage } from '../hooks/useUiLanguage';
+import { useAppStore } from '../store/useAppStore';
 import { UI_COPY } from '../data/i18n/appCopy';
 import { SEO } from './SEO';
 import { SEO_COPY } from '../data/i18n/seoCopy';
@@ -40,7 +40,8 @@ const SUPPORTED_FORMATS = [
 ];
 
 export const ImageConverter: React.FC = () => {
-  const { uiLang } = useUiLanguage();
+  const { uiState } = useAppStore();
+  const { uiLang } = uiState;
   const t = UI_COPY[uiLang];
   
   const [files, setFiles] = useState<FileItem[]>([]);

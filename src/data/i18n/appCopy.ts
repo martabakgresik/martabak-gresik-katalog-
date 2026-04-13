@@ -1,4 +1,4 @@
-import type { UiLang } from "../../hooks/useUiLanguage";
+import type { UiLang } from "../../store/useAppStore";
 
 export const UI_COPY: Record<UiLang, any> = {
   id: {
@@ -17,7 +17,7 @@ export const UI_COPY: Record<UiLang, any> = {
     downloadCatalog: "Download Katalog",
     priceNote: "catatan: *Harga dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.",
     blogLink: "Blog Martabak",
-    backCatalog: "Kembali ke Katalog",
+    backCatalog: "Kembali",
     terms: "Ketentuan Layanan",
     privacy: "Kebijakan Privasi",
     deletion: "Penghapusan Data",
@@ -163,7 +163,7 @@ export const UI_COPY: Record<UiLang, any> = {
     downloadCatalog: "Download Catalog",
     priceNote: "note: *Prices may change at any time without prior notice.",
     blogLink: "Martabak Blog",
-    backCatalog: "Back to Catalog",
+    backCatalog: "Back",
     terms: "Terms of Service",
     privacy: "Privacy Policy",
     deletion: "Data Deletion",
