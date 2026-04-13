@@ -1,4 +1,4 @@
-import type { UiLang } from "../../hooks/useUiLanguage";
+import type { UiLang } from "../../store/useAppStore";
 
 export const BLOG_I18N: Record<UiLang, {
   backCatalog: string;
@@ -27,7 +27,7 @@ export const BLOG_I18N: Record<UiLang, {
   readingTime: (min: number) => string;
 }> = {
   id: {
-    backCatalog: 'Kembali ke Katalog',
+    backCatalog: 'Kembali',
     blogTitle: 'Blog Martabak',
     blogSubtitle: 'Cerita, Tips, dan Promo Menarik dari Martabak Gresik',
     searchPlaceholder: 'Cari artikel menarik...',
@@ -59,7 +59,7 @@ export const BLOG_I18N: Record<UiLang, {
     readingTime: (min: number) => `${min} mnt baca`
   },
   en: {
-    backCatalog: 'Back to Catalog',
+    backCatalog: 'Back',
     blogTitle: 'Martabak Blog',
     blogSubtitle: 'Stories, Tips, and Promo Updates from Martabak Gresik',
     searchPlaceholder: 'Search interesting articles...',

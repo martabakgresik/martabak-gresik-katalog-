@@ -19,7 +19,7 @@ import {
   Instagram,
   MessageCircle
 } from 'lucide-react';
-import { useUiLanguage } from '../hooks/useUiLanguage';
+import { useAppStore } from '../store/useAppStore';
 import { UI_COPY } from '../data/i18n/appCopy';
 import { SEO } from './SEO';
 import { SEO_COPY } from '../data/i18n/seoCopy';
@@ -52,7 +52,8 @@ const PRESETS = [
 ];
 
 export const QrGenerator: React.FC = () => {
-  const { uiLang } = useUiLanguage();
+  const { uiState } = useAppStore();
+  const { uiLang } = uiState;
   const t = UI_COPY[uiLang];
 
   const [text, setText] = useState('https://martabakgresik.my.id');
@@ -251,7 +252,7 @@ export const QrGenerator: React.FC = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <div className="flex justify-between">
+                       <div className="flex justify-between">
                         <label className="text-[10px] font-black uppercase opacity-60">{t.qrSize}</label>
                         <span className="text-[10px] font-bold">{size}px</span>
                       </div>

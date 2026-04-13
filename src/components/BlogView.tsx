@@ -5,16 +5,18 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getBlogPosts, type BlogPost } from '../data/blogUtils';
-import type { UiLang } from '../hooks/useUiLanguage';
+import { useAppStore } from '../store/useAppStore';
 import { BLOG_I18N } from '../data/i18n/blogCopy';
 import { SEO } from './SEO';
 
 interface BlogViewProps {
   onClose: () => void;
-  uiLang?: UiLang;
+  isMainPage?: boolean;
 }
 
-export function BlogView({ onClose, uiLang = 'id' }: BlogViewProps) {
+export function BlogView({ onClose, isMainPage = false }: BlogViewProps) {
+  const { uiState } = useAppStore();
+  const { uiLang } = uiState;
   const navigate = useNavigate();
   const location = useLocation();
   const { slug } = useParams<{ slug?: string }>();

@@ -1,5 +1,25 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { 
+  STORE_NAME, 
+  STORE_ADDRESS, 
+  STORE_PHONE, 
+  OPEN_HOUR, 
+  CLOSE_HOUR, 
+  PROMO_CODE, 
+  PROMO_PERCENT, 
+  SHIPPING_RATE_PER_KM, 
+  MAX_SHIPPING_DISTANCE,
+  HOLIDAYS
+} from '../data/config';
+import { UI_COPY } from '../data/i18n/appCopy';
+
+export type UiLang = "id" | "en";
+
+const detectBrowserLanguage = (): UiLang => {
+  if (typeof navigator === "undefined") return "id";
+  return navigator.language?.toLowerCase().startsWith("en") ? "en" : "id";
+};
 
 interface StoreSettings {
   storeName: string;
@@ -28,11 +48,31 @@ interface UIState {
   activeTab: 'cart' | 'favorites';
   showPromo: boolean;
   isCheckoutPhase: boolean;
-  currentView: 'catalog' | 'blog';
+  currentView: 'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion' | 'app-download';
   isOpen: boolean;
   isHoliday: boolean;
   showBackToTop: boolean;
   showCookieConsent: boolean;
+  uiLang: UiLang;
+  searchQuery: string;
+  isSearchOpen: boolean;
+  isGeneralShareOpen: boolean;
+  isOrderConfirmationOpen: boolean;
+  isMapOpen: boolean;
+  shareItem: { name: string; price: number; category?: string } | null;
+  zoomedImage: { src: string; alt: string } | null;
+  copied: boolean;
+}
+
+interface CheckoutState {
+  customerName: string;
+  customerAddress: string;
+  deliveryMethod: 'delivery' | 'pickup';
+  distance: number;
+  promoCodeInput: string;
+  promoMessage: { status: 'success' | 'error', text: string } | null;
+  isAiProcessing: boolean;
+  isDistanceAiVerified: boolean;
 }
 
 interface AppState {
@@ -49,24 +89,31 @@ interface AppState {
   setUiState: (state: Partial<UIState>) => void;
   toggleDarkMode: () => void;
   toggleCartOpen: () => void;
-  setCurrentView: (view: 'catalog' | 'blog') => void;
+  setCurrentView: (view: UIState['currentView']) => void;
+  setUiLang: (lang: UiLang) => void;
+  setSearchQuery: (query: string) => void;
+  t: any; // Type-safe translation object
+
+  // Checkout State
+  checkoutState: CheckoutState;
+  setCheckoutState: (state: Partial<CheckoutState>) => void;
 }
 
 export const useAppStore = create<AppState>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get) => ({
         storeSettings: {
-          storeName: 'Martabak Gresik',
-          storeAddress: 'Jl. Usman Sadar No 10, Gresik',
-          storePhone: '081330763633',
-          openHour: 10,
-          closeHour: 22,
-          activePromoCode: 'MARTABAKBARU',
-          activePromoPercent: 10,
-          shippingRate: 2000,
-          maxDistance: 10,
-          holidays: [],
+          storeName: STORE_NAME,
+          storeAddress: STORE_ADDRESS,
+          storePhone: STORE_PHONE,
+          openHour: OPEN_HOUR,
+          closeHour: CLOSE_HOUR,
+          activePromoCode: PROMO_CODE,
+          activePromoPercent: PROMO_PERCENT,
+          shippingRate: SHIPPING_RATE_PER_KM,
+          maxDistance: MAX_SHIPPING_DISTANCE,
+          holidays: [...HOLIDAYS],
           isEmergencyClosed: false,
           promoStartAt: null,
           promoEndAt: null,
@@ -98,6 +145,35 @@ export const useAppStore = create<AppState>()(
           isHoliday: false,
           showBackToTop: false,
           showCookieConsent: false,
+          uiLang: detectBrowserLanguage(),
+          searchQuery: "",
+          isSearchOpen: false,
+          isGeneralShareOpen: false,
+          isOrderConfirmationOpen: false,
+          isMapOpen: false,
+          shareItem: null,
+          zoomedImage: null,
+          copied: false,
+        },
+
+        checkoutState: {
+          customerName: "",
+          customerAddress: "",
+          deliveryMethod: 'delivery',
+          distance: 0,
+          promoCodeInput: "",
+          promoMessage: null,
+          isAiProcessing: false,
+          isDistanceAiVerified: false,
+        },
+
+        setCheckoutState: (state) =>
+          set((current) => ({
+            checkoutState: { ...current.checkoutState, ...state }
+          })),
+
+        get t() {
+          return UI_COPY[get().uiState.uiLang];
         },
 
         setUiState: (state) =>
@@ -119,15 +195,54 @@ export const useAppStore = create<AppState>()(
           set((state) => ({
             uiState: { ...state.uiState, currentView: view },
           })),
+
+        setUiLang: (lang) => {
+          set((state) => ({
+            uiState: { ...state.uiState, uiLang: lang }
+          }));
+          document.documentElement.lang = lang;
+        },
+
+        setSearchQuery: (query) =>
+          set((state) => ({
+            uiState: { ...state.uiState, searchQuery: query }
+          })),
       }),
       {
         name: 'martabak-app-store',
         partialize: (state) => ({
           uiState: {
             isDarkMode: state.uiState.isDarkMode,
+            uiLang: state.uiState.uiLang,
           },
+          checkoutState: {
+            customerName: state.checkoutState.customerName,
+            customerAddress: state.checkoutState.customerAddress,
+          }
         }),
       }
     )
   )
 );
+
+/** 
+ * Hook helper untuk menghitung status promo & toko secara reaktif
+ */
+export const useStoreComputed = () => {
+  const { uiState, storeSettings } = useAppStore();
+  const { isHoliday, isOpen } = uiState;
+  const { promoStartAt, promoEndAt, isEmergencyClosed } = storeSettings;
+
+  const isPromoScheduledActive = (() => {
+    if (isHoliday || isEmergencyClosed) return false;
+    if (!promoStartAt && !promoEndAt) return true;
+    const now = new Date();
+    const start = promoStartAt ? new Date(promoStartAt) : null;
+    const end = promoEndAt ? new Date(promoEndAt) : null;
+    if (start && now < start) return false;
+    if (end && now > end) return false;
+    return true;
+  })();
+
+  return { isPromoScheduledActive };
+};

@@ -149,23 +149,30 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
           messages: [
             { 
               role: 'system', 
-              content: "You are a geocoding expert for Gresik region." 
+              content: "You are a friendly local delivery dispatcher for Martabak Gresik. Your job is to help customers by cleaning up their delivery address and estimating the distance from the store at Jl. Usman Sadar No. 10, Gresik." 
             },
             { 
               role: 'user', 
-              content: `Sistem ahli geocoding dan validasi wilayah Gresik. 
-          LOKASI TOKO: Jl. Usman Sadar No. 10, Gresik (Pusat Kota).
+              content: `HALO DISPATCHER! Tolong proses alamat pesanan ini: "${address}".
           
-          TUGAS: 
-          1. Analisis apakah alamat "${address}" berada di wilayah kabupaten Gresik, Jawa Timur, Indonesia.
-          2. Estimasi secara akurat jarak (dalam angka KM) dari TOKO (Jl. Usman Sadar No. 10) ke alamat tujuan.
-             - CATATAN GEOGRAFI: Jl. Pahlawan, Jl. Basuki Rahmat, Jl. Jaksa Agung adalah area DEKAT (< 1.5 KM).
-             - Gunakan estimasi rute jalan raya, bukan garis lurus.
-          3. Pastikan alamat mencantumkan NOMOR RUMAH yang jelas.
-          4. Jika VALID (Gresik, <= 10KM, & Ada No Rumah): Return JSON: {"success": true, "beautifiedAddress": "Alamat yang diperbaiki", "googleMapsLink": "https://www.google.com/maps/search/...", "distance": [angka_km_presisi]}.
-          5. Jika INVALID (Luar Gresik, > 10KM, atau TANPA No Rumah): Return JSON: {"success": false, "error": "Pesan peringatan dalam Bahasa Indonesia yang spesifik (misal: 'Mohon cantumkan nomor rumah' atau 'Di luar wilayah Gresik') dan minta konfirmasi admin"}.
+          KANTOR PUSAT: Jl. Usman Sadar No. 10, Gresik.
           
-          ATURAN: Return HANYA JSON tersebut. Tanpa markdown backticks, tanpa penjelasan.`
+          PANDUAN PROSES:
+          1. ASUMSI LOKAL: User sedang memesan martabak di GRESIK. Jika user menyebut nama jalan/daerah di Gresik (misal: Kalimantan, GKB, Kaca Piring, PPS, Suci, Manyar, Kebomas, Dr. Wahidin, dsb), JANGAN RAGU. Itu pasti di Gresik.
+          2. JANGAN PEDANTIK: Alamat seperti "Jl. Kalimantan no 302" sudah SANGAT JELAS untuk pengiriman makanan. Jangan minta RT/RW, Kecamatan, atau Kode Pos. Itu hanya mempersulit pembeli.
+          3. HITUNG JARAK: Berikan estimasi jarak rute darat yang masuk akal (KM).
+             - GKB/Kalimantan/Manyar: ~3-5km.
+             - Pusat kota (Kaca Piring/Tridharma): ~1-2km.
+             - PPS/Suci: ~6-8km.
+          4. BATASAN: Kita hanya melayani area Gresik dengan jarak maksimal 10KM.
+          
+          CONTOH RESPON SUKSES (JSON):
+          {"success": true, "beautifiedAddress": "Jl. Kalimantan No. 302, Gresik (GKB)", "googleMapsLink": "https://www.google.com/maps/search/Jl.+Kalimantan+No.+302+Gresik", "distance": 4.2}
+          
+          CONTOH RESPON GAGAL (Hanya jika benar-benar di luar kota atau ngawur):
+          {"success": false, "error": "Waduh, sepertinya lokasi Kakak di luar jangkauan pengiriman kami (maks 10km)."}
+          
+          BALAS HANYA DENGAN JSON.`
             }
           ],
           model: 'openai'
