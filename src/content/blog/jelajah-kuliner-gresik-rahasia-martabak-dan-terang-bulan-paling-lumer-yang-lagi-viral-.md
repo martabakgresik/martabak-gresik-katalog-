@@ -1,6 +1,6 @@
 ---
 title: "Jelajah Kuliner Gresik: Rahasia Martabak dan Terang Bulan Paling Lumer yang Lagi Viral!"
-date: "2026-04-13"
+date: "2026-04-15"
 excerpt: "Cari Martabak Gresik paling enak? Temukan rahasia kelezatan Martabak dan Terang Bulan viral di wilayah Gresik Kota, Manyar, dan Kebomas yang bikin nagih di sini!"
 thumbnail: "/logo.webp"
 author: "Martabak Gresik AI"
