@@ -44,11 +44,10 @@ interface MenuState {
 
 interface UIState {
   isDarkMode: boolean;
-  isCartOpen: boolean;
   activeTab: 'cart' | 'favorites';
   showPromo: boolean;
   isCheckoutPhase: boolean;
-  currentView: 'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion' | 'app-download';
+  currentView: 'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion' | 'app-download' | 'cart';
   isOpen: boolean;
   isHoliday: boolean;
   showBackToTop: boolean;
@@ -69,10 +68,12 @@ interface CheckoutState {
   customerAddress: string;
   deliveryMethod: 'delivery' | 'pickup';
   distance: number;
+  coordinates: { lat: number, lng: number } | null;
+  addressNotes: string;
   promoCodeInput: string;
   promoMessage: { status: 'success' | 'error', text: string } | null;
   isAiProcessing: boolean;
-  isDistanceAiVerified: boolean;
+  isLocationConfirmed: boolean;
 }
 
 interface AppState {
@@ -136,7 +137,6 @@ export const useAppStore = create<AppState>()(
 
         uiState: {
           isDarkMode: false,
-          isCartOpen: false,
           activeTab: 'cart' as const,
           showPromo: true,
           isCheckoutPhase: false,
@@ -161,10 +161,12 @@ export const useAppStore = create<AppState>()(
           customerAddress: "",
           deliveryMethod: 'delivery',
           distance: 0,
+          coordinates: null,
+          addressNotes: "",
           promoCodeInput: "",
           promoMessage: null,
           isAiProcessing: false,
-          isDistanceAiVerified: false,
+          isLocationConfirmed: false,
         },
 
         setCheckoutState: (state) =>
@@ -184,11 +186,6 @@ export const useAppStore = create<AppState>()(
         toggleDarkMode: () =>
           set((state) => ({
             uiState: { ...state.uiState, isDarkMode: !state.uiState.isDarkMode },
-          })),
-
-        toggleCartOpen: () =>
-          set((state) => ({
-            uiState: { ...state.uiState, isCartOpen: !state.uiState.isCartOpen },
           })),
 
         setCurrentView: (view) =>
@@ -218,6 +215,10 @@ export const useAppStore = create<AppState>()(
           checkoutState: {
             customerName: state.checkoutState.customerName,
             customerAddress: state.checkoutState.customerAddress,
+            addressNotes: state.checkoutState.addressNotes,
+            coordinates: state.checkoutState.coordinates,
+            distance: state.checkoutState.distance,
+            isLocationConfirmed: state.checkoutState.isLocationConfirmed,
           }
         }),
       }

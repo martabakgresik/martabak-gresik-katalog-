@@ -1,7 +1,7 @@
 // Last Sync: 2026-03-29 - Testing push functionality
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, Sparkles, CookingPot, Download } from "lucide-react";
+import { Store, RotateCcw, X, MessageCircle, Plus, Maximize2, Minimize2, Send, Sparkles, CookingPot, Download, ShoppingBag } from "lucide-react";
 import {
   MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY,
   STORE_NAME, STORE_ADDRESS, STORE_PHONE, SINCE_YEAR,
@@ -23,6 +23,9 @@ const debounce = (fn: Function, ms: number) => {
 
 interface AiAssistantProps {
   onAddToCart?: (item: Omit<CartItem, 'id' | 'quantity'>) => void;
+  onCheckoutRedirect?: () => void;
+  cart?: CartItem[];
+  totalPrice?: number;
   menuSweet?: any[];
   menuSavory?: any[];
 }
@@ -66,12 +69,15 @@ const normalizeModelList = (data: any) => {
 
 export const AiAssistant = ({
   onAddToCart,
+  onCheckoutRedirect,
+  cart = [],
+  totalPrice = 0,
   menuSweet = MENU_SWEET,
   menuSavory = MENU_SAVORY,
 }: AiAssistantProps) => {
   const { uiState, storeSettings } = useAppStore();
-  const { uiLang, isOpen } = uiState;
-  const { activePromoCode, activePromoPercent } = storeSettings;
+  const { uiLang, isOpen, isHoliday } = uiState;
+  const { activePromoCode, activePromoPercent, isEmergencyClosed } = storeSettings;
 
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -136,6 +142,19 @@ export const AiAssistant = ({
 
     return context;
   }, [menuSweet, menuSavory]);
+
+  const getCartContext = useCallback(() => {
+    if (cart.length === 0) return "KERANJANG SAAT INI: Kosong.";
+    let context = "KERANJANG BELANJA USER SAAT INI:\n";
+    cart.forEach((item, index) => {
+      context += `${index + 1}. ${item.name} (${item.quantity}x) - Rp${item.price * item.quantity}\n`;
+      if (item.addons && item.addons.length > 0) {
+        context += `   Addons: ${item.addons.map(a => a.name).join(', ')}\n`;
+      }
+    });
+    context += `TOTAL HARGA: Rp${totalPrice}\n`;
+    return context;
+  }, [cart, totalPrice]);
 
   const scrollAiToBottom = () => {
     aiMessagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -236,10 +255,15 @@ export const AiAssistant = ({
     try {
       const now = new Date();
       const currentTime = now.toLocaleTimeString(uiLang === 'en' ? 'en-US' : 'id-ID', { hour: '2-digit', minute: '2-digit' });
-      const currentDate = now.toISOString().split('T')[0];
-      const isHoliday = HOLIDAYS.includes(currentDate);
-      const currentHour = now.getHours();
-      const isStoreOpen = currentHour >= OPEN_HOUR && currentHour < CLOSE_HOUR;
+      
+      // Menggunakan status terpusat dari store agar konsisten dengan UI lainnya
+      const storeStatusText = isEmergencyClosed 
+        ? "Toko sedang TUTUP DARURAT karena alasan mendesak." 
+        : isHoliday 
+          ? "Toko sedang LIBUR hari ini." 
+          : isOpen 
+            ? `Toko sedang BUKA (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).` 
+            : `Toko sedang TUTUP (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).`;
 
        const systemPrompt = `Anda adalah "Asisten Virtual", asisten virtual ${STORE_NAME} yang cerdas, asik, ramah, dan berpengetahuan luas. Anda bisa menjawab APAPUN yang ditanyakan pelanggan — mulai dari pengetahuan umum, cuaca, tips hidup, lelucon, sampai topik sehari-hari.
 
@@ -265,12 +289,14 @@ INFORMASI TOKO:
 DATA MENU AKTIF:
 ${getMenuContext()}
 
+${getCartContext()}
+
 PANDUAN PROMOSI:
 - Sebutkan item yang "PROMO" jika user tanya rekomendasi atau promo.
 - Sebutkan harga asli (yang dicoret) dan harga baru jika menonjolkan diskon. Contoh: "Lagi murah Kak, dari 25k jadi cuma 20k aja!".
 - Jangan arahkan ke item yang "[STOK HABIS]".
 
-STATUS TOKO SAAT INI: ${isHoliday ? "Toko sedang LIBUR hari ini." : (isStoreOpen ? `Toko sedang BUKA (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).` : `Toko sedang TUTUP (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).`)}
+STATUS TOKO SAAT INI: ${storeStatusText}
 Waktu sekarang: ${currentTime} WIB
 
 Jika pelanggan ingin memesan dan toko sedang libur atau tutup, beritahukan dengan sangat ramah dan sopan. Berikan rekomendasi menu untuk dipesan nanti, atau arahkan hubungi via WhatsApp jika mendesak.
@@ -286,6 +312,8 @@ GAYA KOMUNIKASI: Gunakan "Kak", "Kakak", "yuk", "gurih poll", "coba deh", "lumer
 JANGAN GUNAKAN XML/JSX tags. GUNAKAN FORMAT INI:
 
 #product-card|KATEGORI|NAMA_PRODUK|HARGA|/LOKASI_GAMBAR
+
+#checkout (Gunakan ini jika user ingin mengakhiri pesanan atau membayar)
 
 FORMAT HARUS: #product-card|Kategori|Nama Produk|harga_angka|/images/folder/namafile.webp
 
@@ -430,15 +458,22 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
         }
 
         if (tag === '#checkout') {
-          const [_, nama, alamat, hp, total, menu] = payload;
-          const waMsg = `Halo Admin!\n\n*Pesanan:* ${menu}\n*Total:* ${total}\n\n*Data:* ${nama} (${hp})\n${alamat}`;
           return (
-            <div key={index} className="bg-brand-black/5 dark:bg-white/5 border-2 border-brand-black dark:border-brand-yellow/30 p-5 rounded-[2rem] my-4 space-y-4 shadow-inner">
-              <h4 className="font-black text-xs uppercase italic dark:text-brand-yellow">Ringkasan Pesanan</h4>
-              <p className="text-xs font-bold dark:text-white">{nama} - {total}</p>
-              <a href={`https://wa.me/6281330763633?text=${encodeURIComponent(waMsg)}`} target="_blank" className="w-full py-4 bg-[#25D366] text-white rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 no-underline">
-                <MessageCircle className="w-6 h-6" /> Kirim ke WhatsApp
-              </a>
+            <div key={index} className="bg-brand-black/5 dark:bg-white/5 border-2 border-brand-black dark:border-brand-yellow/30 p-6 rounded-[2.5rem] my-4 space-y-4 shadow-inner text-center">
+              <div className="w-16 h-16 bg-brand-yellow rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg">
+                <ShoppingBag className="w-8 h-8 text-brand-black" />
+              </div>
+              <h4 className="font-black text-sm uppercase italic dark:text-brand-yellow">Siap untuk Checkout?</h4>
+              <p className="text-[10px] font-bold dark:text-white/70">Klik tombol di bawah untuk melengkapi data pengiriman dan menyelesaikan pesanan Kakak.</p>
+              <button 
+                onClick={() => {
+                  setIsAiOpen(false);
+                  onCheckoutRedirect && onCheckoutRedirect();
+                }}
+                className="w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 active:scale-95 transition-all"
+              >
+                Lanjutkan ke Keranjang
+              </button>
             </div>
           );
         }

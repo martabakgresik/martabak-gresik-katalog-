@@ -20,7 +20,8 @@ export const ModalsContainer: React.FC<ModalsContainerProps> = ({
   formatPrice,
   storeAddress
 }) => {
-  const { uiState, setUiState, t } = useAppStore();
+  const { uiState, setUiState, t, storeSettings } = useAppStore();
+  const { storePhone } = storeSettings;
   const {
     shareItem,
     isGeneralShareOpen,
@@ -41,8 +42,9 @@ export const ModalsContainer: React.FC<ModalsContainerProps> = ({
   const shareToWhatsApp = (item: { name: string; price: number; category?: string }) => {
     const message = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${item.name}*\n${item.category ? `(${item.category})\n` : ""}Harga: *${formatPrice(item.price)}*\n\nCek katalog lengkapnya di sini: ${APP_URL}`;
     const encodedMessage = encodeURIComponent(message);
-    const storePhone = "6281330763633"; // Better to pull from store if available
-    window.open(`https://wa.me/${storePhone}?text=${encodedMessage}`, "_blank");
+    const phone = (storePhone || "6281330763633").replace(/\D/g, '');
+    const waPhone = phone.startsWith('0') ? '62' + phone.slice(1) : phone;
+    window.open(`https://wa.me/${waPhone}?text=${encodedMessage}`, "_blank");
   };
 
   const shareGeneral = async (platform: string) => {

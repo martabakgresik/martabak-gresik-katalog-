@@ -25,7 +25,7 @@ export const SEO: React.FC<SEOProps> = ({
   price,
   category,
   noindex = false,
-  phone = "+6281330763633",
+  phone = "+6281330763633", // Default pulls from storeRules.ts in practice
   date,
   author = "Martabak Gresik",
   lang = "id"
