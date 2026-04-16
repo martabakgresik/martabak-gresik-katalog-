@@ -33,7 +33,8 @@ import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
 import { FloatingActions } from "./components/layout/FloatingActions";
 import { MenuCatalog } from "./components/menu/MenuCatalog";
-import { CartSidebar } from "./components/modals/CartSidebar";
+import { CartPage } from "./views/CartPage";
+import { CartNotification } from "./components/cart/CartNotification";
 import { AddonModal } from "./components/modals/AddonModal";
 import { ModalsContainer } from "./components/modals/ModalsContainer";
 import { useAppStore } from "./store/useAppStore";
@@ -57,7 +58,6 @@ export default function App() {
     storeSettings, 
     setUiState, 
     toggleDarkMode, 
-    toggleCartOpen, 
     setCurrentView,
     setSearchQuery,
     t 
@@ -67,7 +67,6 @@ export default function App() {
     uiLang,
     currentView,
     isDarkMode,
-    isCartOpen,
     activeTab,
     showPromo,
     showBackToTop,
@@ -120,16 +119,23 @@ export default function App() {
     applyPromoCode,
     detectLocation,
     sendWhatsAppOrder,
-    processAddressWithAI
+    updateLocation
   } = useCart(shippingRate, maxDistance);
 
   // --- LOCAL UI STATE (Specific to App view) ---
   const [locationStatus, setLocationStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error', message?: string }>({ status: 'idle' });
   const [isAiProcessing, setIsAiProcessing] = useState(false);
-  const [isDistanceAiVerified, setIsDistanceAiVerified] = useState(false);
+  const [isLocationConfirmed, setIsLocationConfirmed] = useState(false);
   
-  const [promoCodeInput, setPromoCodeInput] = useState("");
   const [promoMessage, setPromoMessage] = useState<{ status: 'success' | 'error', text: string } | null>(null);
+  const [lastItemAdded, setLastItemAdded] = useState<string | null>(null);
+
+  const handleAddToCart = (item: any) => {
+    addToCart(item);
+    setLastItemAdded(item.name);
+    // Reset after some time so the next add triggers the notification again if it's the same item
+    setTimeout(() => setLastItemAdded(null), 100);
+  };
 
   const [favorites, setFavorites] = useState<FavoriteItem[]>(() => {
     const saved = localStorage.getItem('martabak_favorites');
@@ -286,7 +292,9 @@ export default function App() {
   const shareToWhatsApp = (item: { name: string; price: number; category?: string }) => {
     const message = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${item.name}*\n${item.category ? `(${item.category})\n` : ""}Harga: *${formatPrice(item.price)}*\n\nCek katalog lengkapnya di sini: ${window.location.origin}`;
     const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${storePhone.replace(/\s/g, '').replace('+', '')}?text=${encodedMessage}`, "_blank");
+    const phone = storePhone.replace(/\D/g, '');
+    const waPhone = phone.startsWith('0') ? '62' + phone.slice(1) : phone;
+    window.open(`https://wa.me/${waPhone}?text=${encodedMessage}`, "_blank");
   };
 
   const shareGeneral = async (platform: string) => {
@@ -475,7 +483,7 @@ export default function App() {
 
                 <div className="flex flex-col gap-4">
                   <a 
-                    href={`https://wa.me/${storePhone.replace(/\s/g, '').replace('+', '')}?text=${encodeURIComponent("Halo Martabak Gresik! Saya mau request link download aplikasi Android-nya dong.")}`}
+                    href={`https://wa.me/${(() => { const p = storePhone.replace(/\D/g, ''); return p.startsWith('0') ? '62' + p.slice(1) : p; })()}?text=${encodeURIComponent("Halo Martabak Gresik! Saya mau request link download aplikasi Android-nya dong.")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full bg-[#25D366] text-white py-5 rounded-full font-black uppercase italic text-lg flex items-center justify-center gap-3 hover:scale-105 transition-transform active:scale-95 shadow-xl"
@@ -494,39 +502,56 @@ export default function App() {
              </div>
           </motion.main>
         )}
+
+        {currentView === 'cart' && (
+          <CartPage 
+            totalItems={totalItems}
+            favorites={favorites}
+            cart={cart}
+            updateLocation={updateLocation}
+            shippingCost={shippingCost}
+            applyPromoCode={applyPromoCode}
+            promoCode={promoCode}
+            discountAmount={discountAmount}
+            totalPrice={totalPrice}
+            removeFromCart={removeFromCart}
+            updateQuantity={updateQuantity}
+            updateNote={updateNote}
+            toggleFavorite={toggleFavorite}
+            setZoomedImage={(img) => setUiState({ zoomedImage: img })}
+            handleOpenAddonModal={handleOpenAddonModal}
+            setIsOrderConfirmationOpen={(open) => setUiState({ isOrderConfirmationOpen: open })}
+            formatPrice={formatPrice}
+          />
+        )}
       </AnimatePresence>
 
       <Footer />
 
-      <FloatingActions totalItems={totalItems} />
+      <FloatingActions 
+        totalItems={totalItems} 
+        onViewCart={() => setCurrentView('cart')}
+      />
+
+      {currentView !== 'cart' && (
+        <CartNotification 
+          lastItemName={lastItemAdded}
+          onViewCart={() => setCurrentView('cart')}
+        />
+      )}
 
       {/* AI Assistant UI */}
       <AiAssistant 
         onAddToCart={addToCart} 
+        onCheckoutRedirect={() => setCurrentView('cart')}
+        cart={cart}
+        totalPrice={totalPrice}
         menuSweet={menuSweet}
         menuSavory={menuSavory}
       />
 
 
-      <CartSidebar 
-        totalItems={totalItems}
-        favorites={favorites}
-        cart={cart}
-        processAddressWithAI={processAddressWithAI}
-        shippingCost={shippingCost}
-        applyPromoCode={applyPromoCode}
-        promoCode={promoCode}
-        discountAmount={discountAmount}
-        totalPrice={totalPrice}
-        removeFromCart={removeFromCart}
-        updateQuantity={updateQuantity}
-        updateNote={updateNote}
-        toggleFavorite={toggleFavorite}
-        setZoomedImage={(img) => setUiState({ zoomedImage: img })}
-        handleOpenAddonModal={handleOpenAddonModal}
-        setIsOrderConfirmationOpen={(open) => setUiState({ isOrderConfirmationOpen: open })}
-        formatPrice={formatPrice}
-      />
+
 
       <AddonModal 
         selectedItemForAddon={selectedItemForAddon}
@@ -535,7 +560,7 @@ export default function App() {
         setCopied={(val) => setUiState({ copied: val })}
         selectedAddons={selectedAddons}
         setSelectedAddons={setSelectedAddons}
-        addToCart={addToCart}
+        addToCart={handleAddToCart}
         setZoomedImage={(img) => setUiState({ zoomedImage: img })}
         formatPrice={formatPrice}
         t={t}

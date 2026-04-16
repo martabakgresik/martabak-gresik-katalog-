@@ -96,7 +96,7 @@ export const FAQ = ({ isPage = false, onClose }: { isPage?: boolean, onClose?: (
       <div className="mt-8 p-6 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-[2rem] text-center space-y-3">
         <p className="text-sm font-bold">{text.moreQuestions}</p>
         <a 
-          href="https://wa.me/6281330763633?text=Halo%20Admin,%20saya%20ingin%20bertanya..."
+          href={`https://wa.me/${(() => { const p = "6281330763633"; return p.startsWith('0') ? '62' + p.slice(1) : p; })()}?text=Halo%20Admin,%20saya%20ingin%20bertanya...`}
           target="_blank"
           className="inline-flex items-center gap-2 px-6 py-2 bg-brand-orange text-white rounded-full font-black text-xs uppercase tracking-wider hover:scale-105 transition-transform"
         >

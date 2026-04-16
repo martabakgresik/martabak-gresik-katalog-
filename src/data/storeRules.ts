@@ -29,7 +29,7 @@ export const STORE_RULES = {
   // 📱 Informasi Toko
   profile: {
     name: "Martabak Gresik",
-    address: "Jl. Usman Sadar No 10, Gresik, Jawa Timur, Indonesia",
+    address: "Jl. Usman Sadar No. 10, Gresik, Jawa Timur",
     phone: "081330763633",
     sinceYear: "2020",
   },

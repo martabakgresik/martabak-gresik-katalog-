@@ -45,7 +45,7 @@ const PRESETS = [
   },
   { 
     name: 'WhatsApp', 
-    url: 'https://wa.me/6281330763633?text=Halo%20Martabak%20Gresik!', 
+    url: `https://wa.me/${(() => { const p = "6281330763633"; return p.startsWith('0') ? '62' + p.slice(1) : p; })()}?text=Halo%20Martabak%20Gresik!`, 
     icon: MessageCircle,
     color: 'bg-green-500/10 text-green-500'
   },

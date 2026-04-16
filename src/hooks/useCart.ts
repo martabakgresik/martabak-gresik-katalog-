@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE } from "../data/config";
+import React from "react";
+import { SHIPPING_RATE_PER_KM, MAX_SHIPPING_DISTANCE, STORE_PHONE } from "../data/config";
+import { useAppStore } from "../store/useAppStore";
 
 export interface Addon {
   name: string;
@@ -23,8 +24,6 @@ export interface CartItem {
   image?: string;
 }
 
-
-
 export const formatPrice = (price: number) => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -35,23 +34,27 @@ export const formatPrice = (price: number) => {
 };
 
 export const useCart = (customShippingRate?: number, customMaxDistance?: number) => {
-  const rate = customShippingRate ?? SHIPPING_RATE_PER_KM;
-  const maxDist = customMaxDistance ?? MAX_SHIPPING_DISTANCE;
+  const { checkoutState, setCheckoutState, storeSettings } = useAppStore();
+  const rate = customShippingRate ?? storeSettings.shippingRate ?? SHIPPING_RATE_PER_KM;
   
-  const [cart, setCart] = useState<CartItem[]>(() => {
+  const [cart, setCart] = React.useState<CartItem[]>(() => {
     const saved = localStorage.getItem('martabak_cart');
     return saved ? JSON.parse(saved) : [];
   });
   
-  const [distance, setDistance] = useState<number>(0);
-  const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>('delivery');
-  const [promoCode, setPromoCode] = useState<string>("");
-  const [discountPercent, setDiscountPercent] = useState<number>(0);
-  const [customerName, setCustomerName] = useState<string>("");
-  const [customerAddress, setCustomerAddress] = useState<string>("");
-  const [coordinates, setCoordinates] = useState<{ lat: number, lng: number } | null>(null);
+  const {
+    distance,
+    deliveryMethod,
+    customerName,
+    customerAddress,
+    addressNotes,
+    coordinates
+  } = checkoutState;
 
-  useEffect(() => {
+  const [promoCode, setPromoCode] = React.useState<string>("");
+  const [discountPercent, setDiscountPercent] = React.useState<number>(0);
+
+  React.useEffect(() => {
     localStorage.setItem('martabak_cart', JSON.stringify(cart));
   }, [cart]);
 
@@ -115,10 +118,12 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     return new Promise<{ success: boolean, message: string }>((resolve) => {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setCoordinates({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
+          setCheckoutState({
+            coordinates: {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            }
+          } as any);
           resolve({ success: true, message: "Lokasi berhasil dideteksi!" });
         },
         (error) => {
@@ -130,82 +135,16 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     });
   };
 
-  const isGoogleMapsLink = (text: string) => {
-    return /https?:\/\/(maps\.(app\.)?goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|maps\.google\.com)/.test(text);
+  const updateLocation = (data: { address: string; lat: number; lng: number; distance: number }) => {
+    setCheckoutState({
+      customerAddress: data.address,
+      coordinates: { lat: data.lat, lng: data.lng },
+      distance: data.distance
+    } as any);
   };
 
-  const processAddressWithAI = async (address: string) => {
-    if (!address || address.length < 5) {
-      return { success: false, error: "Alamat minimal 5 karakter" };
-    }
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            { 
-              role: 'system', 
-              content: "You are a friendly local delivery dispatcher for Martabak Gresik. Your job is to help customers by cleaning up their delivery address and estimating the distance from the store at Jl. Usman Sadar No. 10, Gresik." 
-            },
-            { 
-              role: 'user', 
-              content: `HALO DISPATCHER! Tolong proses alamat pesanan ini: "${address}".
-          
-          KANTOR PUSAT: Jl. Usman Sadar No. 10, Gresik.
-          
-          PANDUAN PROSES:
-          1. ASUMSI LOKAL: User sedang memesan martabak di GRESIK. Jika user menyebut nama jalan/daerah di Gresik (misal: Kalimantan, GKB, Kaca Piring, PPS, Suci, Manyar, Kebomas, Dr. Wahidin, dsb), JANGAN RAGU. Itu pasti di Gresik.
-          2. JANGAN PEDANTIK: Alamat seperti "Jl. Kalimantan no 302" sudah SANGAT JELAS untuk pengiriman makanan. Jangan minta RT/RW, Kecamatan, atau Kode Pos. Itu hanya mempersulit pembeli.
-          3. HITUNG JARAK: Berikan estimasi jarak rute darat yang masuk akal (KM).
-             - GKB/Kalimantan/Manyar: ~3-5km.
-             - Pusat kota (Kaca Piring/Tridharma): ~1-2km.
-             - PPS/Suci: ~6-8km.
-          4. BATASAN: Kita hanya melayani area Gresik dengan jarak maksimal 10KM.
-          
-          CONTOH RESPON SUKSES (JSON):
-          {"success": true, "beautifiedAddress": "Jl. Kalimantan No. 302, Gresik (GKB)", "googleMapsLink": "https://www.google.com/maps/search/Jl.+Kalimantan+No.+302+Gresik", "distance": 4.2}
-          
-          CONTOH RESPON GAGAL (Hanya jika benar-benar di luar kota atau ngawur):
-          {"success": false, "error": "Waduh, sepertinya lokasi Kakak di luar jangkauan pengiriman kami (maks 10km)."}
-          
-          BALAS HANYA DENGAN JSON.`
-            }
-          ],
-          model: 'openai'
-        })
-      });
-
-      if (!response.ok) {
-        return { success: false, error: "Gagal terhubung ke AI service. Coba lagi." };
-      }
-
-      const data = await response.json();
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        return { success: false, error: "Format respons AI tidak valid. Coba lagi." };
-      }
-      
-      const aiContent = data.choices[0].message.content.trim();
-      
-      try {
-        const cleanedContent = aiContent.replace(/```json\n?|```/g, '').trim();
-        const result = JSON.parse(cleanedContent);
-        return result;
-      } catch (parseError) {
-        console.error("AI JSON Parse Error:", parseError, aiContent);
-        // Fallback for simple link return if AI fails JSON format
-        if (isGoogleMapsLink(aiContent)) {
-          return { success: true, googleMapsLink: aiContent };
-        }
-        return { success: false, error: "Format rerespons AI tidak valid. Coba lagi atau hubungi admin." };
-      }
-    } catch (error) {
-      console.error("AI Address Processing Error:", error);
-      return { success: false, error: "Terjadi kesalahan saat memproses alamat. Coba lagi atau hubungi admin." };
-    }
+  const isGoogleMapsLink = (text: string) => {
+    return /https?:\/\/(maps\.(app\.)?goo\.gl|goo\.gl\/maps|www\.google\.com\/maps|maps\.google\.com)/.test(text);
   };
 
   const reverseGeocodeWithAI = async (lat: number, lng: number) => {
@@ -230,7 +169,8 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
   };
 
   const sendWhatsAppOrder = () => {
-    const phoneNumber = "6281330763633";
+    const phone = STORE_PHONE.replace(/\D/g, '');
+    const phoneNumber = phone.startsWith('0') ? '62' + phone.slice(1) : phone;
     let message = "*PESANAN BARU - MARTABAK GRESIK*\n\n";
 
     message += `*DATA PELANGGAN:*\n`;
@@ -238,6 +178,7 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     if (deliveryMethod === 'delivery') {
       const containsMapsLink = isGoogleMapsLink(customerAddress);
       message += `Alamat: ${customerAddress || '-'}\n`;
+      if (addressNotes) message += `Patokan: ${addressNotes}\n`;
       
       if (containsMapsLink) {
         message += `📍 *Lokasi (Share Link dari Pembeli)*\n`;
@@ -286,7 +227,7 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     cart,
     setCart,
     distance,
-    setDistance,
+    setDistance: (dist: number) => setCheckoutState({ distance: dist }),
     addToCart,
     removeFromCart,
     updateQuantity,
@@ -299,17 +240,17 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     promoCode,
     discountPercent,
     customerName,
-    setCustomerName,
     customerAddress,
-    setCustomerAddress,
     coordinates,
     deliveryMethod,
-    setDeliveryMethod,
+    setDeliveryMethod: (method: 'delivery' | 'pickup') => setCheckoutState({ deliveryMethod: method }),
+    setCustomerName: (name: string) => setCheckoutState({ customerName: name }),
+    setCustomerAddress: (address: string) => setCheckoutState({ customerAddress: address }),
     applyPromoCode,
     detectLocation,
     sendWhatsAppOrder,
     isGoogleMapsLink,
-    processAddressWithAI,
-    reverseGeocodeWithAI
+    reverseGeocodeWithAI,
+    updateLocation
   };
 };

@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  X, Send, Sun, Moon, MapPin, Phone, Clock, Search, ChevronDown, ImageIcon, ShoppingBag, Home
+  X, Send, Sun, Moon, MapPin, Phone, Clock, Search, ChevronDown, ImageIcon, ShoppingBag, Home, MessageCircle
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { SCROLL_SPACING } from "../../data/config";
@@ -53,6 +53,10 @@ export const Header: React.FC<HeaderProps> = ({
     isEmergencyClosed
   } = storeSettings;
 
+  const STORE_PHONE_RAW = storePhone || "6281330763633";
+  const normalizedPhone = STORE_PHONE_RAW.replace(/\D/g, '');
+  const waPhone = normalizedPhone.startsWith('0') ? '62' + normalizedPhone.slice(1) : normalizedPhone;
+
   return (
     <>
       {/* Promo Banner */}
@@ -91,8 +95,18 @@ export const Header: React.FC<HeaderProps> = ({
           </motion.button>
         </div>
 
-        {/* Theme Toggle Button */}
-        <div className="absolute top-6 right-6 z-20">
+        {/* Right Actions (Theme + Cart) */}
+        <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setCurrentView('cart')}
+            className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl relative"
+            title={t.viewCart}
+          >
+            <ShoppingBag className="w-5 h-5" />
+          </motion.button>
+          
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -139,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               </div>
               <motion.h1
-                className="text-3xl md:text-6xl font-display font-black tracking-tighter uppercase leading-[0.85] cursor-pointer hover:text-brand-yellow transition-colors"
+                className="block text-3xl md:text-6xl font-display font-black tracking-tighter uppercase leading-[0.85] cursor-pointer hover:text-brand-yellow transition-colors"
                 whileHover={{ scale: 1.02 }}
                 onClick={() => {
                   setCurrentView('catalog');

@@ -5,13 +5,15 @@ import { useAppStore } from "../../store/useAppStore";
 
 interface FloatingActionsProps {
   totalItems: number;
+  onViewCart: () => void;
 }
 
 export const FloatingActions: React.FC<FloatingActionsProps> = ({
-  totalItems
+  totalItems,
+  onViewCart
 }) => {
-  const { uiState, setUiLang, setUiState, t } = useAppStore();
-  const { uiLang, showBackToTop } = uiState;
+  const { uiState, setUiLang, t } = useAppStore();
+  const { uiLang, showBackToTop, currentView } = uiState;
 
   return (
     <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end pointer-events-none">
@@ -40,12 +42,12 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({
         </AnimatePresence>
 
         <AnimatePresence>
-          {totalItems > 0 && (
+          {(totalItems > 0 && currentView !== 'cart') && (
             <motion.button
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
-              onClick={() => setUiState({ isCartOpen: true })}
+              onClick={onViewCart}
               className="w-auto md:bg-brand-black bg-brand-black text-white px-6 py-4 md:px-8 md:py-5 rounded-full shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] flex items-center justify-center gap-2 md:gap-3 hover:bg-brand-orange hover:scale-105 hover:shadow-brand-orange/50 transition-all group animate-[pulse_2s_ease-in-out_infinite] pointer-events-auto"
             >
               <div className="relative">

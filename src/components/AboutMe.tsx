@@ -147,7 +147,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => 
              <a href="https://instagram.com/ayick13" target="_blank" rel="noopener noreferrer" className="p-4 bg-brand-black dark:bg-white/10 text-white rounded-2xl hover:bg-brand-orange transition-all shadow-lg group">
                 <Instagram className="w-6 h-6 group-hover:scale-110 transition-transform" />
              </a>
-             <a href="https://wa.me/6281330763633?text=Halo%20Arif%20Tirtana%2C%20saya%20tertarik%20untuk%20berkolaborasi%20mengenai%20pengembangan%20digital%20seperti%20katalog%20Martabak%20Gresik%20ini." target="_blank" rel="noopener noreferrer" className="p-4 bg-brand-black dark:bg-white/10 text-white rounded-2xl hover:bg-brand-orange transition-all shadow-lg group">
+             <a href={`https://wa.me/${(() => { const p = "6281330763633"; return p.startsWith('0') ? '62' + p.slice(1) : p; })()}?text=Halo%20Arif%20Tirtana%2C%20saya%20tertarik%20untuk%20berkolaborasi%20mengenai%20pengembangan%20digital%20seperti%20katalog%20Martabak%20Gresik%20ini.`} target="_blank" rel="noopener noreferrer" className="p-4 bg-brand-black dark:bg-white/10 text-white rounded-2xl hover:bg-brand-orange transition-all shadow-lg group">
                 <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
              </a>
           </div>
