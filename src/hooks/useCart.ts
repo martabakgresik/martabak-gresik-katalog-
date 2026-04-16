@@ -100,10 +100,13 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
   const totalPrice = itemsPrice + shippingCost - discountAmount;
 
   const applyPromoCode = (code: string) => {
-    if (code.toUpperCase() === "MARTABAKBARU") {
-      setPromoCode(code.toUpperCase());
-      setDiscountPercent(10);
-      return { success: true, message: "Kode promo berhasil digunakan! Diskon 10% diterapkan." };
+    const normalizedInput = (code || "").trim().toUpperCase();
+    const activeCode = (storeSettings.activePromoCode || "").trim().toUpperCase();
+
+    if (normalizedInput && normalizedInput === activeCode) {
+      setPromoCode(activeCode);
+      setDiscountPercent(storeSettings.activePromoPercent);
+      return { success: true, message: `Kode promo berhasil digunakan! Diskon ${storeSettings.activePromoPercent}% diterapkan.` };
     }
     setPromoCode("");
     setDiscountPercent(0);

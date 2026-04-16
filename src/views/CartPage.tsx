@@ -47,7 +47,7 @@ export const CartPage: React.FC<CartPageProps> = ({
 }) => {
   const { uiState, checkoutState, storeSettings, setUiState, setCheckoutState, t } = useAppStore();
   
-  const [showInlineMap, setShowInlineMap] = useState(false);
+  const [showInlineMap, setShowInlineMap] = useState(true);
   const { isCheckoutPhase, isHoliday, isOpen } = uiState;
   const { customerName, customerAddress, addressNotes, coordinates, deliveryMethod, distance, promoCodeInput, promoMessage } = checkoutState;
   const { maxDistance, isEmergencyClosed } = storeSettings;
@@ -293,13 +293,27 @@ export const CartPage: React.FC<CartPageProps> = ({
                             />
                           </div>
 
+                          {/* LANDMARK / PATOKAN (New Optional Field) */}
+                          <div className="group relative">
+                            <label className="absolute -top-3 left-0 text-[10px] font-black uppercase tracking-[0.3em] text-brand-orange/60">
+                              {t.addressNotesLabel}
+                            </label>
+                            <input
+                              type="text"
+                              value={addressNotes}
+                              onChange={(e) => setCheckoutState({ addressNotes: e.target.value })}
+                              placeholder={t.addressNotesPlaceholder}
+                              className="w-full bg-transparent border-b-2 border-brand-black/10 dark:border-white/10 py-5 text-sm md:text-lg font-black focus:border-brand-orange outline-none dark:text-white transition-all placeholder:opacity-20 uppercase tracking-tight"
+                            />
+                          </div>
+
                           <div className="space-y-4">
                             <button
                               onClick={() => setShowInlineMap(!showInlineMap)}
-                              className="w-full py-6 rounded-[1.5rem] border-2 border-brand-black/5 dark:border-white/5 text-brand-black/60 dark:text-white/60 font-black uppercase text-[10px] tracking-[0.3em] flex items-center justify-center gap-4 transition-all hover:bg-brand-black hover:text-white dark:hover:bg-brand-yellow dark:hover:text-brand-black"
+                              className={`w-full py-6 rounded-[1.5rem] border-2 transition-all flex items-center justify-center gap-4 ${showInlineMap ? 'bg-brand-black/5 dark:bg-white/5 border-transparent text-brand-black dark:text-white' : 'border-brand-black/5 dark:border-white/5 text-brand-black/60 dark:text-white/60 hover:bg-brand-black hover:text-white'}`}
                             >
                               <Map className="w-5 h-5" />
-                              {showInlineMap ? t.closeMapButton : t.openMapButton}
+                              <span className="font-black uppercase text-[10px] tracking-[0.3em]">{showInlineMap ? t.closeMapButton : t.openMapButton}</span>
                             </button>
 
                             <AnimatePresence>
