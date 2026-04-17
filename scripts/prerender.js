@@ -133,6 +133,36 @@ async function prerender() {
   const template = fs.readFileSync(INDEX_PATH, 'utf-8');
 
   // ─────────────────────────────────────────────────
+  // 0. Prerender / (Main Catalog)
+  // ─────────────────────────────────────────────────
+  console.log('- Generating: / (Root Catalog)');
+  {
+    let html = template;
+    html = injectMeta(html, {
+      title: 'Martabak Gresik - Terang Bulan & Martabak Telor Spesial',
+      metas: [
+        { id: 'meta-description', content: 'Katalog menu lengkap Martabak Gresik: Terang Bulan Pandan, Red Velvet, Blackforest, Martabak Telor Spesial, dan Samyang Pedas. Pesan Online Mudah!' },
+        { id: 'og-title', content: 'Katalog Menu Martabak Gresik - Terang Bulan & Martabak Telor' },
+        { id: 'og-description', content: 'Pesan Martabak dan Terang Bulan premium di Gresik. Topping melimpah, rasa juara, harga hemat.' },
+        { id: 'og-image', content: `${BASE_URL}/metaseo.webp` },
+        { id: 'og-url', content: `${BASE_URL}/` },
+        { id: 'twitter-title', content: 'Katalog Menu Martabak Gresik' },
+        { id: 'twitter-description', content: 'Pesan Martabak dan Terang Bulan premium di Gresik. Topping melimpah, rasa juara, harga hemat.' },
+        { id: 'twitter-image', content: `${BASE_URL}/metaseo.webp` },
+      ],
+    });
+    html = injectCanonical(html, `${BASE_URL}/`);
+
+    // Update the main index.html in dist
+    fs.writeFileSync(INDEX_PATH, html);
+    
+    // Also create /catalog/index.html for consistency if needed
+    const outputDir = path.join(DIST_DIR, 'catalog');
+    fs.mkdirSync(outputDir, { recursive: true });
+    fs.writeFileSync(path.join(outputDir, 'index.html'), html);
+  }
+
+  // ─────────────────────────────────────────────────
   // 1. Prerender /gallery
   // ─────────────────────────────────────────────────
   console.log('- Generating: /gallery');
@@ -243,9 +273,11 @@ async function prerender() {
   }
 
   console.log('\n✅ Prerendering complete!');
-  console.log(`   - /gallery`);
-  console.log(`   - /blog`);
-  console.log(`   - /blog/* (blog posts)`);
+  console.log('   - / (Root index.html)');
+  console.log('   - /catalog');
+  console.log('   - /gallery');
+  console.log('   - /blog');
+  console.log('   - /blog/* (blog posts)');
 }
 
 prerender().catch(console.error);

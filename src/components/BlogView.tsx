@@ -57,9 +57,9 @@ export function BlogView({ onClose, isMainPage = false }: BlogViewProps) {
   const filteredPosts = useMemo(() => {
     const q = searchQuery.toLowerCase();
     return posts.filter(post => {
-      const matchesSearch = post.title.toLowerCase().includes(q) ||
-        post.excerpt.toLowerCase().includes(q) ||
-        post.content.toLowerCase().includes(q);
+      const matchesSearch = (post.title || "").toLowerCase().includes(q) ||
+        (post.excerpt || "").toLowerCase().includes(q) ||
+        (post.content || "").toLowerCase().includes(q);
       const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });

@@ -207,7 +207,7 @@ export default function App() {
     if (itemName && !selectedItemForAddon) {
       // Find item in sweet menu
       for (const section of menuSweet) {
-        const item = section.items.find(i => i.name.toLowerCase() === itemName.toLowerCase());
+        const item = section.items.find(i => (i.name || "").toLowerCase() === itemName.toLowerCase());
         if (item) {
           setSelectedItemForAddon({ ...item, type: 'sweet', category: section.category });
           return;
@@ -215,7 +215,7 @@ export default function App() {
       }
       // Find item in savory menu
       for (const section of menuSavory) {
-        const variant = section.variants.find(v => (section.title + " " + v.type).toLowerCase() === itemName.toLowerCase() || v.type.toLowerCase() === itemName.toLowerCase());
+        const variant = section.variants.find(v => (section.title + " " + v.type).toLowerCase() === itemName.toLowerCase() || (v.type || "").toLowerCase() === itemName.toLowerCase());
         if (variant) {
           // Find first price for default
           const priceObj = variant.prices[0];
@@ -344,8 +344,8 @@ export default function App() {
   const filteredSweet = useMemo(() => menuSweet.map(section => ({
     ...section,
     items: section.items.filter(item =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      section.category.toLowerCase().includes(searchQuery.toLowerCase())
+      (item.name || "").toLowerCase().includes((searchQuery || "").toLowerCase()) ||
+      (section.category || "").toLowerCase().includes((searchQuery || "").toLowerCase())
     )
   })).filter(section => section.items.length > 0), [searchQuery, menuSweet]);
 
@@ -354,7 +354,7 @@ export default function App() {
     variants: section.variants.map(variant => ({
       ...variant,
       prices: variant.prices.filter(p =>
-        `${section.title} ${variant.type} ${p.desc || `${p.qty} Telor`} ${formatPrice(p.price)}`.toLowerCase().includes(searchQuery.toLowerCase())
+        `${section.title || ""} ${variant.type || ""} ${p.desc || `${p.qty} Telor`} ${formatPrice(p.price)}`.toLowerCase().includes((searchQuery || "").toLowerCase())
       )
     })).filter(v => v.prices.length > 0)
   })).filter(section => section.variants.length > 0), [searchQuery, menuSavory]);
