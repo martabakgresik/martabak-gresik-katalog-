@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Languages, ArrowUp, ShoppingBag } from "lucide-react";
+import { ArrowUp, ShoppingBag } from "lucide-react";
 import { useAppStore } from "../../store/useAppStore";
 
 interface FloatingActionsProps {
@@ -17,15 +17,7 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({
 
   return (
     <div className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 md:gap-4 items-end pointer-events-none">
-        <button
-          onClick={() => setUiLang(uiLang === "id" ? "en" : "id")}
-          className="px-4 py-2 rounded-full bg-white/95 dark:bg-brand-black border-2 border-brand-black dark:border-brand-yellow text-brand-black dark:text-white shadow-xl font-black text-[10px] uppercase tracking-wide flex items-center gap-2 hover:scale-105 transition-transform pointer-events-auto"
-          title={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
-          aria-label={uiLang === "id" ? "Ganti bahasa ke English" : "Switch language to Bahasa Indonesia"}
-        >
-          <Languages className="w-4 h-4" />
-          {uiLang === "id" ? "Bahasa ID" : "English"}
-        </button>
+
         <AnimatePresence>
           {showBackToTop && (
             <motion.button
