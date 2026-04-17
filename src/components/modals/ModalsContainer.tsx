@@ -49,7 +49,7 @@ export const ModalsContainer: React.FC<ModalsContainerProps> = ({
 
   const shareGeneral = async (platform: string) => {
     const title = "Martabak Gresik";
-    const text = `Cek Martabak Gresik - Terang Bulan dan Martabak Telor Terenak!`;
+    const text = t.shareDescription;
     const url = APP_URL;
 
     if (navigator.share) {
@@ -381,7 +381,7 @@ export const ModalsContainer: React.FC<ModalsContainerProps> = ({
                     <MapPin className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">Lokasi Toko</h3>
+                    <h3 className="text-xl font-black uppercase italic dark:text-brand-yellow">{t.storeLocation}</h3>
                     <p className="text-[10px] font-bold opacity-40 uppercase tracking-widest dark:text-white/40">{storeAddress}</p>
                   </div>
                 </div>

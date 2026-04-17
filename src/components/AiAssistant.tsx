@@ -75,7 +75,7 @@ export const AiAssistant = ({
   menuSweet = MENU_SWEET,
   menuSavory = MENU_SAVORY,
 }: AiAssistantProps) => {
-  const { uiState, storeSettings } = useAppStore();
+  const { uiState, storeSettings, t } = useAppStore();
   const { uiLang, isOpen, isHoliday } = uiState;
   const { activePromoCode, activePromoPercent, isEmergencyClosed } = storeSettings;
 
@@ -258,31 +258,28 @@ export const AiAssistant = ({
       
       // Menggunakan status terpusat dari store agar konsisten dengan UI lainnya
       const storeStatusText = isEmergencyClosed 
-        ? "Toko sedang TUTUP DARURAT karena alasan mendesak." 
+        ? (uiLang === 'en' ? "Emergency Closed" : "Tutup Darurat")
         : isHoliday 
-          ? "Toko sedang LIBUR hari ini." 
+          ? (uiLang === 'en' ? "Holiday" : "Libur")
           : isOpen 
-            ? `Toko sedang BUKA (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).` 
-            : `Toko sedang TUTUP (Jam operasional: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00).`;
+            ? (uiLang === 'en' ? `Open (${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00)` : `Buka (${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00)`)
+            : (uiLang === 'en' ? `Closed (${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00)` : `Tutup (${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00)`);
 
-       const systemPrompt = `Anda adalah "Asisten Virtual", asisten virtual ${STORE_NAME} yang cerdas, asik, ramah, dan berpengetahuan luas. Anda bisa menjawab APAPUN yang ditanyakan pelanggan — mulai dari pengetahuan umum, cuaca, tips hidup, lelucon, sampai topik sehari-hari.
-
-BAHASA: Balas mengikuti bahasa user. Jika user menggunakan English, balas full English. Jika user menggunakan Bahasa Indonesia, balas Bahasa Indonesia natural. Jika campur, ikuti bahasa dominan user.
+       const systemPrompt = `Anda adalah "Asisten Virtual", asisten virtual ${STORE_NAME} yang cerdas, asik, ramah, dan berpengetahuan luas.
+       
+PENTING: Gunakan bahasa ${uiLang === 'en' ? 'English' : 'Bahasa Indonesia'} sepenuhnya kecuali user mengganti bahasa.
+Jika user bertanya dalam Bahasa Indonesia, balas Bahasa Indonesia natural. Jika English, balas English.
 
 PENTING: Anda boleh menjawab topik apa saja, TAPI selalu hubungkan kembali ke ${STORE_NAME} secara natural dan kreatif di akhir jawaban. Contoh:
-- Ditanya soal cuaca → jawab, lalu: "Cuaca dingin gini paling enak makan martabak hangat lho Kak! 🍕"
-- Ditanya soal film → jawab, lalu: "Nonton sambil ngemil Terang Bulan makin seru, Kak!"
-- Ditanya joke → jawab, lalu sisipkan humor martabak
-- Ditanya ilmu pengetahuan → jawab dengan benar, lalu bridge ke martabak
+- Ditanya soal cuaca -> jawab, lalu hubungkan ke enaknya makan martabak.
+- Ditanya soal film -> hubungkan ke asiknya ngemil terang bulan.
 
-Jangan pernah menolak pertanyaan. Jawab dulu dengan benar dan informatif, baru arahkan kembali ke martabak secara halus dan natural. Jangan dipaksakan — kalau bridging-nya tidak natural, cukup tambahkan "Btw, ada yang mau dipesan dari menu kami, Kak? 😊"
+Jangan pernah menolak pertanyaan. Jawab dulu dengan benar, baru arahkan kembali ke martabak secara halus.
 
 INFORMASI TOKO:
 - Nama: ${STORE_NAME}
 - Alamat: ${STORE_ADDRESS}
 - WhatsApp: ${STORE_PHONE}
-- Berdiri sejak: ${SINCE_YEAR}
-- Jan Buka: ${OPEN_HOUR}:00 - ${CLOSE_HOUR}:00 WIB
 - Ongkir: Rp${SHIPPING_RATE_PER_KM}/km (maks ${MAX_SHIPPING_DISTANCE} km)
 - Promo: Diskon ${activePromoPercent}% dengan kode "${activePromoCode}"
 
@@ -291,54 +288,27 @@ ${getMenuContext()}
 
 ${getCartContext()}
 
-PANDUAN PROMOSI:
-- Sebutkan item yang "PROMO" jika user tanya rekomendasi atau promo.
-- Sebutkan harga asli (yang dicoret) dan harga baru jika menonjolkan diskon. Contoh: "Lagi murah Kak, dari 25k jadi cuma 20k aja!".
-- Jangan arahkan ke item yang "[STOK HABIS]".
-
 STATUS TOKO SAAT INI: ${storeStatusText}
 Waktu sekarang: ${currentTime} WIB
 
-Jika pelanggan ingin memesan dan toko sedang libur atau tutup, beritahukan dengan sangat ramah dan sopan. Berikan rekomendasi menu untuk dipesan nanti, atau arahkan hubungi via WhatsApp jika mendesak.
-
 NOMOR WHATSAPP TOKO: ${STORE_PHONE}
-Saat perlu menampilkan nomor WhatsApp toko, SELALU gunakan format tag berikut (JANGAN tulis nomor mentah):
-#whatsapp|${STORE_PHONE}|Pesan teks opsional
+Jika perlu menyertakan link WhatsApp, gunakan format: #whatsapp|${STORE_PHONE}|Pesan opsional
 
-GAYA KOMUNIKASI: Gunakan "Kak", "Kakak", "yuk", "gurih poll", "coba deh", "lumer parah", "mantap". Natural, lokal, hangat, dan penuh semangat. Short sentences, reaction positif. Sesekali pakai emoji tapi jangan berlebihan.
+GAYA KOMUNIKASI: ${uiLang === 'en' ? 'Friendly, helpful, foodie expert, excited.' : 'Ramah, asik, pakai "Kak", hangat, lokal Gresik.'}
 
 ========== FORMAT DISPLAY PRODUK ==========
-
-JANGAN GUNAKAN XML/JSX tags. GUNAKAN FORMAT INI:
-
+Format ini wajib untuk menampilkan produk agar user bisa klik beli:
 #product-card|KATEGORI|NAMA_PRODUK|HARGA|/LOKASI_GAMBAR
+#checkout (Gunakan ini jika user ingin mengakhiri pesanan)
 
-#checkout (Gunakan ini jika user ingin mengakhiri pesanan atau membayar)
+CONTOH: #product-card|Terang Bulan|Keju|17000|/sweet/keju.webp
 
-FORMAT HARUS: #product-card|Kategori|Nama Produk|harga_angka|/images/folder/namafile.webp
-
-CONTOH BENAR:
-
-#product-card|Terang Bulan Standard|Keju|17000|/images/sweet/keju.webp
-
-#product-card|Terang Bulan Pandan|Pandan Keju|20000|/images/sweet/pandan-keju.webp
-
-#product-card|Martabak Telor|Martabak 2 Telor|25000|/images/savory/martabak.webp
-
-PATH GAMBAR:
-Sweet: /images/sweet/keju.webp, /images/sweet/coklat.webp, /images/sweet/kacang.webp, /images/sweet/kacang-coklat.webp, /images/sweet/kacang-coklat-keju.webp, /images/sweet/keju-kacang.webp, /images/sweet/keju-coklat.webp, /images/sweet/pandan-keju.webp, /images/sweet/pandan-kacang.webp, /images/sweet/pandan-coklat.webp, /images/sweet/pandan-kacang-coklat.webp, /images/sweet/pandan-coklat-keju.webp, /images/sweet/pandan-kacang-keju.webp, /images/sweet/pandan-kacang-coklat-keju.webp, /images/sweet/redvelvet-keju.webp, /images/sweet/redvelvet-coklat.webp, /images/sweet/redvelvet-kacang.webp, /images/sweet/redvelvet-kacang-coklat.webp, /images/sweet/redvelvet-kacang-coklat-keju.webp, /images/sweet/redvelvet-keju-coklat.webp, /images/sweet/redvelvet-keju-kacang.webp, /images/sweet/blackforest-keju.webp, /images/sweet/blackforest-coklat.webp, /images/sweet/blackforest-kacang.webp, /images/sweet/blackforest-kacang-coklat.webp, /images/sweet/blackforest-kacang-coklat-keju.webp, /images/sweet/blackforest-keju-kacang.webp, /images/sweet/blackforest-keju-coklat.webp
-Savory: /images/savory/martabak.webp, /images/savory/samyang-pedas.webp
+PATH GAMBAR (Gunakan path relatif dari dataset di atas):
+Contoh: /sweet/keju.webp, /savory/martabak.webp
 
 FITUR KHUSUS:
-- KATALOG: Jika user minta "katalog", "lihat katalog", "download katalog" → WAJIB kirim "#download-catalog"
-- PEMBUAT WEBSITE: Jika ditanya "siapa yang buat" atau "developer" → sertakan ![Arif Tirtana](/ariftitana.webp)
-- QRIS: Jika ditanya cara bayar digital/QRIS → gunakan "#show-qris"
-
-TEKNIK UPSELL: Soft upsell natural. Setiap rekomendasi menu pakai #product-card. Highlight rasa dan keunggulan.
-
-KARAKTER: "Asisten Virtual" — passionate, cerdas, bisa ngobrol apa saja tapi selalu kembali ke martabak. Jangan promise di luar kemampuan toko.
-
-RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri dengan pertanyaan engagement atau rekomendasi menu.`;
+- KATALOG: Jika minta katalog -> kirim "#download-catalog"
+- QRIS: Jika tanya cara bayar -> kirim "#show-qris"`;
 
       // Construct payload with full message history including system prompt
       const apiMessages = [
@@ -463,8 +433,8 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
               <div className="w-16 h-16 bg-brand-yellow rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg">
                 <ShoppingBag className="w-8 h-8 text-brand-black" />
               </div>
-              <h4 className="font-black text-sm uppercase italic dark:text-brand-yellow">Siap untuk Checkout?</h4>
-              <p className="text-[10px] font-bold dark:text-white/70">Klik tombol di bawah untuk melengkapi data pengiriman dan menyelesaikan pesanan Kakak.</p>
+              <h4 className="font-black text-sm uppercase italic dark:text-brand-yellow">{aiText.checkoutReady}</h4>
+              <p className="text-[10px] font-bold dark:text-white/70">{aiText.checkoutDesc}</p>
               <button 
                 onClick={() => {
                   setIsAiOpen(false);
@@ -472,7 +442,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                 }}
                 className="w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl shadow-xl font-black text-xs uppercase flex items-center justify-center gap-3 active:scale-95 transition-all"
               >
-                Lanjutkan ke Keranjang
+                {aiText.continueToCart}
               </button>
             </div>
           );
@@ -493,7 +463,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
               className="flex items-center justify-center gap-3 w-full py-4 bg-[#25D366] hover:bg-[#1ebe5b] text-white rounded-2xl font-black text-[11px] uppercase tracking-wider shadow-xl hover:shadow-[#25D366]/30 active:scale-95 transition-all no-underline my-4 max-w-[280px] border-2 border-[#1ebe5b]"
             >
               <MessageCircle className="w-5 h-5" />
-              <span>Hubungi via WhatsApp</span>
+              <span>{aiText.contactWa}</span>
             </motion.a>
           );
         }
@@ -519,12 +489,12 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
               </div>
               <div className="p-5 bg-white dark:bg-black/40 backdrop-blur-sm space-y-4">
                 <div className="text-center">
-                  <h4 className="text-sm font-black dark:text-white uppercase tracking-tighter mb-1">Katalog Produk Lengkap</h4>
-                  <p className="text-[10px] text-brand-black/60 dark:text-white/60 font-medium">Download untuk simpan di galeri HP Kakak</p>
+                  <h4 className="text-sm font-black dark:text-white uppercase tracking-tighter mb-1">{t.downloadMenuLabel}</h4>
+                  <p className="text-[10px] text-brand-black/60 dark:text-white/60 font-medium">{aiText.catalogSubtitle}</p>
                 </div>
                 <a href="/katalog.webp" download="Katalog-Martabak-Gresik.webp" className="flex items-center justify-center gap-3 w-full py-4 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black rounded-2xl font-black text-[11px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl no-underline group/btn">
                   <Download className="w-4 h-4 group-hover/btn:bounce" /> 
-                  Simpan Katalog
+                  {aiText.saveCatalog}
                 </a>
               </div>
             </motion.div>
@@ -536,7 +506,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
             <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-white/10 p-6 rounded-[2.5rem] border-4 border-brand-black dark:border-brand-yellow shadow-[0_20px_50px_rgba(0,0,0,0.1)] my-6 text-center max-w-[280px] mx-auto relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-brand-yellow via-brand-orange to-brand-yellow animate-gradient-x" />
               <div className="mb-4">
-                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-orange mb-1">Metode Pembayaran</h4>
+                <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-brand-orange mb-1">{aiText.qrisTitle}</h4>
                 <div className="h-0.5 w-12 bg-brand-black dark:bg-brand-yellow mx-auto" />
               </div>
               <div className="bg-white p-3 rounded-3xl shadow-inner mb-5 relative group-hover:scale-105 transition-transform duration-500">
@@ -548,7 +518,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                   <span className="text-[10px] font-black uppercase tracking-widest dark:text-white">QRIS Real-time</span>
                 </div>
-                <p className="text-[9px] text-brand-black/60 dark:text-white/70 font-bold leading-relaxed">Scan kode di atas menggunakan m-banking atau e-wallet favorit Kakak</p>
+                <p className="text-[9px] text-brand-black/60 dark:text-white/70 font-bold leading-relaxed">{aiText.qrisSubtitle}</p>
               </div>
               <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-brand-yellow/10 rounded-full blur-2xl" />
               <div className="absolute -top-6 -left-6 w-24 h-24 bg-brand-orange/10 rounded-full blur-2xl" />
@@ -637,7 +607,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
   );
 
   return (
-    <div className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-50 flex flex-col items-center gap-2">
+    <div className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-[999] flex flex-col items-center gap-2">
       <AnimatePresence>
         {isAiOpen && (
           <motion.div
@@ -660,7 +630,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5 sm:gap-2">
                     <span className="font-bold text-[11px] sm:text-sm tracking-wide whitespace-nowrap truncate">Martabak Assistant</span>
-                    <span className="text-[8px] sm:text-[9px] bg-green-500/20 text-green-400 px-1 sm:px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider border border-green-500/30 hidden min-[400px]:block">Online</span>
+                    <span className="text-[8px] sm:text-[9px] bg-green-500/20 text-green-400 px-1 sm:px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider border border-green-500/30 hidden min-[400px]:block">{aiText.onlineStatus}</span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="flex h-2 w-2 relative">
@@ -668,7 +638,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                       <span className={`relative inline-flex rounded-full h-2 w-2 ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}></span>
                     </span>
                     <span className={`text-[9px] sm:text-[10px] font-bold tracking-wider ${isOpen ? 'text-green-400' : 'text-red-400'} whitespace-nowrap`}>
-                      {isOpen ? 'Toko Buka' : 'Toko Tutup'}
+                      {isOpen ? aiText.storeOpen : aiText.storeClosed}
                     </span>
                   </div>
                 </div>
@@ -676,14 +646,14 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
               <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
-                  title={isExpanded ? "Perkecil Modal" : "Perbesar Modal"}
+                  title={isExpanded ? "Minimize" : "Maximize"}
                   className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
                 >
                   {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </button>
                 <button
-                  onClick={() => setAiMessages([{ role: 'assistant', content: `Halo Kak! Saya "Asisten Virtual". 🌙✨\n\nSenang banget bisa ngobrol lagi! Kakak bisa tanya apa saja ke saya—mulai dari rekomendasi martabak lumer, info promo, sampai tanya hal-hal umum lainnya. Saya siap bantu!\n\n✨ Menu cepat:\n📑 Katalog Lengkap\n🍕 Rekomendasi Menu\n💳 Cara Order\n🎁 Promo Hari Ini\n\nKira-kira Kakak mau tanya apa atau lagi pengen jajan apa hari ini? 😊` }])}
-                  title="Mulai Ulang Chat"
+                  onClick={() => setAiMessages([{ role: 'assistant', content: aiText.greeting(STORE_NAME) }])}
+                  title={aiText.resetChat}
                   className="hover:bg-white/10 p-1.5 rounded-full transition-colors"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -710,7 +680,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                     <div className="flex items-center gap-3 text-[10px] font-bold dark:text-brand-yellow">
                       <div className="w-5 h-5 rounded-full border-2 border-brand-orange border-t-transparent animate-spin" />
                       <span className="animate-pulse italic">
-                        Sedang meracik jawaban lezat...
+                        {aiText.loadingStep}
                       </span>
                     </div>
                     <div className="flex justify-end pr-1">
@@ -774,7 +744,7 @@ RULES: Respon informatif tapi ringkas. FORMAT TAG HARUS BENAR. Selalu akhiri den
                       if (aiInput.trim() && !isAiLoading) generateImageResponse(aiInput);
                     }
                   }}
-                  placeholder="Tanya apa aja seputar menu, promo, atau order"
+                  placeholder={aiText.inputPlaceholder}
                   className="flex-grow bg-brand-black/5 dark:bg-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-brand-orange dark:text-white resize-none max-h-[120px] transition-all"
                 />
               </div>

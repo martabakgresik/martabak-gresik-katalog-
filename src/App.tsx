@@ -6,8 +6,8 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
 import { 
-  MENU_SWEET, 
-  MENU_SAVORY, 
+  getMenuSweet, 
+  getMenuSavory, 
   ADDONS_SWEET, 
   ADDONS_SAVORY,
   OPEN_HOUR, 
@@ -93,8 +93,8 @@ export default function App() {
     isEmergencyClosed
   } = storeSettings;
 
-  const [menuSweet] = useState(MENU_SWEET);
-  const [menuSavory] = useState(MENU_SAVORY);
+  const menuSweet = useMemo(() => getMenuSweet(t), [t]);
+  const menuSavory = useMemo(() => getMenuSavory(t), [t]);
 
   const {
     cart,

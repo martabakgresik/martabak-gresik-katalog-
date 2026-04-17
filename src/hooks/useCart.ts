@@ -106,16 +106,18 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     if (normalizedInput && normalizedInput === activeCode) {
       setPromoCode(activeCode);
       setDiscountPercent(storeSettings.activePromoPercent);
-      return { success: true, message: `Kode promo berhasil digunakan! Diskon ${storeSettings.activePromoPercent}% diterapkan.` };
+      const msg = t.promoApplied || `Kode promo berhasil digunakan! Diskon ${storeSettings.activePromoPercent}% diterapkan.`;
+      return { success: true, message: msg };
     }
     setPromoCode("");
     setDiscountPercent(0);
-    return { success: false, message: "Kode promo tidak valid." };
+    return { success: false, message: t.promoCodeInvalid || "Kode promo tidak valid." };
   };
 
   const detectLocation = () => {
+    const { t } = useAppStore.getState();
     if (!navigator.geolocation) {
-      return { success: false, message: "Geolocation tidak didukung oleh browser ini." };
+      return { success: false, message: t.gpsError || "Geolocation tidak didukung oleh browser ini." };
     }
 
     return new Promise<{ success: boolean, message: string }>((resolve) => {
@@ -127,11 +129,11 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
               lng: position.coords.longitude
             }
           } as any);
-          resolve({ success: true, message: "Lokasi berhasil dideteksi!" });
+          resolve({ success: true, message: t.locationDetected || "Lokasi berhasil dideteksi!" });
         },
         (error) => {
-          let msg = "Gagal mendapatkan lokasi.";
-          if (error.code === 1) msg = "Izin lokasi ditolak.";
+          let msg = t.gpsError || "Gagal mendapatkan lokasi.";
+          if (error.code === 1) msg = t.gpsError || "Izin lokasi ditolak.";
           resolve({ success: false, message: msg });
         }
       );
@@ -151,6 +153,7 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
   };
 
   const reverseGeocodeWithAI = async (lat: number, lng: number) => {
+    const { uiLang } = useAppStore.getState().uiState;
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -159,7 +162,7 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
         },
         body: JSON.stringify({
           prompt: `Berapa alamat untuk koordinat ini: ${lat}, ${lng}?`,
-          systemPrompt: 'Sistem ahli geocoding. Tugas: Berikan alamat jalan yang lengkap, akurat, dan manusiawi berdasarkan koordinat latitude dan longitude yang diberikan. Contoh return: "Jl. Usman Sadar No. 10, Gresik, Jawa Timur". Berikan HANYA teks alamat tersebut tanpa penjelasan lain, tanpa markdown.'
+          systemPrompt: `Sistem ahli geocoding. Tugas: Berikan alamat jalan yang lengkap, akurat, dan manusiawi berdasarkan koordinat latitude dan longitude yang diberikan. Contoh return: "Jl. Usman Sadar No. 10, Gresik, Jawa Timur". Gunakan bahasa ${uiLang === 'en' ? 'English' : 'Bahasa Indonesia'}. Berikan HANYA teks alamat tersebut tanpa penjelasan lain, tanpa markdown.`
         })
       });
 
@@ -172,24 +175,25 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
   };
 
   const sendWhatsAppOrder = () => {
+    const { t } = useAppStore.getState();
     const phone = STORE_PHONE.replace(/\D/g, '');
     const phoneNumber = phone.startsWith('0') ? '62' + phone.slice(1) : phone;
-    let message = "*PESANAN BARU - MARTABAK GRESIK*\n\n";
+    let message = `${t.waHeader}\n\n`;
 
-    message += `*DATA PELANGGAN:*\n`;
-    message += `Nama: ${customerName || '-'}\n`;
+    message += `${t.waCustomerData}\n`;
+    message += `${t.waName}: ${customerName || '-'}\n`;
     if (deliveryMethod === 'delivery') {
       const containsMapsLink = isGoogleMapsLink(customerAddress);
-      message += `Alamat: ${customerAddress || '-'}\n`;
-      if (addressNotes) message += `Patokan: ${addressNotes}\n`;
+      message += `${t.waAddress}: ${customerAddress || '-'}\n`;
+      if (addressNotes) message += `${t.waLandmark}: ${addressNotes}\n`;
       
       if (containsMapsLink) {
-        message += `📍 *Lokasi (Share Link dari Pembeli)*\n`;
+        message += `${t.waLocation} (Share Link dari Pembeli)\n`;
       } else if (coordinates) {
-        message += `📍 *Lokasi (GPS Terdeteksi):* https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}\n`;
+        message += `${t.waLocation} (GPS Terdeteksi): https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}\n`;
       }
     }
-    message += `\n*PESANAN:*\n`;
+    message += `\n${t.waOrderList}\n`;
     cart.forEach((item, index) => {
       message += `${index + 1}. *${item.name}*\n`;
       if (item.category) message += `   (${item.category})\n`;
@@ -211,15 +215,15 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     });
 
     message += `--------------------------\n`;
-    message += `Metode: *${deliveryMethod === 'pickup' ? 'AMBIL SENDIRI' : 'KIRIM KE ALAMAT'}*\n`;
+    message += `${t.waMethod}: *${deliveryMethod === 'pickup' ? t.waPickup : t.waDelivery}*\n`;
     if (deliveryMethod === 'delivery' && distance > 0) {
-      message += `Ongkir (${distance}km): ${formatPrice(shippingCost)}\n`;
+      message += `${t.waShipping} (${distance}km): ${formatPrice(shippingCost)}\n`;
     }
     if (discountAmount > 0) {
-      message += `Diskon Promo (${promoCode}): -${formatPrice(discountAmount)}\n`;
+      message += `${t.waDiscount} (${promoCode}): -${formatPrice(discountAmount)}\n`;
     }
-    message += `*TOTAL PEMBAYARAN: ${formatPrice(totalPrice)}*\n\n`;
-    message += `Mohon segera diproses ya, terima kasih! 🙏`;
+    message += `${t.waTotal}: ${formatPrice(totalPrice)}*\n\n`;
+    message += `${t.waFooter}`;
 
     const encodedMessage = encodeURIComponent(message);
     

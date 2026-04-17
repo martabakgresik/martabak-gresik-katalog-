@@ -148,7 +148,7 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
                   </div>
                   {(item as any).isAvailable === false && (
                     <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[1px] flex items-center justify-center rounded-2xl pointer-events-none z-[5]">
-                       <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase italic tracking-widest shadow-lg shadow-red-500/20">Stok Habis</span>
+                       <span className="bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase italic tracking-widest shadow-lg shadow-red-500/20">{t.soldOut}</span>
                     </div>
                   )}
                   </article>
@@ -216,12 +216,12 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
                             </div>
                           )}
                           <h5 className="text-sm font-medium opacity-90 flex items-center gap-1.5 min-w-0">
-                            <span className="whitespace-normal leading-tight">{p.desc ? p.desc : `${p.qty} Telor`}</span>
+                            <span className="whitespace-normal leading-tight">{p.desc ? p.desc : t.eggs(p.qty)}</span>
                             <button 
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleOpenAddonModal({
-                                  name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
+                                  name: `${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`,
                                   price: p.price,
                                   image: (p as any).image,
                                   description: (variant as any).description
@@ -247,19 +247,19 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
                           <div className="flex items-center gap-1.5 ml-1">
                             <button
                               onClick={() => toggleFavorite({
-                                name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
+                                name: `${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`,
                                 price: p.price
                               })}
-                              className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`)
+                              className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`)
                                 ? 'bg-brand-orange text-white'
                                 : 'bg-white/10 text-brand-yellow hover:bg-brand-orange/20'
                                 }`}
                             >
-                              <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`) ? 'fill-current' : ''}`} />
+                              <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`) ? 'fill-current' : ''}`} />
                             </button>
                             <button
                               onClick={() => (p as any).isAvailable !== false && handleOpenAddonModal({
-                                name: `${section.title} (${variant.type} - ${p.desc ? p.desc : `${p.qty} Telor`})`,
+                                name: `${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`,
                                 price: p.price,
                                 image: (p as any).image,
                                 description: (variant as any).description
@@ -275,7 +275,7 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
                         </div>
                         {(p as any).isAvailable === false && (
                           <div className="absolute inset-0 bg-white/20 dark:bg-black/60 backdrop-blur-[1px] flex items-center justify-center rounded-xl pointer-events-none z-[5]">
-                            <span className="text-[10px] font-black text-red-500 tracking-[0.2em] italic uppercase bg-white/90 dark:bg-zinc-950 px-2 py-0.5 rounded shadow-sm border border-red-500/20 underline decoration-red-500">HABIS</span>
+                            <span className="text-[10px] font-black text-red-500 tracking-[0.2em] italic uppercase bg-white/90 dark:bg-zinc-950 px-2 py-0.5 rounded shadow-sm border border-red-500/20 underline decoration-red-500">{t.soldOut.toUpperCase()}</span>
                           </div>
                         )}
                        </article>
@@ -295,7 +295,7 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
         viewport={{ once: true }}
         className="mt-16 bg-white dark:bg-white/5 p-8 rounded-[2rem] border-4 border-brand-black dark:border-brand-yellow/20"
       >
-        <h3 className="text-2xl font-black uppercase mb-6 text-center italic dark:text-brand-yellow">Bisa Pesan Disini:</h3>
+        <h3 className="text-2xl font-black uppercase mb-6 text-center italic dark:text-brand-yellow">{t.orderOnlineTitle}</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             {

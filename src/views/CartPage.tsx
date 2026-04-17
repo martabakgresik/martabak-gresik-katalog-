@@ -86,7 +86,7 @@ export const CartPage: React.FC<CartPageProps> = ({
               {isCheckoutPhase ? t.completeOrderData : t.yourMenuTitle}
             </h1>
             <p className="text-[10px] font-bold opacity-40 uppercase tracking-[0.2em] mt-1 dark:text-brand-yellow">
-              Step {isCheckoutPhase ? '2' : '1'} of 2
+              {t.orderSteps(isCheckoutPhase ? 2 : 1)}
             </p>
           </div>
 
@@ -103,7 +103,7 @@ export const CartPage: React.FC<CartPageProps> = ({
               onClick={() => setUiState({ currentView: 'catalog' })}
               className="mt-8 bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-10 py-4 rounded-full font-black uppercase italic shadow-xl"
             >
-              Belanja Sekarang
+              {t.backShop}
             </button>
           </div>
         ) : (
@@ -125,7 +125,7 @@ export const CartPage: React.FC<CartPageProps> = ({
                       <div className="w-12 h-12 bg-brand-orange rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
                          <ShoppingCart className="w-6 h-6" />
                       </div>
-                      <h2 className="text-3xl font-black uppercase italic">Daftar Pesanan</h2>
+                      <h2 className="text-3xl font-black uppercase italic">{t.waOrderList.replace(/\W/g, '')}</h2>
                     </div>
 
                     {cart.map((item) => (
@@ -173,7 +173,7 @@ export const CartPage: React.FC<CartPageProps> = ({
                                 <Plus className="w-3 h-3 text-brand-black/20" />
                                 <input
                                   type="text"
-                                  placeholder="Tambah catatan..."
+                                  placeholder={item.category?.toLowerCase().includes('asin') || item.category?.toLowerCase().includes('savory') ? t.notePlaceholderSavory : t.notePlaceholderSweet}
                                   value={item.note || ""}
                                   onChange={(e) => updateNote(item.id, e.target.value)}
                                   className="flex-1 bg-transparent py-1 text-[11px] font-bold outline-none placeholder:italic placeholder:opacity-30 dark:text-white"
@@ -230,8 +230,8 @@ export const CartPage: React.FC<CartPageProps> = ({
                          <MapPin className="w-6 h-6" />
                       </div>
                       <div>
-                        <h2 className="text-3xl font-black uppercase italic leading-none">Detail Pengiriman</h2>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40 mt-2">Data Diri & Alamat</p>
+                        <h2 className="text-3xl font-black uppercase italic leading-none">{t.shippingData}</h2>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] opacity-40 mt-2">{t.waCustomerData.replace(/\W/g, '')}</p>
                       </div>
                     </div>
 
@@ -345,19 +345,19 @@ export const CartPage: React.FC<CartPageProps> = ({
             <div className="lg:col-span-5 lg:sticky lg:top-32 py-10 lg:py-0">
               <div className="bg-white dark:bg-black/20 p-6 md:p-12 rounded-[2.5rem] md:rounded-[3.5rem] border border-brand-black/5 dark:border-white/5 shadow-2xl shadow-brand-black/5 space-y-8 md:space-y-12">
                  <div className="space-y-2">
-                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">Ringkasan</h2>
+                    <h2 className="text-2xl font-black uppercase italic tracking-tighter">{t.orderSummary}</h2>
                     <div className="h-1 w-12 bg-brand-orange rounded-full" />
                  </div>
                  
                  <div className="space-y-6">
                    <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-30">
-                      <span>Menu Subtotal</span>
+                      <span>{t.menuSubtotal}</span>
                       <span className="dark:text-white tabular-nums">{formatPrice(totalPrice - (deliveryMethod === 'delivery' ? shippingCost : 0) + discountAmount)}</span>
                    </div>
                    {deliveryMethod === 'delivery' && (
                      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-30">
                         <div className="flex items-center gap-2">
-                           <span>Ongkos Kirim</span>
+                           <span>{t.shippingFee}</span>
                            <span className="bg-brand-black/5 px-2 py-0.5 rounded text-[8px]">{distance.toFixed(1)}km</span>
                         </div>
                         <span className="dark:text-white tabular-nums">{formatPrice(shippingCost)}</span>
@@ -365,13 +365,13 @@ export const CartPage: React.FC<CartPageProps> = ({
                    )}
                    {discountAmount > 0 && (
                      <div className="flex justify-between items-center text-[10px] font-black text-green-500 uppercase tracking-[0.2em]">
-                        <span>Potongan Promo</span>
+                        <span>{t.promoDiscount}</span>
                         <span className="tabular-nums">-{formatPrice(discountAmount)}</span>
                      </div>
                    )}
 
                    <div className="pt-10 flex flex-col gap-2">
-                      <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20">Total Estimasi</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-20">{t.estimatedTotalLabel}</span>
                       <div className="flex items-end justify-between">
                         <span className="text-5xl md:text-6xl font-black dark:text-brand-yellow tracking-tighter leading-none tabular-nums">
                           {formatPrice(totalPrice).replace("Rp ", "")}
@@ -383,7 +383,7 @@ export const CartPage: React.FC<CartPageProps> = ({
 
                  {/* PROMO BOX (Refined) */}
                  <div className="space-y-4 pt-4">
-                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 ml-1">Punya Kode Promo?</label>
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 ml-1">{t.havePromoCode}</label>
                     <div className="flex items-center gap-2 bg-brand-black/[0.03] dark:bg-white/5 p-1.5 md:p-2 rounded-2xl border border-brand-black/5 focus-within:border-brand-orange transition-all">
                        <input
                          type="text"
@@ -396,7 +396,7 @@ export const CartPage: React.FC<CartPageProps> = ({
                          onClick={() => { const res = applyPromoCode(promoCodeInput); setCheckoutState({ promoMessage: { status: res.success ? 'success' : 'error', text: res.message } }); }}
                          className={`px-5 md:px-8 py-3 md:py-4 rounded-xl text-[10px] font-black uppercase transition-all active:scale-95 shrink-0 ${promoCode ? 'bg-green-500 text-white' : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black shadow-lg'}`}
                        >
-                         {promoCode ? 'Sesuai' : 'Pakai'}
+                         {promoCode ? t.promoApplied : t.usePromo}
                        </button>
                     </div>
                     {promoMessage && <p className={`text-[10px] font-black uppercase text-center tracking-widest ${promoMessage.status === 'success' ? 'text-green-500' : 'text-red-500'}`}>{promoMessage.text}</p>}
@@ -412,7 +412,7 @@ export const CartPage: React.FC<CartPageProps> = ({
                         }}
                         className="w-full py-8 rounded-[2rem] bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black font-black uppercase italic flex items-center justify-center gap-6 shadow-2xl shadow-brand-orange/20 hover:bg-brand-orange hover:text-white transition-all group"
                       >
-                         <span className="text-xl tracking-tighter font-display">Lanjutkan Pembayaran</span>
+                         <span className="text-xl tracking-tighter font-display">{t.continuePayment}</span>
                          <ArrowLeft className="w-6 h-6 rotate-180 group-hover:translate-x-2 transition-transform" />
                       </button>
                     ) : (

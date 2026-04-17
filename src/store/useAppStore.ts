@@ -174,9 +174,7 @@ export const useAppStore = create<AppState>()(
             checkoutState: { ...current.checkoutState, ...state }
           })),
 
-        get t() {
-          return UI_COPY[get().uiState.uiLang];
-        },
+        t: UI_COPY[detectBrowserLanguage()],
 
         setUiState: (state) =>
           set((current) => ({
@@ -195,7 +193,8 @@ export const useAppStore = create<AppState>()(
 
         setUiLang: (lang) => {
           set((state) => ({
-            uiState: { ...state.uiState, uiLang: lang }
+            uiState: { ...state.uiState, uiLang: lang },
+            t: UI_COPY[lang]
           }));
           document.documentElement.lang = lang;
         },

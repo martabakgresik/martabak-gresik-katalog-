@@ -54,65 +54,64 @@ const ASSET_BASE_URL = "/images";
  */
 
 // 🍕 DATA MENU MANIS (Terang Bulan)
-export const MENU_SWEET = [
+export const getMenuSweet = (t: any) => [
   {
-    category: "Terang Bulan Standard",
+    category: t.catSweetStandard,
     items: [
-      { name: "Kacang", price: 12000, description: "Perpaduan klasik kacang tanah sangrai yang gurih and manis.", image: `${ASSET_BASE_URL}/sweet/kacang.webp` },
-      { name: "Coklat", price: 12000, description: "Coklat butiran premium yang meleleh sempurna di setiap gigitan.", image: `${ASSET_BASE_URL}/sweet/coklat.webp` },
-      { name: "Kacang + Coklat", price: 14000, description: "Kombinasi legendaris kacang gurih and coklat manis yang melimpah.", image: `${ASSET_BASE_URL}/sweet/kacang-coklat.webp` },
-      { name: "Kacang + Coklat + Keju", price: 19000, isBestSeller: true, description: "Trio maut! Kacang, coklat, and keju dalam satu balutan adonan lembut.", image: `${ASSET_BASE_URL}/sweet/kacang-coklat-keju.webp` },
-      { name: "Keju", price: 17000, isBestSeller: true, highlight: true, description: "Keju cheddar pilihan yang melimpah, lumer, and super gurih.", image: `${ASSET_BASE_URL}/sweet/keju.webp` },
-      { name: "Keju + Kacang", price: 18000, highlight: true, description: "Gurihnya keju berpadu dengan renyahnya kacang tanah pilihan.", image: `${ASSET_BASE_URL}/sweet/keju-kacang.webp` },
-      { name: "Keju + Coklat", price: 18000, highlight: true, description: "Harmoni sempurna antara manisnya coklat and gurihnya keju premium.", image: `${ASSET_BASE_URL}/sweet/keju-coklat.webp` },
+      { name: t.itemKacang, price: 12000, description: t.descKacang, image: `${ASSET_BASE_URL}/sweet/kacang.webp` },
+      { name: t.itemCoklat, price: 12000, description: t.descCoklat, image: `${ASSET_BASE_URL}/sweet/coklat.webp` },
+      { name: `${t.itemKacang} + ${t.itemCoklat}`, price: 14000, description: t.descKacangCoklat, image: `${ASSET_BASE_URL}/sweet/kacang-coklat.webp` },
+      { name: `${t.itemKacang} + ${t.itemCoklat} + ${t.itemKeju}`, price: 19000, isBestSeller: true, description: t.descKacangCoklatKeju, image: `${ASSET_BASE_URL}/sweet/kacang-coklat-keju.webp` },
+      { name: t.itemKeju, price: 17000, isBestSeller: true, highlight: true, description: t.descKeju, image: `${ASSET_BASE_URL}/sweet/keju.webp` },
+      { name: `${t.itemKeju} + ${t.itemKacang}`, price: 18000, highlight: true, description: t.descKejuKacang, image: `${ASSET_BASE_URL}/sweet/keju-kacang.webp` },
+      { name: `${t.itemKeju} + ${t.itemCoklat}`, price: 18000, highlight: true, description: t.descKejuCoklat, image: `${ASSET_BASE_URL}/sweet/keju-coklat.webp` },
     ],
   },
   {
-    category: "Terang Bulan Pandan",
+    category: t.catSweetPandan,
     items: [
-      { name: "Pandan Kacang", price: 13000, description: "Adonan aroma pandan asli yang wangi dengan topping kacang gurih.", image: `${ASSET_BASE_URL}/sweet/pandan-kacang.webp` },
-      { name: "Pandan Coklat", price: 13000, description: "Aroma pandan yang khas berpadu dengan coklat butiran yang manis.", image: `${ASSET_BASE_URL}/sweet/pandan-coklat.webp` },
-      { name: "Pandan Kacang + Coklat", price: 15000, description: "Wangi pandan, renyah kacang, and manis coklat dalam satu gigitan.", image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat.webp` },
-      { name: "Pandan Kacang + Coklat + Keju", price: 21000, description: "Paket lengkap pandan dengan perpaduan topping premium favorit.", image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat-keju.webp` },
-      { name: "Pandan Keju", price: 20000, highlight: true, isBestSeller: true, description: "Favorit pelanggan! Wangi pandan alami dengan keju melimpah.", image: `${ASSET_BASE_URL}/sweet/pandan-keju.webp` },
-      { name: "Pandan Coklat Keju", price: 20000, highlight: true, description: "Coklat and keju melimpah di atas adonan pandan hijau yang lembut.", image: `${ASSET_BASE_URL}/sweet/pandan-coklat-keju.webp` },
-      { name: "Pandan Kacang + Keju", price: 20000, highlight: true, description: "Kacang renyah and keju gurih dengan aroma pandan yang menggoda.", image: `${ASSET_BASE_URL}/sweet/pandan-kacang-keju.webp` },
+      { name: `${t.itemPandan} ${t.itemKacang}`, price: 13000, description: t.descPandan, image: `${ASSET_BASE_URL}/sweet/pandan-kacang.webp` },
+      { name: `${t.itemPandan} ${t.itemCoklat}`, price: 13000, description: t.descPandan, image: `${ASSET_BASE_URL}/sweet/pandan-coklat.webp` },
+      { name: `${t.itemPandan} ${t.itemKacang} + ${t.itemCoklat}`, price: 15000, description: t.descPandan, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat.webp` },
+      { name: `${t.itemPandan} ${t.itemKacang} + ${t.itemCoklat} + ${t.itemKeju}`, price: 21000, description: t.descPandan, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-coklat-keju.webp` },
+      { name: `${t.itemPandan} ${t.itemKeju}`, price: 20000, highlight: true, isBestSeller: true, description: t.descPandan, image: `${ASSET_BASE_URL}/sweet/pandan-keju.webp` },
+      { name: `${t.itemPandan} ${t.itemCoklat} ${t.itemKeju}`, price: 20000, highlight: true, description: t.descPandan, image: `${ASSET_BASE_URL}/sweet/pandan-coklat-keju.webp` },
+      { name: `${t.itemPandan} ${t.itemKacang} + ${t.itemKeju}`, price: 20000, highlight: true, description: t.descPandan, image: `${ASSET_BASE_URL}/sweet/pandan-kacang-keju.webp` },
     ],
   },
   {
-    category: "Terang Bulan Red Velvet",
+    category: t.catSweetRedVelvet,
     items: [
-      { name: "Red Velvet Kacang", price: 14000, description: "Adonan coklat merah yang mewah dengan taburan kacang sangrai.", image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang.webp` },
-      { name: "Red Velvet Coklat", price: 14000, description: "Manisnya coklat berpadu dengan adonan Red Velvet yang lembut.", image: `${ASSET_BASE_URL}/sweet/redvelvet-coklat.webp` },
-      { name: "Red Velvet Kacang Coklat", price: 16000, description: "Klasik kacang coklat kini hadir dengan gaya Red Velvet yang elegan.", image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat.webp` },
-      { name: "Red Velvet Kacang Coklat Keju", price: 21000, description: "Kombinasi topping paling lengkap khusus untuk pecinta Red Velvet.", image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat-keju.webp` },
-      { name: "Red Velvet Keju", price: 20000, highlight: true, description: "Kontras warna merah yang cantik dengan gurihnya keju melimpah.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju.webp` },
-      { name: "Red Velvet Keju + Coklat", price: 21000, highlight: true, description: "Adonan mewah Red Velvet dengan topping favorit keju and coklat.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-coklat.webp` },
-      { name: "Red Velvet Keju + Kacang", price: 21000, highlight: true, description: "Perpaduan tekstur kacang renyah and lembutnya keju Red Velvet.", image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-kacang.webp` },
+      { name: `${t.itemRedVelvet} ${t.itemKacang}`, price: 14000, description: t.descRedVelvet, image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang.webp` },
+      { name: `${t.itemRedVelvet} ${t.itemCoklat}`, price: 14000, description: t.descRedVelvet, image: `${ASSET_BASE_URL}/sweet/redvelvet-coklat.webp` },
+      { name: `${t.itemRedVelvet} ${t.itemKacang} ${t.itemCoklat}`, price: 16000, description: t.descRedVelvet, image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat.webp` },
+      { name: `${t.itemRedVelvet} ${t.itemKacang} ${t.itemCoklat} ${t.itemKeju}`, price: 21000, description: t.descRedVelvet, image: `${ASSET_BASE_URL}/sweet/redvelvet-kacang-coklat-keju.webp` },
+      { name: `${t.itemRedVelvet} ${t.itemKeju}`, price: 20000, highlight: true, description: t.descRedVelvet, image: `${ASSET_BASE_URL}/sweet/redvelvet-keju.webp` },
+      { name: `${t.itemRedVelvet} ${t.itemKeju} + ${t.itemCoklat}`, price: 21000, highlight: true, description: t.descRedVelvet, image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-coklat.webp` },
+      { name: `${t.itemRedVelvet} ${t.itemKeju} + ${t.itemKacang}`, price: 21000, highlight: true, description: t.descRedVelvet, image: `${ASSET_BASE_URL}/sweet/redvelvet-keju-kacang.webp` },
     ],
   },
   {
-    category: "Terang Bulan Blackforest",
+    category: t.catSweetBlackforest,
     items: [
-      { name: "Blackforest Kacang", price: 25000, description: "Adonan coklat pekat yang rich dengan taburan kacang renyah.", image: `${ASSET_BASE_URL}/sweet/blackforest-kacang.webp` },
-      { name: "Blackforest Coklat", price: 25000, description: "Double chocolate! Adonan coklat dengan limpahan coklat butiran.", image: `${ASSET_BASE_URL}/sweet/blackforest-coklat.webp` },
-      { name: "Blackforest Kacang Coklat", price: 26000, description: "Sensasi coklat hitam yang mewah dengan duo kacang and coklat.", image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat.webp` },
-      { name: "Blackforest Kacang Coklat Keju", price: 29000, description: "Varian premium terlengkap dengan adonan coklat Blackforest.", image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat-keju.webp` },
-      { name: "Blackforest Keju", price: 27000, highlight: true, isBestSeller: true, description: "Hitam manis berpadu dengan putih gurihnya keju cheddar pilihan.", image: `${ASSET_BASE_URL}/sweet/blackforest-keju.webp` },
-      { name: "Blackforest Keju Kacang", price: 28000, highlight: true, description: "Coklat rich, keju gurih, and kacang renyah dalam satu perpaduan.", image: `${ASSET_BASE_URL}/sweet/blackforest-keju-kacang.webp` },
-      { name: "Blackforest Keju Coklat", price: 28000, highlight: true, description: "Kenikmatan maksimal bagi pecinta coklat tingkat tinggi.", image: `${ASSET_BASE_URL}/sweet/blackforest-keju-coklat.webp` },
+      { name: `${t.itemBlackforest} ${t.itemKacang}`, price: 25000, description: t.descBlackforest, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang.webp` },
+      { name: `${t.itemBlackforest} ${t.itemCoklat}`, price: 25000, description: t.descBlackforest, image: `${ASSET_BASE_URL}/sweet/blackforest-coklat.webp` },
+      { name: `${t.itemBlackforest} ${t.itemKacang} ${t.itemCoklat}`, price: 26000, description: t.descBlackforest, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat.webp` },
+      { name: `${t.itemBlackforest} ${t.itemKacang} ${t.itemCoklat} ${t.itemKeju}`, price: 29000, description: t.descBlackforest, image: `${ASSET_BASE_URL}/sweet/blackforest-kacang-coklat-keju.webp` },
+      { name: `${t.itemBlackforest} ${t.itemKeju}`, price: 27000, highlight: true, isBestSeller: true, description: t.descBlackforest, image: `${ASSET_BASE_URL}/sweet/blackforest-keju.webp` },
+      { name: `${t.itemBlackforest} ${t.itemKeju} ${t.itemKacang}`, price: 28000, highlight: true, description: t.descBlackforest, image: `${ASSET_BASE_URL}/sweet/blackforest-keju-kacang.webp` },
+      { name: `${t.itemBlackforest} ${t.itemKeju} ${t.itemCoklat}`, price: 28000, highlight: true, description: t.descBlackforest, image: `${ASSET_BASE_URL}/sweet/blackforest-keju-coklat.webp` },
     ],
   },
 ];
 
-// 🍗 DATA MENU ASIN (Martabak Telor)
-export const MENU_SAVORY = [
+export const getMenuSavory = (t: any) => [
   {
-    title: "Daging Sapi",
+    title: t.catSavoryBeef,
     variants: [
       {
-        type: "Telor Ayam",
-        description: "Martabak telor klasik dengan isian daging sapi bumbu rempah and telor ayam segar.",
+        type: t.itemTelorAyam,
+        description: t.descSavoryStandard,
         prices: [
           { qty: 2, price: 25000, isBestSeller: true, highlight: true, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
           { qty: 3, price: 34000, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
@@ -121,8 +120,8 @@ export const MENU_SAVORY = [
         ],
       },
       {
-        type: "Telor Bebek",
-        description: "Rasa lebih gurih and mantap dengan isian daging sapi and telor bebek pilihan.",
+        type: t.itemTelorBebek,
+        description: t.descSavoryBebek,
         prices: [
           { qty: 2, price: 26000, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
           { qty: 3, price: 35000, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
@@ -133,11 +132,11 @@ export const MENU_SAVORY = [
     ],
   },
   {
-    title: "Daging Ayam",
+    title: t.catSavoryChicken,
     variants: [
       {
-        type: "Telor Ayam",
-        description: "Martabak isian daging ayam cincang yang empuk, dibalut telor ayam berkualitas.",
+        type: t.itemTelorAyam,
+        description: t.descSavoryStandard,
         prices: [
           { qty: 2, price: 22000, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
           { qty: 3, price: 30000, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
@@ -146,8 +145,8 @@ export const MENU_SAVORY = [
         ],
       },
       {
-        type: "Telor Bebek",
-        description: "Martabak telor bebek dengan isian daging ayam istimewa yang gurih maksimal.",
+        type: t.itemTelorBebek,
+        description: t.descSavoryBebek,
         prices: [
           { qty: 2, price: 24000, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
           { qty: 3, price: 32000, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/martabak.webp` },
@@ -158,20 +157,20 @@ export const MENU_SAVORY = [
     ],
   },
   {
-    title: "Menu Pedas",
+    title: t.catSavorySpicy,
     variants: [
       {
-        type: "Samyang Ayam Pedas",
-        description: "Paduan unik Martabak Telor dengan Samyang pedas dan daging ayam pilihan.",
+        type: t.itemSamyangAyam,
+        description: t.descSamyang,
         prices: [
-          { qty: 2, price: 30000, desc: "2 Telor Bebek + Daging Ayam", image: `${ASSET_BASE_URL}/savory/samyang-pedas.webp` },
+          { qty: 2, price: 30000, desc: `2 ${t.itemTelorBebek} + ${t.catSavoryChicken}`, image: `${ASSET_BASE_URL}/savory/samyang-pedas.webp` },
         ],
       },
       {
-        type: "Samyang Sapi Pedas",
-        description: "Sensasi pedas Samyang berpadu dengan daging sapi gurih dalam satu kulit martabak renyah.",
+        type: t.itemSamyangSapi,
+        description: t.descSamyang,
         prices: [
-          { qty: 2, price: 32000, desc: "2 Telor Bebek + Daging Sapi", isBestSeller: true, image: `${ASSET_BASE_URL}/savory/samyang-pedas.webp` },
+          { qty: 2, price: 32000, desc: `2 ${t.itemTelorBebek} + ${t.catSavoryBeef}`, isBestSeller: true, image: `${ASSET_BASE_URL}/savory/samyang-pedas.webp` },
         ],
       },
     ],
@@ -179,19 +178,25 @@ export const MENU_SAVORY = [
 ];
 
 // ➕ ADD-ONS (Tambahan)
-export const ADDONS_SWEET: Addon[] = [
-  { name: 'Tambah Coklat', price: 3000 },
-  { name: 'Tambah Kacang', price: 2000 },
-  { name: 'Tambah Keju', price: 7000 },
-  { name: 'Tambah Milo', price: 5000 },
+export const getAddonsSweet = (t: any): Addon[] => [
+  { name: t.addonCoklat, price: 3000 },
+  { name: t.addonKacang, price: 2000 },
+  { name: t.addonKeju, price: 7000 },
+  { name: t.addonMilo, price: 5000 },
 ];
 
-export const ADDONS_SAVORY: Addon[] = [
-  { name: 'Tambah Sosis', price: 2000, minQty: 1, maxQty: 20, defaultQty: 3 },
-  { name: 'Tambah Kornet', price: 13000, disabled: true },
-  { name: 'Tambah Jamur', price: 10000, disabled: true },
-  { name: 'Tambah Acar', price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
-  { name: 'Tambah Irisan Cabe', price: 400, minQty: 1, maxQty: 20, defaultQty: 5 },
-  { name: 'Tambah Saus', price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
-  { name: 'Tambah Sambal Pedas', price: 5000, minQty: 1, maxQty: 20, defaultQty: 1 },
+export const getAddonsSavory = (t: any): Addon[] => [
+  { name: t.addonSosis, price: 2000, minQty: 1, maxQty: 20, defaultQty: 3 },
+  { name: t.addonKornet, price: 13000, disabled: true },
+  { name: t.addonJamur, price: 10000, disabled: true },
+  { name: t.addonAcar, price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
+  { name: t.addonCabe, price: 400, minQty: 1, maxQty: 20, defaultQty: 5 },
+  { name: t.addonSaus, price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
+  { name: t.addonSambal, price: 5000, minQty: 1, maxQty: 20, defaultQty: 1 },
 ];
+
+// LEGACY EXPORTS (Optional: provide fallback for direct imports if needed, but better to update call sites)
+export const MENU_SWEET = getMenuSweet({ catSweetStandard: "Terang Bulan Standard", itemKacang: "Kacang", itemCoklat: "Coklat", itemKeju: "Keju", itemPandan: "Pandan", itemRedVelvet: "Red Velvet", itemBlackforest: "Blackforest" });
+export const MENU_SAVORY = getMenuSavory({ catSavoryBeef: "Daging Sapi", itemTelorAyam: "Telor Ayam", itemTelorBebek: "Telor Bebek", catSavoryChicken: "Daging Ayam", catSavorySpicy: "Menu Pedas", itemSamyangAyam: "Samyang Ayam Pedas", itemSamyangSapi: "Samyang Sapi Pedas" });
+export const ADDONS_SWEET = getAddonsSweet({ addonCoklat: "Tambah Coklat", addonKacang: "Tambah Kacang", addonKeju: "Tambah Keju", addonMilo: "Tambah Milo" });
+export const ADDONS_SAVORY = getAddonsSavory({ addonSosis: "Tambah Sosis", addonKornet: "Tambah Kornet", addonJamur: "Tambah Jamur", addonAcar: "Tambah Acar", addonCabe: "Tambah Irisan Cabe", addonSaus: "Tambah Saus", addonSambal: "Tambah Sambal Pedas" });
