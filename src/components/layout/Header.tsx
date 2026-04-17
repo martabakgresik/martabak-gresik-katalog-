@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
             exit={{ y: -50 }}
             className="bg-brand-orange text-brand-black text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
           >
-              {t.promoText(activePromoCode, activePromoPercent)}
+              {typeof t?.promoText === 'function' ? t.promoText(activePromoCode, activePromoPercent) : ""}
             <button
               onClick={() => setUiState({ showPromo: false })}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"

@@ -341,23 +341,23 @@ export default function App() {
 
   const totalFavorites = favorites.length;
 
-  const filteredSweet = useMemo(() => menuSweet.map(section => ({
+  const filteredSweet = useMemo(() => (menuSweet || []).map(section => ({
     ...section,
-    items: section.items.filter(item =>
-      (item.name || "").toLowerCase().includes((searchQuery || "").toLowerCase()) ||
-      (section.category || "").toLowerCase().includes((searchQuery || "").toLowerCase())
+    items: (section?.items || []).filter(item =>
+      (item?.name || "").toLowerCase().includes((searchQuery || "").toLowerCase()) ||
+      (section?.category || "").toLowerCase().includes((searchQuery || "").toLowerCase())
     )
-  })).filter(section => section.items.length > 0), [searchQuery, menuSweet]);
+  })).filter(section => (section?.items || []).length > 0), [searchQuery, menuSweet]);
 
-  const filteredSavory = useMemo(() => menuSavory.map(section => ({
+  const filteredSavory = useMemo(() => (menuSavory || []).map(section => ({
     ...section,
-    variants: section.variants.map(variant => ({
+    variants: (section?.variants || []).map(variant => ({
       ...variant,
-      prices: variant.prices.filter(p =>
-        `${section.title || ""} ${variant.type || ""} ${p.desc || `${p.qty} Telor`} ${formatPrice(p.price)}`.toLowerCase().includes((searchQuery || "").toLowerCase())
+      prices: (variant?.prices || []).filter(p =>
+        `${section?.title || ""} ${variant?.type || ""} ${p?.desc || (p?.qty ? `${p.qty} Telor` : "")} ${typeof formatPrice === 'function' && p?.price !== undefined ? formatPrice(p.price) : ""}`.toLowerCase().includes((searchQuery || "").toLowerCase())
       )
-    })).filter(v => v.prices.length > 0)
-  })).filter(section => section.variants.length > 0), [searchQuery, menuSavory]);
+    })).filter(v => (v?.prices || []).length > 0)
+  })).filter(section => (section?.variants || []).length > 0), [searchQuery, menuSavory]);
 
   const isPromoScheduledActive = useMemo(() => {
     if (isHoliday || isEmergencyClosed) return false;
