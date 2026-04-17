@@ -18,7 +18,8 @@ export type UiLang = "id" | "en";
 
 const detectBrowserLanguage = (): UiLang => {
   if (typeof navigator === "undefined") return "id";
-  return navigator.language?.toLowerCase().startsWith("en") ? "en" : "id";
+  const lang = (navigator.language || navigator.userLanguage || "id").toLowerCase();
+  return lang.startsWith("en") ? "en" : "id";
 };
 
 interface StoreSettings {

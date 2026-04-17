@@ -135,7 +135,7 @@ export const Footer: React.FC = () => {
             </div>
             
             <div className="flex gap-6">
-              <a href={`https://wa.me/${storePhone.replace(/\s/g, '').replace('+', '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5 font-bold">
+              <a href={`https://wa.me/${(storePhone || "").replace(/\s/g, '').replace('+', '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-brand-yellow transition-colors flex items-center gap-1.5 font-bold">
                 <MessageCircleQuestionIcon className="w-3.5 h-3.5" />
                 {t.feedback}
               </a>

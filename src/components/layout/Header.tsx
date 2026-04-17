@@ -183,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({
               <MapPin className="w-4 h-4 text-brand-orange group-hover:scale-110 transition-transform" />
               <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storeAddress}</span>
             </div>
-            <a href={`tel:${storePhone.replace(/\s/g, '')}`} className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
+            <a href={`tel:${(storePhone || "").replace(/\s/g, '')}`} className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
               <Phone className="w-4 h-4 text-brand-orange" />
               <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storePhone}</span>
             </a>

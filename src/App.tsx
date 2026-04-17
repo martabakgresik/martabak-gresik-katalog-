@@ -206,28 +206,36 @@ export default function App() {
 
     if (itemName && !selectedItemForAddon) {
       // Find item in sweet menu
-      for (const section of menuSweet) {
-        const item = section.items.find(i => (i.name || "").toLowerCase() === itemName.toLowerCase());
-        if (item) {
-          setSelectedItemForAddon({ ...item, type: 'sweet', category: section.category });
-          return;
+      if (Array.isArray(menuSweet)) {
+        for (const section of menuSweet) {
+          if (!section?.items) continue;
+          const item = section.items.find(i => (i?.name || "").toLowerCase() === itemName.toLowerCase());
+          if (item) {
+            setSelectedItemForAddon({ ...item, type: 'sweet', category: section.category });
+            return;
+          }
         }
       }
       // Find item in savory menu
-      for (const section of menuSavory) {
-        const variant = section.variants.find(v => (section.title + " " + v.type).toLowerCase() === itemName.toLowerCase() || (v.type || "").toLowerCase() === itemName.toLowerCase());
-        if (variant) {
-          // Find first price for default
-          const priceObj = variant.prices[0];
-          setSelectedItemForAddon({ 
-            name: `${section.title} ${variant.type}`, 
-            price: priceObj.price, 
-            image: priceObj.image || "", 
-            description: variant.description || "",
-            type: 'savory',
-            category: section.title
-          });
-          return;
+      if (Array.isArray(menuSavory)) {
+        for (const section of menuSavory) {
+          if (!section?.variants) continue;
+          const variant = section.variants.find(v => (section.title + " " + v.type).toLowerCase() === itemName.toLowerCase() || (v?.type || "").toLowerCase() === itemName.toLowerCase());
+          if (variant) {
+            // Find first price for default
+            const priceObj = variant.prices?.[0];
+            if (priceObj) {
+              setSelectedItemForAddon({ 
+                name: `${section.title} ${variant.type}`, 
+                price: priceObj.price, 
+                image: priceObj.image || "", 
+                description: variant.description || "",
+                type: 'savory',
+                category: section.title
+              });
+              return;
+            }
+          }
         }
       }
     }
