@@ -154,7 +154,8 @@ async function prerender() {
     html = injectCanonical(html, `${BASE_URL}/`);
 
     // Update the main index.html in dist
-    fs.writeFileSync(INDEX_PATH, html);
+    // Do NOT update the main index.html in dist directly as it can break Vite's hydration logic
+    // fs.writeFileSync(INDEX_PATH, html);
     
     // Also create /catalog/index.html for consistency if needed
     const outputDir = path.join(DIST_DIR, 'catalog');
