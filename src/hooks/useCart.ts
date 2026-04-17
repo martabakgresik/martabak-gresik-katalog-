@@ -229,7 +229,7 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     if (discountAmount > 0) {
       message += `${t.waDiscount} (${promoCode}): -${formatPrice(discountAmount)}\n`;
     }
-    message += `${t.waTotal}: ${formatPrice(totalPrice)}*\n\n`;
+    message += `${t.waTotal}: *${formatPrice(totalPrice)}*\n\n`;
     message += `${t.waFooter}`;
 
     const encodedMessage = encodeURIComponent(message);

@@ -534,8 +534,8 @@ export default function App() {
             setIsOrderConfirmationOpen={(open) => setUiState({ isOrderConfirmationOpen: open })}
             formatPrice={formatPrice}
           />
-          )}
-        </AnimatePresence>
+        )}
+      </AnimatePresence>
       </div>
 
       <Footer />

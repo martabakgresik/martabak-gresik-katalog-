@@ -125,7 +125,7 @@ export const CartPage: React.FC<CartPageProps> = ({
                       <div className="w-12 h-12 bg-brand-orange rounded-2xl flex items-center justify-center text-white shadow-lg rotate-3">
                          <ShoppingCart className="w-6 h-6" />
                       </div>
-                      <h2 className="text-3xl font-black uppercase italic">{t.waOrderList.replace(/\W/g, '')}</h2>
+                      <h2 className="text-3xl font-black uppercase italic">{t.waOrderList}</h2>
                     </div>
 
                     {cart.map((item) => (
