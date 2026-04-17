@@ -381,13 +381,13 @@ export default function App() {
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">
       <SEO 
-        title={selectedItemForAddon ? `${selectedItemForAddon.name} - Martabak Gresik` : undefined}
-        description={selectedItemForAddon?.description}
-        image={selectedItemForAddon?.image}
-        url={selectedItemForAddon ? `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}` : undefined}
+        title={selectedItemForAddon?.name ? `${selectedItemForAddon.name} - Martabak Gresik` : t?.heroSubtitle || storeName}
+        description={selectedItemForAddon?.description || t?.footerDescription || storeAddress}
+        image={selectedItemForAddon?.image || "/metaseo.webp"}
+        url={selectedItemForAddon?.name ? `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}` : window.location.origin}
         price={selectedItemForAddon?.price}
         category={selectedItemForAddon?.category}
-        phone={storePhone}
+        phone={storePhone || "6281330763633"}
         noindex={false}
       />
       <Header 
@@ -397,63 +397,66 @@ export default function App() {
       />
 
       {/* Main Content */}
-      <AnimatePresence mode="wait">
-        {currentView === 'catalog' && (
-          <MenuCatalog 
-            filteredSweet={filteredSweet}
-            filteredSavory={filteredSavory}
-            imagesLoaded={imagesLoaded}
-            handleImageLoad={handleImageLoad}
-            setZoomedImage={(img) => setUiState({ zoomedImage: img })}
-            toggleFavorite={toggleFavorite}
-            isFavorite={isFavorite}
-            handleOpenAddonModal={handleOpenAddonModal}
-            formatPrice={formatPrice}
-          />
-        )}
-
-        {currentView === 'blog' && (
-          <motion.main
-            key="blog"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="w-full min-h-screen pt-20 pb-12"
-          >
-             <BlogView 
-               isMainPage={true} 
-               onClose={() => { 
-                 setCurrentView('catalog');
-                 navigate('/');
-               }} 
-             />
-          </motion.main>
-        )}
-
-        {(currentView === 'about' || currentView === 'faq' || currentView === 'terms' || currentView === 'privacy' || currentView === 'deletion') && (
-          <motion.main
-            key={currentView}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="w-full min-h-screen pt-20 pb-12"
-          >
-            <SEO 
-              title={SEO_COPY[uiLang][currentView].title}
-              description={SEO_COPY[uiLang][currentView].description}
-              url={`https://martabakgresik.my.id/${currentView}`}
+      <div className="relative flex-grow">
+        <AnimatePresence mode="wait">
+          {(currentView === 'catalog' || !['blog', 'about', 'faq', 'terms', 'privacy', 'deletion', 'cart', 'app-download'].includes(currentView)) && (
+            <MenuCatalog 
+              key="catalog"
+              filteredSweet={filteredSweet}
+              filteredSavory={filteredSavory}
+              imagesLoaded={imagesLoaded}
+              handleImageLoad={handleImageLoad}
+              setZoomedImage={(img) => setUiState({ zoomedImage: img })}
+              toggleFavorite={toggleFavorite}
+              isFavorite={isFavorite}
+              handleOpenAddonModal={handleOpenAddonModal}
+              formatPrice={formatPrice}
             />
-            {currentView === 'about' && <AboutMe onClose={() => { setCurrentView('catalog'); navigate('/'); }} isPage={true} />}
-            {currentView === 'faq' && <FAQ isPage={true} onClose={() => { setCurrentView('catalog'); navigate('/'); }} />}
-            {['terms', 'privacy', 'deletion'].includes(currentView) && (
-              <LegalPages 
-                type={currentView === 'terms' ? 'tos' : currentView as any} 
-                onClose={() => { setCurrentView('catalog'); navigate('/'); }} 
-                isPage={true} 
+          )}
+
+          {currentView === 'blog' && (
+            <motion.div 
+              key="blog"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="w-full min-h-screen pt-28 pb-12"
+            >
+               <BlogView 
+                 isMainPage={true} 
+                 onClose={() => { 
+                   setCurrentView('catalog');
+                   navigate('/');
+                 }} 
+               />
+            </motion.div>
+          )}
+
+          {/* Legal & Static Views */}
+          {['about', 'faq', 'terms', 'privacy', 'deletion'].includes(currentView) && (
+            <motion.main
+              key={currentView}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full min-h-screen pt-20 pb-12"
+            >
+              <SEO 
+                title={SEO_COPY[uiLang][currentView].title}
+                description={SEO_COPY[uiLang][currentView].description}
+                url={`https://martabakgresik.my.id/${currentView}`}
               />
-            )}
-          </motion.main>
-        )}
+              {currentView === 'about' && <AboutMe onClose={() => { setCurrentView('catalog'); navigate('/'); }} isPage={true} />}
+              {currentView === 'faq' && <FAQ isPage={true} onClose={() => { setCurrentView('catalog'); navigate('/'); }} />}
+              {['terms', 'privacy', 'deletion'].includes(currentView) && (
+                <LegalPages 
+                  type={currentView === 'terms' ? 'tos' : currentView as any} 
+                  onClose={() => { setCurrentView('catalog'); navigate('/'); }} 
+                  isPage={true} 
+                />
+              )}
+            </motion.main>
+          )}
 
         {currentView === 'app-download' && (
           <motion.main
@@ -531,17 +534,20 @@ export default function App() {
             setIsOrderConfirmationOpen={(open) => setUiState({ isOrderConfirmationOpen: open })}
             formatPrice={formatPrice}
           />
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
 
       <Footer />
 
-      <FloatingActions 
-        totalItems={totalItems} 
-        onViewCart={() => setCurrentView('cart')}
-      />
+      {currentView !== 'blog' && (
+        <FloatingActions 
+          totalItems={totalItems} 
+          onViewCart={() => setCurrentView('cart')}
+        />
+      )}
 
-      {currentView !== 'cart' && (
+      {currentView !== 'cart' && currentView !== 'blog' && (
         <CartNotification 
           lastItemName={lastItemAdded}
           onViewCart={() => setCurrentView('cart')}
@@ -549,14 +555,16 @@ export default function App() {
       )}
 
       {/* AI Assistant UI */}
-      <AiAssistant 
-        onAddToCart={addToCart} 
-        onCheckoutRedirect={() => setCurrentView('cart')}
-        cart={cart}
-        totalPrice={totalPrice}
-        menuSweet={menuSweet}
-        menuSavory={menuSavory}
-      />
+      {currentView !== 'blog' && (
+        <AiAssistant 
+          onAddToCart={addToCart} 
+          onCheckoutRedirect={() => setCurrentView('cart')}
+          cart={cart}
+          totalPrice={totalPrice}
+          menuSweet={menuSweet}
+          menuSavory={menuSavory}
+        />
+      )}
 
 
 

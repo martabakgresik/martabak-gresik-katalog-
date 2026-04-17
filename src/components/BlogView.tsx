@@ -28,7 +28,7 @@ export function BlogView({ onClose, isMainPage = false }: BlogViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [displayLimit, setDisplayLimit] = useState(6);
-  const t = BLOG_I18N[uiLang];
+  const t = BLOG_I18N[uiLang] || BLOG_I18N["id"];
   const dateLocale = uiLang === 'en' ? 'en-US' : 'id-ID';
 
   // Category Translation Helper

@@ -41,8 +41,8 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
       className="max-w-7xl mx-auto px-4 py-8 md:py-12 scroll-mt-8"
     >
       <SEO 
-        title={SEO_COPY[uiLang].catalog.title}
-        description={SEO_COPY[uiLang].catalog.description}
+        title={SEO_COPY[uiLang]?.catalog?.title || "Katalog Martabak Gresik"}
+        description={SEO_COPY[uiLang]?.catalog?.description || "Menu Martabak Manis & Telor Terlengkap"}
         url="https://martabakgresik.my.id"
       />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
@@ -77,7 +77,7 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
               >
                 <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
                   <span className="w-2 h-2 bg-brand-orange rounded-full" />
-                  {section.category}
+                  {section?.category || section?.title || ""}
                 </h3>
             <div className="space-y-3">
               {section.items.map((item) => (
@@ -97,12 +97,12 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
                           )}
                         </div>
                       )}
-                        <h4 className={`font-medium ${item.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5 min-w-0 text-base`}>
-                         <span className="whitespace-normal leading-tight">{item.name}</span>
+                        <h4 className={`font-medium ${item?.highlight ? 'text-brand-orange' : 'text-brand-black dark:text-white'} flex items-center gap-1.5 min-w-0 text-base`}>
+                         <span className="whitespace-normal leading-tight">{item?.name || ""}</span>
                          <button 
                            onClick={(e) => {
                              e.stopPropagation();
-                             handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet');
+                             handleOpenAddonModal({ name: item?.name, price: item?.price, category: section?.category || section?.title, image: (item as any)?.image, description: (item as any)?.description }, 'sweet');
                            }}
                            className="opacity-40 hover:opacity-100 hover:text-brand-orange transition-all p-0.5 flex-shrink-0"
                            title="Detail Produk"
@@ -115,33 +115,33 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
                     <div className="hidden sm:block flex-grow border-b border-dotted border-brand-black/20 dark:border-white/20 mx-2 group-hover:border-brand-orange/50 transition-colors" />
                     <div className="flex flex-col items-end flex-shrink-0 ml-auto mr-1">
                       <div className="flex items-center gap-1.5">
-                        {(item as any).original_price && (item as any).original_price > item.price && (
+                        {(item as any)?.original_price && (item as any)?.original_price > (item?.price || 0) && (
                           <span className="text-[10px] md:text-xs text-zinc-600 dark:text-zinc-400 line-through decoration-red-600 decoration-2">
                             {formatPrice((item as any).original_price)}
                           </span>
                         )}
                         <span className="font-bold tabular-nums dark:text-brand-yellow text-sm md:text-base">
-                          {formatPrice(item.price)}
+                          {formatPrice(item?.price || 0)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 ml-2">
                         <button
-                          onClick={() => toggleFavorite({ name: item.name, price: item.price, category: section.category })}
-                          className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(item.name, section.category)
+                          onClick={() => toggleFavorite({ name: item?.name, price: item?.price, category: section?.category || section?.title })}
+                          className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(item?.name || "", section?.category || section?.title)
                             ? 'bg-brand-orange text-white'
                             : 'bg-brand-black/5 dark:bg-white/10 text-brand-black dark:text-white hover:bg-brand-orange/20'
                             }`}
                         >
-                          <Heart className={`w-4 h-4 ${isFavorite(item.name, section.category) ? 'fill-current' : ''}`} />
+                          <Heart className={`w-4 h-4 ${isFavorite(item?.name || "", section?.category || section?.title) ? 'fill-current' : ''}`} />
                         </button>
                         <button
-                          onClick={() => (item as any).isAvailable !== false && handleOpenAddonModal({ name: item.name, price: item.price, category: section.category, image: (item as any).image, description: (item as any).description }, 'sweet')}
-                          disabled={(item as any).isAvailable === false}
-                          className={`p-1.5 rounded-full transition-colors active:scale-90 ${(item as any).isAvailable === false 
+                          onClick={() => (item as any)?.isAvailable !== false && handleOpenAddonModal({ name: item?.name, price: item?.price, category: section?.category || section?.title, image: (item as any)?.image, description: (item as any)?.description }, 'sweet')}
+                          disabled={(item as any)?.isAvailable === false}
+                          className={`p-1.5 rounded-full transition-colors active:scale-90 ${(item as any)?.isAvailable === false 
                             ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
                             : 'bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black hover:bg-brand-orange hover:text-white'}`}
                         >
-                          {(item as any).isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                          {(item as any)?.isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>
@@ -244,32 +244,32 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
                             )}
                             <span className="font-bold text-brand-yellow text-sm">{formatPrice(p.price)}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 ml-1">
+                           <div className="flex items-center gap-1.5 ml-1">
                             <button
                               onClick={() => toggleFavorite({
-                                name: `${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`,
-                                price: p.price
+                                name: `${section?.title || ""} (${variant?.type || ""} - ${p?.desc ? p.desc : t.eggs(p?.qty || 0)})`,
+                                price: p?.price || 0
                               })}
-                              className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`)
+                              className={`p-1.5 rounded-full transition-all active:scale-90 ${isFavorite(`${section?.title || ""} (${variant?.type || ""} - ${p?.desc ? p.desc : t.eggs(p?.qty || 0)})`)
                                 ? 'bg-brand-orange text-white'
                                 : 'bg-white/10 text-brand-yellow hover:bg-brand-orange/20'
                                 }`}
                             >
-                              <Heart className={`w-4 h-4 ${isFavorite(`${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`) ? 'fill-current' : ''}`} />
+                              <Heart className={`w-4 h-4 ${isFavorite(`${section?.title || ""} (${variant?.type || ""} - ${p?.desc ? p.desc : t.eggs(p?.qty || 0)})`) ? 'fill-current' : ''}`} />
                             </button>
                             <button
-                              onClick={() => (p as any).isAvailable !== false && handleOpenAddonModal({
-                                name: `${section.title} (${variant.type} - ${p.desc ? p.desc : t.eggs(p.qty)})`,
-                                price: p.price,
-                                image: (p as any).image,
-                                description: (variant as any).description
+                              onClick={() => (p as any)?.isAvailable !== false && handleOpenAddonModal({
+                                name: `${section?.title || ""} (${variant?.type || ""} - ${p?.desc ? p.desc : t.eggs(p?.qty || 0)})`,
+                                price: p?.price || 0,
+                                image: (p as any)?.image,
+                                description: (variant as any)?.description
                               }, 'savory')}
-                              disabled={(p as any).isAvailable === false}
-                              className={`p-1.5 rounded-full transition-colors active:scale-90 ${(p as any).isAvailable === false 
+                              disabled={(p as any)?.isAvailable === false}
+                              className={`p-1.5 rounded-full transition-colors active:scale-90 ${(p as any)?.isAvailable === false 
                                 ? 'bg-zinc-200 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed' 
                                 : 'bg-brand-yellow text-brand-black hover:bg-brand-orange hover:text-white'}`}
                             >
-                              {(p as any).isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                              {(p as any)?.isAvailable === false ? <CircleSlash className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                             </button>
                           </div>
                         </div>

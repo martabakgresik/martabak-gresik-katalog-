@@ -175,7 +175,7 @@ export const useAppStore = create<AppState>()(
             checkoutState: { ...current.checkoutState, ...state }
           })),
 
-        t: UI_COPY[detectBrowserLanguage()],
+        t: UI_COPY[detectBrowserLanguage()] || UI_COPY["id"],
 
         setUiState: (state) =>
           set((current) => ({
@@ -193,11 +193,12 @@ export const useAppStore = create<AppState>()(
           })),
 
         setUiLang: (lang) => {
+          const validatedLang = (lang === "id" || lang === "en") ? lang : "id";
           set((state) => ({
-            uiState: { ...state.uiState, uiLang: lang },
-            t: UI_COPY[lang]
+            uiState: { ...state.uiState, uiLang: validatedLang },
+            t: UI_COPY[validatedLang] || UI_COPY["id"]
           }));
-          document.documentElement.lang = lang;
+          document.documentElement.lang = validatedLang;
         },
 
         setSearchQuery: (query) =>

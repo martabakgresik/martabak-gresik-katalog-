@@ -1,12 +1,11 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  X, Send, Sun, Moon, MapPin, Phone, Clock, Search, ChevronDown, ImageIcon, ShoppingBag, Home, MessageCircle
+  X, Send, Sun, Moon, MapPin, Phone, Clock, Search, ChevronDown, ImageIcon, ShoppingBag, Home
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { SCROLL_SPACING } from "../../data/config";
 import { useAppStore, useStoreComputed } from "../../store/useAppStore";
-import { formatPrice } from "../../hooks/useCart";
 
 interface HeaderProps {
   imagesLoaded: Record<string, boolean>;
@@ -27,6 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
     toggleDarkMode, 
     setCurrentView,
     setSearchQuery,
+    setUiLang,
     t 
   } = useAppStore();
   const { isPromoScheduledActive } = useStoreComputed();
@@ -53,9 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
     isEmergencyClosed
   } = storeSettings;
 
-  const STORE_PHONE_RAW = storePhone || "6281330763633";
-  const normalizedPhone = STORE_PHONE_RAW.replace(/\D/g, '');
-  const waPhone = normalizedPhone.startsWith('0') ? '62' + normalizedPhone.slice(1) : normalizedPhone;
+  const waPhone = (storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62');
 
   return (
     <>
@@ -68,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
             exit={{ y: -50 }}
             className="bg-brand-orange text-brand-black text-[10px] md:text-xs font-bold py-2 px-4 text-center sticky top-0 z-[100] shadow-md flex items-center justify-center gap-2"
           >
-              {typeof t?.promoText === 'function' ? t.promoText(activePromoCode, activePromoPercent) : ""}
+            {typeof t?.promoText === 'function' ? t.promoText(activePromoCode, activePromoPercent) : ""}
             <button
               onClick={() => setUiState({ showPromo: false })}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
@@ -79,8 +77,8 @@ export const Header: React.FC<HeaderProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Hero Section */}
-      {currentView === 'catalog' && (
+      {/* Hero Section - Visible only in Catalog/Default views */}
+      {currentView !== 'blog' && (
         <header className="relative bg-brand-black dark:bg-black text-white py-12 px-6 overflow-hidden">
         {/* Share Button (Left) */}
         <div className="absolute top-6 left-6 z-20">
@@ -95,53 +93,53 @@ export const Header: React.FC<HeaderProps> = ({
           </motion.button>
         </div>
 
-        {/* Right Actions (Theme + Cart) */}
+        {/* Right Actions (Language + Theme + Cart) */}
         <div className="absolute top-6 right-6 z-20 flex items-center gap-3">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+          <button
+            onClick={() => setUiLang(uiLang === 'id' ? 'en' : 'id')}
+            className="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl font-black text-[10px] tracking-widest transition-all"
+            title={uiLang === 'id' ? "Switch to English" : "Ubah ke Bahasa Indonesia"}
+          >
+            {uiLang.toUpperCase()}
+          </button>
+
+          <button
             onClick={() => setCurrentView('cart')}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl relative"
             title={t.viewCart}
           >
             <ShoppingBag className="w-5 h-5" />
-          </motion.button>
+          </button>
           
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+          <button
             onClick={toggleDarkMode}
             className="p-3 bg-white/10 hover:bg-white/20 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl"
             title={isDarkMode ? t.toLight : t.toDark}
           >
             {isDarkMode ? <Sun className="w-5 h-5 text-brand-yellow" /> : <Moon className="w-5 h-5" />}
-          </motion.button>
+          </button>
         </div>
 
-        {/* Wavy Background Element */}
         <div className="absolute bottom-0 left-0 w-full h-16 bg-brand-yellow dark:bg-brand-black rounded-t-[100%] translate-y-8" />
 
         <div className="max-w-6xl mx-auto relative z-10 flex flex-col items-center">
           <div className="mb-8 flex flex-row items-center justify-center gap-4 md:gap-10 w-full">
-            <motion.div 
-              className="relative cursor-pointer group"
-              whileHover={{ scale: 1.05, rotate: 5 }}
-              whileTap={{ scale: 0.95 }}
+            <div 
+              className="relative cursor-pointer"
               onClick={() => {
                 setCurrentView('catalog');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                window.history.pushState({}, '', '/');
+                navigate('/');
               }}
             >
               {!imagesLoaded['/logo.webp'] && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />}
               <img
                 src="/logo.webp"
-                alt="Martabak Gresik Logo"
-                className={`w-24 md:w-48 h-auto shrink-0 transition-opacity duration-500 ${imagesLoaded['/logo.webp'] ? 'opacity-100' : 'opacity-0'}`}
+                alt="Logo"
+                className={`w-24 md:w-48 h-auto transition-opacity duration-500 ${imagesLoaded['/logo.webp'] ? 'opacity-100' : 'opacity-0'}`}
                 onLoad={() => handleImageLoad('/logo.webp')}
-                referrerPolicy="no-referrer"
               />
-            </motion.div>
+            </div>
             <div className="text-left">
               <div className="flex flex-wrap items-center justify-start gap-1.5 md:gap-2 mb-2">
                 <div className="bg-brand-yellow text-brand-black px-3 py-0.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest inline-block whitespace-nowrap">
@@ -152,53 +150,41 @@ export const Header: React.FC<HeaderProps> = ({
                   {isHoliday ? t.holidayClosed : isOpen ? t.open : t.closedAt(openHour)}
                 </div>
               </div>
-              <motion.h1
-                className="block text-3xl md:text-6xl font-display font-black tracking-tighter uppercase leading-[0.85] cursor-pointer hover:text-brand-yellow transition-colors"
-                whileHover={{ scale: 1.02 }}
+              <h1
+                className="block text-3xl md:text-5xl font-display font-black tracking-tighter uppercase leading-[0.85] cursor-pointer"
                 onClick={() => {
                   setCurrentView('catalog');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                   navigate('/');
                 }}
               >
-                <span className="sr-only">{storeName} - Terang Bulan Gresik</span>
-                <span aria-hidden="true">
-                  Martabak<br />
-                  <span className="text-brand-yellow font-display">Gresik</span>
-                </span>
-              </motion.h1>
-              <p className="text-xs md:text-2xl font-medium text-brand-orange italic mt-1 md:mt-2">
+                Martabak<br />
+                <span className="text-brand-yellow">Gresik</span>
+              </h1>
+              <p className="text-xs md:text-lg font-medium text-brand-orange italic mt-1">
                 {t.heroSubtitle}
               </p>
             </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-sm md:text-base opacity-80 w-full"
-          >
-            <div className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer group">
-              <MapPin className="w-4 h-4 text-brand-orange group-hover:scale-110 transition-transform" />
-              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storeAddress}</span>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 text-sm md:text-base opacity-80 w-full">
+            <div className="flex items-center justify-center gap-2">
+              <MapPin className="w-4 h-4 text-brand-orange" />
+              <span>{storeAddress}</span>
             </div>
-            <a href={`tel:${(storePhone || "").replace(/\s/g, '')}`} className="flex items-center justify-center gap-2 hover:text-brand-orange transition-colors cursor-pointer">
+            <div className="flex items-center justify-center gap-2">
               <Phone className="w-4 h-4 text-brand-orange" />
-              <span className="underline decoration-transparent hover:decoration-brand-orange transition-colors">{storePhone}</span>
-            </a>
+              <span>{storePhone}</span>
+            </div>
             <div className="flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-brand-orange" />
               <span>{t.openingHours}: {openHour}.00 - {closeHour}.00 WIB</span>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Prominent Shop Status Indicator */}
+          {/* Shop Status Indicator */}
           <div className="flex justify-center mt-8 mb-4">
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full border-2 ${
+            <div className={`flex items-center gap-2 px-5 py-2.5 rounded-full border-2 ${
                 isOpen 
                   ? 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400' 
                   : 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400'
@@ -206,58 +192,41 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <span className={`w-2 h-2 rounded-full animate-pulse ${isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
               {isEmergencyClosed ? t.emergencyClosed : isHoliday ? t.holidayClosed : isOpen ? t.openNowReady : t.closedNowAt(openHour)}
-            </motion.div>
+            </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-8 flex flex-wrap items-center justify-center gap-4"
-          >
-            <motion.button
+          {/* Action Buttons */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <button
               onClick={() => {
                 setCurrentView('catalog');
                 setTimeout(() => {
                   document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
               }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               className="bg-brand-orange text-white px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-orange/50"
             >
               <ShoppingBag className="w-5 h-5" />
               {t.orderNow}
-            </motion.button>
+            </button>
             <Link to="/gallery">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 className="bg-brand-yellow text-brand-black px-8 py-3 rounded-full font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-lg hover:shadow-brand-yellow/50 cursor-pointer"
               >
                 <ImageIcon className="w-5 h-5" />
                 {t.viewGallery}
-              </motion.button>
+              </button>
             </Link>
-          </motion.div>
+          </div>
 
-          {/* Search Bar */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-8 mb-4 flex justify-center w-full max-w-2xl px-4"
-          >
+          {/* Search Bar - Restored Dynamic Logic */}
+          <div className="mt-8 mb-4 flex justify-center w-full max-w-2xl px-4">
             <motion.div 
               initial={false}
               animate={{ 
                 width: isSearchOpen || searchQuery ? "100%" : "64px",
-                maxWidth: isSearchOpen || searchQuery ? "42rem" : "64px"
               }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className={`relative flex items-center shadow-xl rounded-full bg-white dark:bg-black/50 border-4 ${
-                isSearchOpen || searchQuery ? 'border-brand-black/10 dark:border-brand-yellow/20 focus-within:border-brand-orange focus-within:ring-4 focus-within:ring-brand-orange/20' : 'border-brand-orange/50 dark:border-brand-yellow/50'
-              } transition-colors overflow-hidden h-16`}
+              className={`relative flex items-center shadow-xl rounded-full bg-white dark:bg-black/50 border-4 border-brand-black/10 transition-all overflow-hidden h-16`}
             >
               <button 
                 onClick={() => {
@@ -268,9 +237,9 @@ export const Header: React.FC<HeaderProps> = ({
                     setUiState({ isSearchOpen: false });
                   }
                 }}
-                className={`w-16 h-full flex items-center justify-center shrink-0 ${!isSearchOpen && !searchQuery ? 'cursor-pointer hover:bg-brand-black/5 dark:hover:bg-white/5' : ''}`}
+                className="w-16 h-full flex items-center justify-center shrink-0 cursor-pointer"
               >
-                <Search className={`h-6 w-6 ${!isSearchOpen && !searchQuery ? 'text-brand-orange dark:text-brand-yellow' : 'text-brand-black/40 dark:text-white/40'}`} />
+                <Search className="h-6 w-6 text-brand-orange" />
               </button>
               
               <input
@@ -280,86 +249,49 @@ export const Header: React.FC<HeaderProps> = ({
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  if (currentView !== 'catalog') {
-                    setCurrentView('catalog');
-                    setTimeout(() => {
-                      document.getElementById('menu-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                  }
+                  if (currentView !== 'catalog') setCurrentView('catalog');
                 }}
                 onFocus={() => setUiState({ isSearchOpen: true })}
                 onBlur={() => {
                   if (!searchQuery) setUiState({ isSearchOpen: false });
                 }}
-                className="block flex-grow min-w-0 h-full bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 dark:placeholder:text-white/40 outline-none font-bold text-base md:text-lg pr-2"
+                className="block flex-grow min-w-0 h-full bg-transparent border-none text-brand-black dark:text-white placeholder:text-brand-black/40 outline-none font-bold text-base md:text-lg pr-2"
                 style={{ display: isSearchOpen || searchQuery ? 'block' : 'none' }}
               />
               {searchQuery && (
                 <button
-                  onClick={() => {
-                    setSearchQuery("");
-                    searchInputRef.current?.focus();
-                  }}
+                  onClick={() => setSearchQuery("")}
                   className="w-16 h-full flex items-center justify-center text-brand-black/40 hover:text-brand-orange transition-colors shrink-0"
-                  aria-label="Bersihkan pencarian"
                 >
-                  <div className="bg-brand-black/5 p-2 rounded-full hover:bg-brand-orange/10">
-                    <X className="h-5 w-5" />
-                  </div>
+                  <X className="h-5 w-5" />
                 </button>
               )}
             </motion.div>
-          </motion.div>
+          </div>
 
           {/* Scroll Indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-            className={`${SCROLL_SPACING} flex flex-col items-center gap-1 text-brand-orange dark:text-brand-yellow w-full`}
-          >
-            <motion.div
-              animate={{ y: [0, 5, 0] }}
-              transition={{ 
-                duration: 2, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="flex flex-col items-center"
-            >
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] mb-1">{t.scrollMenu}</span>
-              <ChevronDown className="w-5 h-5 animate-pulse" />
-            </motion.div>
-          </motion.div>
-        </div>
+          <div className={`${SCROLL_SPACING} flex flex-col items-center gap-1 text-brand-orange dark:text-brand-yellow w-full mt-4`}>
+             <span className="text-[9px] font-black uppercase tracking-[0.3em] mb-1">{t.scrollMenu}</span>
+             <ChevronDown className="w-5 h-5 animate-bounce" />
+          </div>
+        </div> {/* Closes main container (line 116) */}
       </header>
-      )}
+    )}
 
+      {/* Blog specific header overlay */}
       {currentView === 'blog' && (
-        <header className="bg-brand-black dark:bg-black text-white py-4 px-6 sticky top-0 z-50 shadow-lg">
-           <div className="max-w-7xl mx-auto flex justify-between items-center">
-             <div 
-               className="flex items-center gap-2 cursor-pointer"
-               onClick={() => {
-                 setCurrentView('catalog');
-                 navigate('/');
-               }}
-             >
-               <img src="/logo.webp" alt="Logo" className="w-10 h-10 object-contain" />
-               <span className="font-display font-black uppercase text-brand-yellow">{storeName}</span>
-             </div>
-             <button 
-               onClick={() => {
-                 setCurrentView('catalog');
-                 navigate('/');
-               }}
-               className="text-[10px] font-black uppercase tracking-widest text-brand-orange hover:text-white transition-colors flex items-center gap-2"
-             >
-               <Home className="w-3.5 h-3.5" />
-               {t.backCatalog}
-             </button>
-           </div>
-         </header>
+        <header className="fixed top-0 left-0 w-full bg-brand-black/90 backdrop-blur-md text-white py-4 px-6 z-50 border-b border-white/10">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setCurrentView('catalog'); navigate('/'); }}>
+              <img src="/logo.webp" alt="Logo" className="w-10 h-10 object-contain" />
+              <span className="font-display font-black uppercase text-brand-yellow">{storeName}</span>
+            </div>
+            <button onClick={() => { setCurrentView('catalog'); navigate('/'); }} className="text-[10px] font-black uppercase tracking-widest text-brand-orange flex items-center gap-1">
+              <Home className="w-3.5 h-3.5" />
+              {t.backCatalog}
+            </button>
+          </div>
+        </header>
       )}
     </>
   );

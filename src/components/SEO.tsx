@@ -30,7 +30,7 @@ export const SEO: React.FC<SEOProps> = ({
   author = "Martabak Gresik",
   lang = "id"
 }) => {
-  const siteTitle = title.includes("Martabak Gresik") ? title : `${title} | Martabak Gresik`;
+  const siteTitle = (title && title.includes("Martabak Gresik")) ? title : `${title || "Martabak Gresik"} | Martabak Gresik`;
   const SITE_NAME = "Martabak Gresik";
   const BASE_URL = "https://martabakgresik.my.id";
   const locale = lang === 'en' ? 'en_US' : 'id_ID';
