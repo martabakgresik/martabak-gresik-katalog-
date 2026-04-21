@@ -1,6 +1,6 @@
 ---
 title: "Daftar Menu Martabak dan Terang Bulan Paling Hits di Gresik: Topping Melimpah & Harga Hemat!"
-date: "2026-04-13"
+date: "2026-04-21"
 excerpt: "Mencari Martabak Gresik dengan topping melimpah? Simak daftar menu martabak telur dan terang bulan hits di area Gresik Kota, Manyar, hingga Kebomas yang wajib dicoba!"
 thumbnail: "/logo.webp"
 author: "Martabak Gresik AI"
