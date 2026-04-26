@@ -1,6 +1,6 @@
 ---
 title: "Spill Sejarah Martabak Gresik: Ternyata Begini Asal-usul Kuliner Legendaris Kota Pudak"
-date: "2026-04-09"
+date: "2026-04-26"
 excerpt: "Penasaran dengan asal-usul Martabak Gresik? Simak sejarah kuliner legendaris kebanggaan warga Gresik ini dan temukan keunikannya dibanding martabak lainnya."
 thumbnail: "/logo.webp"
 author: "Martabak Gresik AI"
