@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, ArrowLeft, Mail, Globe, Github, Instagram, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -63,6 +63,10 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => 
   const { uiLang } = uiState;
   const content = ABOUT_COPY[uiLang];
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const Container = isPage ? 'div' : motion.div;
   const innerClasses = isPage 
     ? "relative w-full max-w-4xl mx-auto bg-white dark:bg-brand-black min-h-screen pt-12"
@@ -80,7 +84,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => 
         className={innerClasses}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-brand-yellow dark:bg-brand-black/90 dark:backdrop-blur-md p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md dark:bg-brand-black/90 p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-tr from-brand-orange to-brand-yellow rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
@@ -94,7 +98,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => 
               <h2 className="text-2xl md:text-3xl font-display font-black uppercase text-brand-black dark:text-brand-yellow leading-tight">
                 {content.title}
               </h2>
-              <p className="text-[10px] md:text-xs font-bold text-brand-white uppercase tracking-widest mt-0.5">{content.role}</p>
+              <p className="text-[10px] md:text-xs font-bold text-brand-black/50 dark:text-white/50 uppercase tracking-widest mt-0.5">{content.role}</p>
             </div>
           </div>
           <button

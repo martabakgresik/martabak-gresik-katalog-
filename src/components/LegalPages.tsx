@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { X, ArrowLeft, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -15,6 +15,10 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, isPage = 
   const { uiState } = useAppStore();
   const { uiLang } = uiState;
   const contentByLang = LEGAL_CONTENT;
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [type]);
 
   const activeLang = contentByLang[uiLang];
   const activeContent = activeLang.content[type];
@@ -37,9 +41,9 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, isPage = 
         className={innerClasses}
       >
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-brand-yellow dark:bg-brand-black/90 dark:backdrop-blur-md p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
+        <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md dark:bg-brand-black/90 p-6 border-b border-black/5 dark:border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-white dark:bg-white/10 rounded-2xl shadow-sm">
+            <div className="p-3 bg-neutral-100 dark:bg-white/10 rounded-2xl shadow-sm">
               {activeContent.icon}
             </div>
             <div>
