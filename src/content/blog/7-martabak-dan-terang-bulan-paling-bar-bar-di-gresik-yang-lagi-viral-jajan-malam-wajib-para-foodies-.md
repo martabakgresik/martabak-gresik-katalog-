@@ -1,6 +1,6 @@
 ---
 title: "7 Martabak dan Terang Bulan Paling Bar-Bar di Gresik yang Lagi Viral, Jajan Malam Wajib Para Foodies!"
-date: "2026-05-06"
+date: "2026-05-11"
 excerpt: "Cari Martabak Gresik paling enak? Cek 7 rekomendasi martabak dan terang bulan bar-bar di area Gresik Kota, Manyar, dan Kebomas yang viral dan wajib dicoba!"
 thumbnail: "/logo.webp"
 author: "Martabak Gresik AI"
