@@ -1,6 +1,6 @@
 ---
 title: "Martabak Gresik Viral: Hidden Gem UMKM dengan Topping Melimpah yang Bikin Nagih!"
-date: "2026-05-01"
+date: "2026-05-21"
 excerpt: "Cari Martabak Gresik paling enak? Intip rahasia Martabak UMKM di Jl. Usman Sadar dengan topping melimpah yang viral di Gresik Kota, Manyar, dan Kebomas."
 thumbnail: "/logo.webp"
 author: "Martabak Gresik AI"
