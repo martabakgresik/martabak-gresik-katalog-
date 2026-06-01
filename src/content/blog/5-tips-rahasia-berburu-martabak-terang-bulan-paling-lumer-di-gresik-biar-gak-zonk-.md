@@ -1,6 +1,6 @@
 ---
 title: "5 Tips Rahasia Berburu Martabak Terang Bulan Paling Lumer di Gresik Biar Gak Zonk!"
-date: "2026-05-26"
+date: "2026-06-01"
 excerpt: "Cari Martabak Gresik yang lumer dan anti zonk? Simak 5 tips rahasia berburu terang bulan terbaik di wilayah Gresik Kota, Manyar, dan Kebomas di artikel ini!"
 thumbnail: "/logo.webp"
 author: "Martabak Gresik AI"
