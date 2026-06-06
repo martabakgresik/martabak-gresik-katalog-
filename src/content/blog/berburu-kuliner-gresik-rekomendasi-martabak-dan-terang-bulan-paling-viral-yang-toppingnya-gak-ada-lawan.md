@@ -1,6 +1,6 @@
 ---
 title: "Berburu Kuliner Gresik: Rekomendasi Martabak dan Terang Bulan Paling Viral yang Toppingnya Gak Ada Lawan"
-date: "2026-05-31"
+date: "2026-06-06"
 excerpt: "Cari Martabak Gresik terbaik? Cek rekomendasi martabak dan terang bulan viral di Gresik Kota, Manyar, & Kebomas dengan topping melimpah yang bikin nagih di sini!"
 thumbnail: "/logo.webp"
 author: "Martabak Gresik AI"
