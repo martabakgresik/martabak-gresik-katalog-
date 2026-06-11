@@ -2,9 +2,11 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "martabak-gresik-catalog",
 	"compatibility_date": "2024-03-20",
-	"kv_namespaces": [
+	"d1_databases": [
 		{
-			"binding": "MARTABAK_KV"
+			"binding": "MARTABAK_D1",
+			"database_name": "martabak-d1",
+			"database_id": "f2fcb222-ae81-47bb-93e7-3526ab4c0a3a"
 		}
 	]
 }
