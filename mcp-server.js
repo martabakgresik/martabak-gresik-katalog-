@@ -9,7 +9,9 @@ const { Server } = require("@modelcontextprotocol/sdk/server/index.js");
 const { StdioServerTransport } = require("@modelcontextprotocol/sdk/server/stdio.js");
 const { CallToolRequestSchema, ListToolsRequestSchema } = require("@modelcontextprotocol/sdk/types.js");
 
-const API_URL = "https://martabak-gresik-katalog.vercel.app/api/menu";
+// Ganti URL di bawah dengan alamat produksi Cloudflare Pages Anda nantinya
+// misal: "https://martabak-gresik-catalog.pages.dev/api/menu"
+const API_URL = "http://localhost:8788/api/menu";
 
 const server = new Server(
   {

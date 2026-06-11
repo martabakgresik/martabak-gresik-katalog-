@@ -14,6 +14,9 @@ coverage/
 # Vercel
 .vercel/
 
+# Cloudflare Pages / Wrangler
+.wrangler/
+.dev.vars
 # Local Assets Repository
 assets-repo/
 
