@@ -161,7 +161,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => 
             <div className="flex flex-col items-center gap-2 text-center">
               <div className="flex items-center gap-2 text-brand-orange font-bold uppercase text-[10px] tracking-widest bg-brand-orange/10 px-4 py-1.5 rounded-full">
                 <Mail className="w-3.5 h-3.5" />
-                {content.contactLabel}: martabakgresik@gmail.com
+                {content.contactLabel}: <a href="mailto:martabakgresik@gmail.com" className="hover:underline">martabakgresik@gmail.com</a>
               </div>
             </div>
             

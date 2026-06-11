@@ -4,6 +4,7 @@ import App from './App';
 import { QrGenerator } from './components/QrGenerator';
 import { Gallery } from './components/Gallery';
 import { ImageConverter } from './components/ImageConverter';
+import { AdminDashboard } from './views/AdminDashboard';
 
 function RootLayout() {
   return <Outlet />;
@@ -63,6 +64,10 @@ export const router = createBrowserRouter([
       {
         path: 'converter',
         element: <ImageConverter />,
+      },
+      {
+        path: 'admin',
+        element: <AdminDashboard />,
       },
       {
         path: 'app-download',

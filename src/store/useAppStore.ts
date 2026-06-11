@@ -99,6 +99,9 @@ interface AppState {
   // Checkout State
   checkoutState: CheckoutState;
   setCheckoutState: (state: Partial<CheckoutState>) => void;
+  
+  // App Config
+  fetchConfig: () => Promise<void>;
 }
 
 export const useAppStore = create<AppState>()(
@@ -205,6 +208,24 @@ export const useAppStore = create<AppState>()(
           set((state) => ({
             uiState: { ...state.uiState, searchQuery: query }
           })),
+
+        fetchConfig: async () => {
+          try {
+            const res = await fetch('/api/config');
+            if (res.ok) {
+              const data = await res.json();
+              if (data.storeSettings) get().setStoreSettings(data.storeSettings);
+              if (data.menuSweet || data.menuSavory) {
+                get().setMenuState({
+                  menuSweet: data.menuSweet || get().menuState.menuSweet,
+                  menuSavory: data.menuSavory || get().menuState.menuSavory
+                });
+              }
+            }
+          } catch (e) {
+            console.error('Failed to fetch config:', e);
+          }
+        },
       }),
       {
         name: 'martabak-app-store',

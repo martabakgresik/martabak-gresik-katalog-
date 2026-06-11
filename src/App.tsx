@@ -60,8 +60,13 @@ export default function App() {
     toggleDarkMode, 
     setCurrentView,
     setSearchQuery,
+    fetchConfig,
     t 
   } = useAppStore();
+
+  useEffect(() => {
+    fetchConfig();
+  }, [fetchConfig]);
 
   const {
     uiLang,
