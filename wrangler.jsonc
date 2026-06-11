@@ -4,9 +4,7 @@
 	"compatibility_date": "2024-03-20",
 	"kv_namespaces": [
 		{
-			"binding": "MARTABAK_KV",
-			"id": "dc90fb134fa945b38f7d4db752cccce2",
-			"preview_id": "4e5d24a4c8a04c19b56a8d9d51d6853c"
+			"binding": "MARTABAK_KV"
 		}
 	]
 }
