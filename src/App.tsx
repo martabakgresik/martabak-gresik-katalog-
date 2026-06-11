@@ -170,7 +170,15 @@ export default function App() {
       const dateString = now.toISOString().split('T')[0];
       const hour = now.getHours();
 
-      const holidayFound = holidays.includes(dateString);
+      const isHoliday = (holidayItem: any, targetDate: string) => {
+        if (typeof holidayItem === 'string') return holidayItem === targetDate;
+        if (holidayItem && holidayItem.start && holidayItem.end) {
+          return targetDate >= holidayItem.start && targetDate <= holidayItem.end;
+        }
+        return false;
+      };
+
+      const holidayFound = holidays.some((h: any) => isHoliday(h, dateString));
       setUiState({ 
         isHoliday: holidayFound,
         isOpen: !holidayFound && !isEmergencyClosed && (hour >= openHour && hour < closeHour)

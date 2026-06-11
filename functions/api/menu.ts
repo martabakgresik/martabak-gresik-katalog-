@@ -85,7 +85,7 @@ export const onRequestGet = async (context) => {
   const currentHour = localNow.getHours();
   const currentDate = localNow.toISOString().split('T')[0];
   
-  const isHoliday = config.storeSettings.holidays.includes(currentDate);
+  const isHoliday = (config.storeSettings.holidays || []).some((h: any) => currentDate >= h.start && currentDate <= h.end);
   const isWithinOperationalHours = currentHour >= config.storeSettings.openHour && currentHour < config.storeSettings.closeHour;
   const isOpen = isWithinOperationalHours && !isHoliday && !config.storeSettings.isEmergencyClosed;
 

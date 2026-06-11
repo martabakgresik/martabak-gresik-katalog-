@@ -95,7 +95,7 @@ export const onRequestPost = async (context) => {
     if (!d1) return new Response(JSON.stringify({ error: 'D1 not configured' }), { status: 500 });
 
     // UPDATE SETTINGS
-    const s = configData.storeSettings;
+    const s = configData.storeSettings || {};
     await d1.prepare(`
       UPDATE store_settings SET 
         open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
@@ -103,19 +103,19 @@ export const onRequestPost = async (context) => {
         is_emergency_closed = ?, holidays_json = ?
       WHERE id = 1
     `).bind(
-      s.openHour, s.closeHour, s.activePromoCode, s.activePromoPercent, s.shippingRate, s.maxDistance,
-      s.storeName, s.storeAddress, s.storePhone, s.isEmergencyClosed ? 1 : 0, JSON.stringify(s.holidays)
+      s.openHour ?? 15, s.closeHour ?? 23, s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
+      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, JSON.stringify(s.holidays || [])
     ).run();
 
     // UPDATE SWEET MENU (Clear and re-insert for sync)
     await d1.prepare("DELETE FROM menu_sweet_items").run();
     await d1.prepare("DELETE FROM menu_sweet_categories").run();
-    for (const cat of configData.menuSweet) {
-      const { success, meta } = await d1.prepare("INSERT INTO menu_sweet_categories (name) VALUES (?)").bind(cat.category).run();
+    for (const cat of (configData.menuSweet || [])) {
+      const { success, meta } = await d1.prepare("INSERT INTO menu_sweet_categories (name) VALUES (?)").bind(cat.category ?? 'Uncategorized').run();
       const catId = meta.last_row_id;
-      for (const item of cat.items) {
+      for (const item of (cat.items || [])) {
         await d1.prepare(`INSERT INTO menu_sweet_items (category_id, name, price, description, image, is_best_seller, highlight) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-          .bind(catId, item.name, item.price, item.description, item.image, item.isBestSeller ? 1 : 0, item.highlight ? 1 : 0).run();
+          .bind(catId, item.name ?? 'New Menu', Number(item.price) || 0, item.description ?? null, item.image ?? null, item.isBestSeller ? 1 : 0, item.highlight ? 1 : 0).run();
       }
     }
 
@@ -123,16 +123,16 @@ export const onRequestPost = async (context) => {
     await d1.prepare("DELETE FROM menu_savory_prices").run();
     await d1.prepare("DELETE FROM menu_savory_variants").run();
     await d1.prepare("DELETE FROM menu_savory_categories").run();
-    for (const cat of configData.menuSavory) {
-      const { meta: catMeta } = await d1.prepare("INSERT INTO menu_savory_categories (title) VALUES (?)").bind(cat.title).run();
+    for (const cat of (configData.menuSavory || [])) {
+      const { meta: catMeta } = await d1.prepare("INSERT INTO menu_savory_categories (title) VALUES (?)").bind(cat.title ?? 'Uncategorized').run();
       const catId = catMeta.last_row_id;
-      for (const v of cat.variants) {
+      for (const v of (cat.variants || [])) {
         const { meta: varMeta } = await d1.prepare("INSERT INTO menu_savory_variants (category_id, type, description) VALUES (?, ?, ?)")
-          .bind(catId, v.type, v.description).run();
+          .bind(catId, v.type ?? 'New Variant', v.description ?? null).run();
         const varId = varMeta.last_row_id;
-        for (const p of v.prices) {
+        for (const p of (v.prices || [])) {
           await d1.prepare(`INSERT INTO menu_savory_prices (variant_id, qty, price, desc, image, is_best_seller, highlight) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-            .bind(varId, p.qty, p.price, p.desc || null, p.image, p.isBestSeller ? 1 : 0, p.highlight ? 1 : 0).run();
+            .bind(varId, Number(p.qty) || 0, Number(p.price) || 0, p.desc ?? null, p.image ?? null, p.isBestSeller ? 1 : 0, p.highlight ? 1 : 0).run();
         }
       }
     }

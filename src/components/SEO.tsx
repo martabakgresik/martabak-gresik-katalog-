@@ -1,5 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useAppStore } from '../store/useAppStore';
+import { createSlug } from '../utils/slug';
 
 interface SEOProps {
   title?: string;
@@ -34,6 +36,19 @@ export const SEO: React.FC<SEOProps> = ({
   const SITE_NAME = "Martabak Gresik";
   const BASE_URL = "https://martabakgresik.my.id";
   const locale = lang === 'en' ? 'en_US' : 'id_ID';
+
+  const { menuSweet, menuSavory } = useAppStore(state => state.menuState);
+  const allMenu = [...menuSweet, ...menuSavory];
+
+  const itemListSchema = (url === BASE_URL || url === `${BASE_URL}/`) && allMenu.length > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": allMenu.map((item, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `${BASE_URL}/menu/${createSlug(item.name)}`
+    }))
+  } : null;
 
   // Restaurant Schema
   const restaurantSchema = {
@@ -151,6 +166,11 @@ export const SEO: React.FC<SEOProps> = ({
       {blogSchema && (
         <script type="application/ld+json">
           {JSON.stringify(blogSchema)}
+        </script>
+      )}
+      {itemListSchema && (
+        <script type="application/ld+json">
+          {JSON.stringify(itemListSchema)}
         </script>
       )}
 

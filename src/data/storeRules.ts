@@ -19,12 +19,10 @@ export const STORE_RULES = {
 
   // 🗓️ Hari Libur / Tutup
   holidays: [
-    "2026-03-19",
-    "2026-03-20",
-    "2026-03-21",
-    "2026-03-23",
-    "2026-04-13",
-    "2026-06-04"
+    { start: "2026-03-19", end: "2026-03-21" },
+    { start: "2026-03-23", end: "2026-03-23" },
+    { start: "2026-04-13", end: "2026-04-13" },
+    { start: "2026-06-04", end: "2026-06-04" }
   ],
 
   // 📱 Informasi Toko
@@ -53,7 +51,7 @@ export const CLOSE_HOUR = STORE_RULES.operationalHours.close;
 export const PROMO_CODE = STORE_RULES.promo.code;
 export const PROMO_PERCENT = STORE_RULES.promo.percent;
 
-export const HOLIDAYS: string[] = [...STORE_RULES.holidays];
+export const HOLIDAYS: { start: string; end: string }[] = [...STORE_RULES.holidays];
 
 export const STORE_NAME = STORE_RULES.profile.name;
 export const STORE_ADDRESS = STORE_RULES.profile.address;

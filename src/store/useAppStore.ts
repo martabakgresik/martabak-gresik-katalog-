@@ -17,9 +17,7 @@ import { UI_COPY } from '../data/i18n/appCopy';
 export type UiLang = "id" | "en";
 
 const detectBrowserLanguage = (): UiLang => {
-  if (typeof navigator === "undefined") return "id";
-  const lang = (navigator.language || "id").toLowerCase();
-  return lang.startsWith("en") ? "en" : "id";
+  return "id";
 };
 
 interface StoreSettings {
@@ -32,7 +30,7 @@ interface StoreSettings {
   activePromoPercent: number;
   shippingRate: number;
   maxDistance: number;
-  holidays: string[];
+  holidays: { start: string; end: string }[];
   isEmergencyClosed: boolean;
   promoStartAt: string | null;
   promoEndAt: string | null;
@@ -49,7 +47,7 @@ interface UIState {
   activeTab: 'cart' | 'favorites';
   showPromo: boolean;
   isCheckoutPhase: boolean;
-  currentView: 'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion' | 'app-download' | 'cart';
+  currentView: 'catalog' | 'blog' | 'about' | 'faq' | 'terms' | 'privacy' | 'deletion' | 'app-download' | 'cart' | 'favorites';
   isOpen: boolean;
   isHoliday: boolean;
   showBackToTop: boolean;
@@ -142,6 +140,7 @@ export const useAppStore = create<AppState>()(
 
         uiState: {
           isDarkMode: false,
+          isCartOpen: false,
           activeTab: 'cart' as const,
           showPromo: true,
           isCheckoutPhase: false,
@@ -234,7 +233,7 @@ export const useAppStore = create<AppState>()(
         },
       }),
       {
-        name: 'martabak-app-store',
+        name: 'martabak-app-store-v2',
         partialize: (state) => ({
           uiState: {
             isDarkMode: state.uiState.isDarkMode,
