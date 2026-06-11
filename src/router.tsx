@@ -6,9 +6,7 @@ import { Gallery } from './components/Gallery';
 import { ImageConverter } from './components/ImageConverter';
 import { AdminDashboard } from './views/AdminDashboard';
 
-function RootLayout() {
-  return <Outlet />;
-}
+
 
 /**
  * 🔀 Router Configuration
@@ -17,67 +15,29 @@ function RootLayout() {
  *   /              → Home/Catalog Page
  *   /blog          → Blog Page
  *   /qr            → QR Generator Page (Public)
- *   /?item=NAME    → Item Detail Modal (query param di home page)
+ *   /menu/:slug    → Item Detail Modal (seo-friendly product link)
  */
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <RootLayout />,
-    children: [
-      {
-        index: true,
-        element: <App />,
-        errorElement: <ErrorPage />
-      },
-      {
-        path: 'blog/:slug?',
-        element: <App />,
-      },
-      {
-        path: 'about',
-        element: <App />,
-      },
-      {
-        path: 'faq',
-        element: <App />,
-      },
-      {
-        path: 'terms',
-        element: <App />,
-      },
-      {
-        path: 'privacy',
-        element: <App />,
-      },
-      {
-        path: 'deletion',
-        element: <App />,
-      },
-      {
-        path: 'qr',
-        element: <QrGenerator />,
-      },
-      {
-        path: 'gallery',
-        element: <Gallery />,
-      },
-      {
-        path: 'converter',
-        element: <ImageConverter />,
-      },
-      {
-        path: 'admin',
-        element: <AdminDashboard />,
-      },
-      {
-        path: 'app-download',
-        element: <App />,
-      },
-      {
-        path: '*',
-        element: <Navigate to="/" replace />
-      }
-    ]
+    path: '/qr',
+    element: <QrGenerator />,
+  },
+  {
+    path: '/gallery',
+    element: <Gallery />,
+  },
+  {
+    path: '/converter',
+    element: <ImageConverter />,
+  },
+  {
+    path: '/admin',
+    element: <AdminDashboard />,
+  },
+  {
+    path: '*',
+    element: <App />,
+    errorElement: <ErrorPage />
   }
 ]);
 

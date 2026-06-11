@@ -38,6 +38,7 @@ import { CartNotification } from "./components/cart/CartNotification";
 import { AddonModal } from "./components/modals/AddonModal";
 import { ModalsContainer } from "./components/modals/ModalsContainer";
 import { useAppStore } from "./store/useAppStore";
+import { createSlug } from "./utils/slug";
 import { UI_COPY } from "./data/i18n/appCopy";
 import { SEO_COPY } from "./data/i18n/seoCopy";
 
@@ -185,10 +186,14 @@ export default function App() {
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
 
   const closeAddonModal = () => {
-    const params = new URLSearchParams(location.search);
-    params.delete('item');
-    const newSearch = params.toString();
-    navigate({ search: newSearch ? `?${newSearch}` : '' }, { replace: true });
+    if (location.pathname.startsWith('/menu/')) {
+      navigate('/', { replace: true });
+    } else {
+      const params = new URLSearchParams(location.search);
+      params.delete('item');
+      const newSearch = params.toString();
+      navigate({ search: newSearch ? `?${newSearch}` : '' }, { replace: true });
+    }
     setSelectedItemForAddon(null);
   };
 
@@ -198,23 +203,33 @@ export default function App() {
     const itemName = params.get('item');
     const pathname = window.location.pathname;
 
-    if (pathname.startsWith('/blog')) {
-      setCurrentView('blog');
-      return;
-    }
-    if (pathname === '/about') { setCurrentView('about'); return; }
-    if (pathname === '/faq') { setCurrentView('faq'); return; }
-    if (pathname === '/terms') { setCurrentView('terms'); return; }
-    if (pathname === '/privacy') { setCurrentView('privacy'); return; }
-    if (pathname === '/deletion') { setCurrentView('deletion'); return; }
-    if (pathname === '/app-download') { setCurrentView('app-download'); return; }
+    if (pathname.startsWith('/blog')) { if (currentView !== 'blog') setCurrentView('blog'); return; }
+    if (pathname === '/about') { if (currentView !== 'about') setCurrentView('about'); return; }
+    if (pathname === '/faq') { if (currentView !== 'faq') setCurrentView('faq'); return; }
+    if (pathname === '/terms') { if (currentView !== 'terms') setCurrentView('terms'); return; }
+    if (pathname === '/privacy') { if (currentView !== 'privacy') setCurrentView('privacy'); return; }
+    if (pathname === '/deletion') { if (currentView !== 'deletion') setCurrentView('deletion'); return; }
+    if (pathname === '/app-download') { if (currentView !== 'app-download') setCurrentView('app-download'); return; }
+    if (pathname === '/cart') { if (currentView !== 'cart') setCurrentView('cart'); return; }
+    if (pathname === '/favorites') { if (currentView !== 'favorites') setCurrentView('favorites'); return; }
 
-    if (itemName && !selectedItemForAddon) {
+    if (pathname === '/' || pathname.startsWith('/menu/')) {
+       if (currentView !== 'catalog') setCurrentView('catalog');
+    }
+
+    let targetSlug: string | null = null;
+    if (pathname.startsWith('/menu/')) {
+      targetSlug = pathname.replace('/menu/', '');
+    } else if (itemName) {
+      targetSlug = createSlug(itemName);
+    }
+
+    if (targetSlug && !selectedItemForAddon) {
       // Find item in sweet menu
       if (Array.isArray(menuSweet)) {
         for (const section of menuSweet) {
           if (!section?.items) continue;
-          const item = section.items.find(i => (i?.name || "").toLowerCase() === itemName.toLowerCase());
+          const item = section.items.find(i => createSlug(i?.name || "") === targetSlug);
           if (item) {
             setSelectedItemForAddon({ ...item, type: 'sweet', category: section.category });
             return;
@@ -225,7 +240,7 @@ export default function App() {
       if (Array.isArray(menuSavory)) {
         for (const section of menuSavory) {
           if (!section?.variants) continue;
-          const variant = section.variants.find(v => (section.title + " " + v.type).toLowerCase() === itemName.toLowerCase() || (v?.type || "").toLowerCase() === itemName.toLowerCase());
+          const variant = section.variants.find(v => createSlug(section.title + " " + v.type) === targetSlug || createSlug(v?.type || "") === targetSlug);
           if (variant) {
             // Find first price for default
             const priceObj = variant.prices?.[0];
@@ -244,21 +259,41 @@ export default function App() {
         }
       }
     }
-  }, [menuSweet, menuSavory, selectedItemForAddon, location.pathname, location.search]);
+  }, [menuSweet, menuSavory, selectedItemForAddon, location.pathname, location.search, currentView]);
 
   // Sync URL with Selected Item
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const currentItem = params.get('item');
+    const pathname = location.pathname;
+    const isMenuRoute = pathname.startsWith('/menu/');
+    const currentSlug = isMenuRoute ? pathname.replace('/menu/', '') : null;
     
-    if (selectedItemForAddon && selectedItemForAddon.name !== currentItem) {
-      params.set('item', selectedItemForAddon.name);
-      navigate({ search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
-    } else if (!selectedItemForAddon && currentItem) {
-      params.delete('item');
-      navigate({ search: params.toString() ? `?${params.toString()}` : '' }, { replace: true });
+    if (selectedItemForAddon && createSlug(selectedItemForAddon.name) !== currentSlug) {
+      navigate(`/menu/${createSlug(selectedItemForAddon.name)}`, { replace: true });
+    } else if (!selectedItemForAddon && isMenuRoute) {
+      navigate('/', { replace: true });
     }
-  }, [selectedItemForAddon, location.search, navigate]);
+  }, [selectedItemForAddon, location.pathname, navigate]);
+
+  // Sync currentView changes to URL
+  useEffect(() => {
+    const p = location.pathname;
+    let targetPath = p;
+    const staticPages = ['cart', 'favorites', 'about', 'faq', 'terms', 'privacy', 'deletion', 'app-download'];
+
+    if (staticPages.includes(currentView)) {
+      targetPath = `/${currentView}`;
+    } else if (currentView === 'blog' && !p.startsWith('/blog')) {
+      targetPath = '/blog';
+    } else if (currentView === 'catalog' && (staticPages.includes(p.replace('/', '')) || p.startsWith('/blog'))) {
+      targetPath = '/';
+    }
+
+    if (targetPath !== p) {
+      navigate(targetPath);
+      if (currentView !== 'catalog') window.scrollTo(0, 0);
+    }
+  }, [currentView, location.pathname, navigate]);
+
   // Image loading state
   const [imagesLoaded, setImagesLoaded] = useState<Record<string, boolean>>({});
   const handleImageLoad = (src: string) => {
@@ -269,10 +304,15 @@ export default function App() {
 
 
   useEffect(() => {
+    let lastState = false;
     const handleScroll = () => {
-      setUiState({ showBackToTop: window.scrollY > 400 });
+      const shouldShow = window.scrollY > 400;
+      if (shouldShow !== lastState) {
+        lastState = shouldShow;
+        setUiState({ showBackToTop: shouldShow });
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [setUiState]);
 
@@ -303,7 +343,7 @@ export default function App() {
   };
 
   const shareToWhatsApp = (item: { name: string; price: number; category?: string }) => {
-    const message = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${item.name}*\n${item.category ? `(${item.category})\n` : ""}Harga: *${formatPrice(item.price)}*\n\nCek katalog lengkapnya di sini: ${window.location.origin}`;
+    const message = `Halo Martabak Gresik! Saya tertarik dengan menu ini:\n\n*${item.name}*\n${item.category ? `(${item.category})\n` : ""}Harga: *${formatPrice(item.price)}*\n\nCek katalog lengkapnya di sini: ${window.location.origin}/menu/${createSlug(item.name)}`;
     const encodedMessage = encodeURIComponent(message);
     const phone = storePhone.replace(/\D/g, '');
     const waPhone = phone.startsWith('0') ? '62' + phone.slice(1) : phone;
@@ -389,17 +429,19 @@ export default function App() {
         title={selectedItemForAddon?.name ? `${selectedItemForAddon.name} - Martabak Gresik` : t?.heroSubtitle || storeName}
         description={selectedItemForAddon?.description || t?.footerDescription || storeAddress}
         image={selectedItemForAddon?.image || "/metaseo.webp"}
-        url={selectedItemForAddon?.name ? `${window.location.origin}/?item=${encodeURIComponent(selectedItemForAddon.name)}` : window.location.origin}
+        url={selectedItemForAddon?.name ? `${window.location.origin}/menu/${createSlug(selectedItemForAddon.name)}` : window.location.origin}
         price={selectedItemForAddon?.price}
         category={selectedItemForAddon?.category}
         phone={storePhone || "6281330763633"}
         noindex={false}
       />
-      <Header 
-        imagesLoaded={imagesLoaded}
-        handleImageLoad={handleImageLoad}
-        searchInputRef={searchInputRef}
-      />
+      {!['cart', 'favorites', 'app-download', 'about', 'faq', 'terms', 'privacy', 'deletion', 'blog'].includes(currentView) && (
+        <Header 
+          imagesLoaded={imagesLoaded}
+          handleImageLoad={handleImageLoad}
+          searchInputRef={searchInputRef}
+        />
+      )}
 
       {/* Main Content */}
       <div className="relative flex-grow">
@@ -543,7 +585,9 @@ export default function App() {
       </AnimatePresence>
       </div>
 
-      <Footer />
+      {currentView !== 'cart' && currentView !== 'favorites' && currentView !== 'app-download' && (
+        <Footer />
+      )}
 
       {currentView !== 'blog' && (
         <FloatingActions 

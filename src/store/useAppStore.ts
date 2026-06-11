@@ -18,7 +18,7 @@ export type UiLang = "id" | "en";
 
 const detectBrowserLanguage = (): UiLang => {
   if (typeof navigator === "undefined") return "id";
-  const lang = (navigator.language || navigator.userLanguage || "id").toLowerCase();
+  const lang = (navigator.language || "id").toLowerCase();
   return lang.startsWith("en") ? "en" : "id";
 };
 
@@ -45,6 +45,7 @@ interface MenuState {
 
 interface UIState {
   isDarkMode: boolean;
+  isCartOpen: boolean;
   activeTab: 'cart' | 'favorites';
   showPromo: boolean;
   isCheckoutPhase: boolean;
@@ -188,6 +189,11 @@ export const useAppStore = create<AppState>()(
         toggleDarkMode: () =>
           set((state) => ({
             uiState: { ...state.uiState, isDarkMode: !state.uiState.isDarkMode },
+          })),
+
+        toggleCartOpen: () =>
+          set((state) => ({
+            uiState: { ...state.uiState, isCartOpen: !state.uiState.isCartOpen }
           })),
 
         setCurrentView: (view) =>

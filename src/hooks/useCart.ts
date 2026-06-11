@@ -107,6 +107,7 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
   const totalPrice = itemsPrice + shippingCost - discountAmount;
 
   const applyPromoCode = (code: string) => {
+    const { t } = useAppStore.getState();
     const normalizedInput = (code || "").trim().toUpperCase();
     const activeCode = (storeSettings.activePromoCode || "").trim().toUpperCase();
 
