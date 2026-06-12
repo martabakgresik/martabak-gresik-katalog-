@@ -14,7 +14,7 @@ export const onRequestGet = async (context) => {
       activePromoPercent: PROMO_PERCENT, shippingRate: SHIPPING_RATE_PER_KM,
       maxDistance: MAX_SHIPPING_DISTANCE, holidays: HOLIDAYS,
       storeName: STORE_NAME, storeAddress: STORE_ADDRESS, storePhone: STORE_PHONE,
-      isEmergencyClosed: false, maintenanceEndTime: '', promoStartAt: null, promoEndAt: null
+      isEmergencyClosed: false, maintenanceEndTime: '', maintenanceReason: '', promoStartAt: null, promoEndAt: null
     },
     menuSweet: MENU_SWEET,
     menuSavory: MENU_SAVORY
