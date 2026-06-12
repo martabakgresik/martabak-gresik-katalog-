@@ -220,7 +220,10 @@ export const useAppStore = create<AppState>()(
 
         fetchConfig: async () => {
           try {
-            const res = await fetch('/api/config');
+            // Tambahkan cache buster agar browser selalu mengambil config terbaru
+            const res = await fetch(`/api/config?t=${Date.now()}`, {
+              cache: 'no-store'
+            });
             if (res.ok) {
               const data = await res.json();
               if (data.storeSettings) get().setStoreSettings(data.storeSettings);

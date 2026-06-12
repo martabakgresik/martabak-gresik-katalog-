@@ -78,10 +78,22 @@ export const onRequestGet = async (context) => {
       }));
     }
 
-    return new Response(JSON.stringify(responseData), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify(responseData), { 
+      status: 200, 
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+      } 
+    });
   } catch(e) {
     console.error("D1 GET Error:", e);
-    return new Response(JSON.stringify(defaults), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify(defaults), { 
+      status: 200, 
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'
+      } 
+    });
   }
 };
 
