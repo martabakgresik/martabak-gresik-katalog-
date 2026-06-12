@@ -1,4 +1,4 @@
-const CACHE_NAME = 'martabak-gresik-v5'; // Increment version
+const CACHE_NAME = 'martabak-gresik-v6'; // Increment version
 const ASSETS = [
   '/',
   '/index.html',
@@ -56,6 +56,11 @@ self.addEventListener('fetch', (event) => {
         .catch(() => caches.match('/'))
     );
     return;
+  }
+
+  // Bypass caching for API requests to ensure real-time data
+  if (url.pathname.startsWith('/api/')) {
+    return; // Let the browser handle it directly
   }
 
   // 2. Static Assets -> Stale-While-Revalidate
