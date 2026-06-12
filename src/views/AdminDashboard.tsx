@@ -721,7 +721,45 @@ export const AdminDashboard = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-bold mb-2 opacity-80">Deskripsi / Alasan Tutup</label>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-sm font-bold opacity-80">Deskripsi / Alasan Tutup</label>
+                          <button 
+                            onClick={async () => {
+                              const btn = document.getElementById('btn-ai-maint') as HTMLButtonElement;
+                              if (btn) btn.disabled = true;
+                              const prevText = btn?.innerText;
+                              if (btn) btn.innerText = 'Menghasilkan...';
+                              
+                              try {
+                                const res = await fetch('/api/chat', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    prompt: 'Buatkan 1 kalimat (maksimal 20 kata) lucu, santai, dan menarik yang menjelaskan bahwa toko martabak gresik sedang tutup sementara karena suatu alasan (bisa karena kehabisan bahan, istirahat, atau cuaca). Jangan gunakan tanda kutip.',
+                                    model: 'openai'
+                                  })
+                                });
+                                const data = await res.json();
+                                if (data.response) {
+                                  updateStoreSetting('maintenanceReason', data.response);
+                                } else {
+                                  alert('Gagal menghasilkan teks AI: ' + (data.error || 'Unknown error'));
+                                }
+                              } catch (e: any) {
+                                alert('Error: ' + e.message);
+                              } finally {
+                                if (btn) {
+                                  btn.disabled = false;
+                                  btn.innerText = prevText || '✨ Buat dengan AI';
+                                }
+                              }
+                            }}
+                            id="btn-ai-maint"
+                            className="text-xs bg-brand-orange text-white px-3 py-1 rounded-full font-bold hover:bg-brand-orange/80 transition-colors disabled:opacity-50"
+                          >
+                            ✨ Buat dengan AI
+                          </button>
+                        </div>
                         <textarea 
                           value={config.storeSettings.maintenanceReason || ''}
                           onChange={(e) => updateStoreSetting('maintenanceReason', e.target.value)}
