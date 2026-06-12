@@ -544,28 +544,29 @@ export default function App() {
           initial={{opacity:0, y: 30}} 
           animate={{opacity:1, y: 0}} 
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-brand-black p-6 md:p-8 lg:p-10 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl max-w-3xl w-full border border-black/10 dark:border-white/10 relative z-10 mx-auto"
+          className="bg-brand-black p-6 md:p-8 rounded-[2rem] shadow-2xl max-w-4xl w-full border border-black/10 dark:border-white/10 relative z-10 mx-auto"
         >
           <div className="w-16 h-16 md:w-20 md:h-20 bg-brand-yellow rounded-2xl md:rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner shadow-black/20 rotate-3 hover:rotate-0 transition-transform duration-300 relative">
             <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-brand-black relative z-10 drop-shadow-sm" strokeWidth={2.5} />
           </div>
           
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-black uppercase tracking-tight mb-2 md:mb-3 text-white">
+          <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2 text-white">
             Toko Sedang Tutup
           </h1>
-          <p className="text-sm md:text-base lg:text-lg text-brand-yellow/90 mb-5 md:mb-6 font-medium leading-relaxed whitespace-pre-line max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-brand-yellow opacity-90 mb-6 font-medium leading-relaxed whitespace-pre-line max-w-2xl mx-auto">
             {storeSettings.maintenanceReason || "Mohon maaf, layanan kami saat ini sedang tidak tersedia. Kami sedang melakukan pemeliharaan sistem atau persiapan bahan."}
           </p>
           
           {storeSettings.maintenanceEndTime && (
-            <div className="max-w-xl mx-auto">
+            <div className="max-w-2xl mx-auto">
               <MaintenanceCountdown targetDateStr={storeSettings.maintenanceEndTime} />
             </div>
           )}
           
-          <div className="border-t border-white/10 pt-4 md:pt-6 mt-2 md:mt-4">
-            <p className="text-[10px] md:text-xs tracking-[0.2em] text-white/50 mb-3 md:mb-4 font-bold uppercase">Butuh Bantuan?</p>
-            <a href={`https://wa.me/${(storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-brand-yellow text-brand-black px-6 md:px-8 py-3 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-yellow/20">
+          <div className="border-t border-white opacity-20 pt-4 md:pt-6 mt-2 md:mt-4"></div>
+          <div className="mt-2">
+            <p className="text-[10px] md:text-xs tracking-[0.2em] text-white opacity-50 mb-3 font-bold uppercase">Butuh Bantuan?</p>
+            <a href={`https://wa.me/${(storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-brand-yellow text-brand-black px-6 md:px-8 py-3 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-yellow opacity-90">
               Hubungi via WhatsApp
             </a>
           </div>
