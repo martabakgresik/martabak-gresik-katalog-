@@ -221,11 +221,19 @@ export default function App() {
 
       const holidayFound = holidays.some((h: any) => isHoliday(h, dateString));
       
+      let actuallyEmergencyClosed = isEmergencyClosed;
+      if (isEmergencyClosed && storeSettings.maintenanceEndTime) {
+        const targetDate = new Date(storeSettings.maintenanceEndTime);
+        if (!isNaN(targetDate.getTime()) && now.getTime() >= targetDate.getTime()) {
+          actuallyEmergencyClosed = false;
+        }
+      }
+
       let isOpenCalc = false;
       if (closeMins < openMins) {
-        isOpenCalc = !holidayFound && !isEmergencyClosed && (currentMins >= openMins || currentMins < closeMins);
+        isOpenCalc = !holidayFound && !actuallyEmergencyClosed && (currentMins >= openMins || currentMins < closeMins);
       } else {
-        isOpenCalc = !holidayFound && !isEmergencyClosed && (currentMins >= openMins && currentMins < closeMins);
+        isOpenCalc = !holidayFound && !actuallyEmergencyClosed && (currentMins >= openMins && currentMins < closeMins);
       }
 
       setUiState({ 
@@ -236,7 +244,7 @@ export default function App() {
     checkStatus();
     const timer = setInterval(checkStatus, 60000); // Re-check every minute
     return () => clearInterval(timer);
-  }, [holidays, isEmergencyClosed, openHour, closeHour, setUiState]);
+  }, [holidays, isEmergencyClosed, storeSettings.maintenanceEndTime, openHour, closeHour, setUiState]);
 
   // Add-ons modal state
   const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);
@@ -493,7 +501,15 @@ export default function App() {
     );
   }
 
-  if (isEmergencyClosed) {
+  let actuallyEmergencyClosed = isEmergencyClosed;
+  if (isEmergencyClosed && storeSettings.maintenanceEndTime) {
+    const targetDate = new Date(storeSettings.maintenanceEndTime);
+    if (!isNaN(targetDate.getTime()) && new Date().getTime() >= targetDate.getTime()) {
+      actuallyEmergencyClosed = false;
+    }
+  }
+
+  if (actuallyEmergencyClosed) {
     return (
       <div className="min-h-screen bg-brand-yellow dark:bg-brand-black flex flex-col items-center justify-center p-6 text-center text-brand-black dark:text-brand-yellow">
         <SEO title={`Maintenance - ${storeName}`} description="Toko sedang dalam perbaikan." />
