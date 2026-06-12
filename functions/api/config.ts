@@ -163,7 +163,8 @@ export const onRequestPost = async (context) => {
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error("D1 POST Error:", error);
-    return new Response(JSON.stringify({ error: 'Invalid request' }), { status: 400 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: errorMessage || 'Invalid request' }), { status: 400 });
   }
 };
 
