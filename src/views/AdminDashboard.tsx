@@ -14,6 +14,13 @@ export const AdminDashboard = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   const [activeTab, setActiveTab] = useState<'overview' | 'umum' | 'sweet' | 'savory'>('overview');
   
   // Filter states
@@ -82,7 +89,6 @@ export const AdminDashboard = () => {
       setMessage({ type: 'error', text: 'Terjadi kesalahan jaringan.' });
     }
     setLoading(false);
-    setTimeout(() => setMessage(null), 3000);
   };
 
   const handleSave = async () => {
@@ -111,7 +117,6 @@ export const AdminDashboard = () => {
       setMessage({ type: 'error', text: 'Terjadi kesalahan jaringan.' });
     }
     setSaving(false);
-    setTimeout(() => setMessage(null), 3000);
   };
 
   const updateStoreSetting = (key: string, value: any) => {
@@ -478,15 +483,23 @@ export const AdminDashboard = () => {
         <AnimatePresence>
           {message && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className={`fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full shadow-lg z-50 flex items-center gap-2 text-white font-bold ${
-                message.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              className={`fixed top-6 right-6 px-5 py-4 rounded-2xl shadow-2xl z-[999] flex items-center gap-4 font-bold border-l-4 bg-white dark:bg-zinc-800 text-brand-black dark:text-white border-y border-r border-black/5 dark:border-white/5 ${
+                message.type === 'success' ? 'border-l-green-500' : 'border-l-red-500'
               }`}
             >
-              {message.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-              {message.text}
+              {message.type === 'success' ? (
+                <div className="p-2 bg-green-500/10 rounded-xl">
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                </div>
+              ) : (
+                <div className="p-2 bg-red-500/10 rounded-xl">
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                </div>
+              )}
+              <span className="text-sm">{message.text}</span>
             </motion.div>
           )}
         </AnimatePresence>
