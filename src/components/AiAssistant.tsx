@@ -288,7 +288,7 @@ export const AiAssistant = ({
   DATA MENU AKTIF:
   ${getMenuContext()}
   
-  ${AI_TEXTS.SYSTEM_PROMPT[uiLang === 'en' ? 'en' : 'id']}
+  Jangan pernah menolak pertanyaan. Jawab dulu dengan benar, baru arahkan kembali ke martabak secara halus.
   
   ${getCartContext()}
 
