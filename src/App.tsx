@@ -59,6 +59,7 @@ export default function App() {
   const { 
     uiState, 
     storeSettings, 
+    menuState,
     setUiState, 
     toggleDarkMode, 
     setCurrentView,
@@ -101,8 +102,8 @@ export default function App() {
     isEmergencyClosed
   } = storeSettings;
 
-  const menuSweet = useMemo(() => getMenuSweet(t), [t]);
-  const menuSavory = useMemo(() => getMenuSavory(t), [t]);
+  const menuSweet = useMemo(() => menuState.menuSweet && menuState.menuSweet.length > 0 ? menuState.menuSweet : getMenuSweet(t), [t, menuState.menuSweet]);
+  const menuSavory = useMemo(() => menuState.menuSavory && menuState.menuSavory.length > 0 ? menuState.menuSavory : getMenuSavory(t), [t, menuState.menuSavory]);
 
   const {
     cart,
