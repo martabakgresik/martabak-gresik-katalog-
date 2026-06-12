@@ -24,8 +24,8 @@ interface StoreSettings {
   storeName: string;
   storeAddress: string;
   storePhone: string;
-  openHour: number;
-  closeHour: number;
+  openHour: string;
+  closeHour: string;
   activePromoCode: string;
   activePromoPercent: number;
   shippingRate: number;

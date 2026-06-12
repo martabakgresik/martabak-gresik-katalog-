@@ -180,7 +180,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div className="flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-brand-orange" />
-              <span>{t.openingHours}: {openHour}.00 - {closeHour}.00 WIB</span>
+              <span>{t.openingHours}: {openHour} - {closeHour} WIB</span>
             </div>
           </div>
 

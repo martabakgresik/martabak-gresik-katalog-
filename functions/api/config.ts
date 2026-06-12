@@ -117,7 +117,7 @@ export const onRequestPost = async (context) => {
         is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, holidays_json = ?
       WHERE id = 1
     `).bind(
-      s.openHour ?? 15, s.closeHour ?? 23, s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
+      s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
       s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', JSON.stringify(s.holidays || [])
     ).run();
 

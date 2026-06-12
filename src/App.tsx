@@ -171,7 +171,15 @@ export default function App() {
     const checkStatus = () => {
       const now = new Date();
       const dateString = now.toISOString().split('T')[0];
-      const hour = now.getHours();
+      
+      const openTimeStr = String(openHour || "15:00");
+      const closeTimeStr = String(closeHour || "23:00");
+      const [oH, oM] = openTimeStr.split(':').map(Number);
+      const [cH, cM] = closeTimeStr.split(':').map(Number);
+      
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+      const openMins = (oH || 0) * 60 + (oM || 0);
+      const closeMins = (cH || 0) * 60 + (cM || 0);
 
       const isHoliday = (holidayItem: any, targetDate: string) => {
         if (typeof holidayItem === 'string') return holidayItem === targetDate;
@@ -182,9 +190,17 @@ export default function App() {
       };
 
       const holidayFound = holidays.some((h: any) => isHoliday(h, dateString));
+      
+      let isOpenCalc = false;
+      if (closeMins < openMins) {
+        isOpenCalc = !holidayFound && !isEmergencyClosed && (currentMins >= openMins || currentMins < closeMins);
+      } else {
+        isOpenCalc = !holidayFound && !isEmergencyClosed && (currentMins >= openMins && currentMins < closeMins);
+      }
+
       setUiState({ 
         isHoliday: holidayFound,
-        isOpen: !holidayFound && !isEmergencyClosed && (hour >= openHour && hour < closeHour)
+        isOpen: isOpenCalc
       });
     };
     checkStatus();

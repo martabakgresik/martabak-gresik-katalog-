@@ -7,8 +7,8 @@
 export const STORE_RULES = {
   // ⏰ Jam Operasional
   operationalHours: {
-    open: 16,
-    close: 23,
+    open: "16:00",
+    close: "23:00",
   },
 
   // 🎟️ Promo & Diskon
