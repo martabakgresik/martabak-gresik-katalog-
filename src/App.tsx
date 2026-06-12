@@ -443,7 +443,7 @@ export default function App() {
             <AlertCircle className="w-10 h-10" />
           </div>
           <h1 className="text-2xl md:text-3xl font-black uppercase mb-4 text-brand-black dark:text-brand-yellow">Toko Sedang Tutup</h1>
-          <p className="text-lg opacity-70 mb-6 font-medium">Mohon maaf, layanan kami saat ini sedang tidak tersedia (mungkin karena bahan habis atau pemeliharaan sistem).</p>
+          <p className="text-lg opacity-70 mb-6 font-medium whitespace-pre-line">{storeSettings.maintenanceReason || "Mohon maaf, layanan kami saat ini sedang tidak tersedia (mungkin karena bahan habis atau pemeliharaan sistem)."}</p>
           
           {storeSettings.maintenanceEndTime && (
             <MaintenanceCountdown targetDateStr={storeSettings.maintenanceEndTime} />

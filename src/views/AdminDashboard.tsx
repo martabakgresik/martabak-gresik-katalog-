@@ -710,14 +710,25 @@ export const AdminDashboard = () => {
                   </div>
                   
                   {config.storeSettings.isEmergencyClosed ? (
-                    <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10 animate-fade-in">
-                      <label className="block text-sm font-bold mb-2 opacity-80">Pesan / Kapan Aktif Kembali?</label>
-                      <input 
-                        type="datetime-local" 
-                        value={config.storeSettings.maintenanceEndTime || ''}
-                        onChange={(e) => updateStoreSetting('maintenanceEndTime', e.target.value)}
-                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
-                      />
+                    <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10 animate-fade-in flex flex-col gap-4">
+                      <div>
+                        <label className="block text-sm font-bold mb-2 opacity-80">Kapan Aktif Kembali?</label>
+                        <input 
+                          type="datetime-local" 
+                          value={config.storeSettings.maintenanceEndTime || ''}
+                          onChange={(e) => updateStoreSetting('maintenanceEndTime', e.target.value)}
+                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold mb-2 opacity-80">Deskripsi / Alasan Tutup</label>
+                        <textarea 
+                          value={config.storeSettings.maintenanceReason || ''}
+                          onChange={(e) => updateStoreSetting('maintenanceReason', e.target.value)}
+                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all min-h-[100px]"
+                          placeholder="Contoh: Mohon maaf, layanan kami saat ini sedang tidak tersedia karena pemeliharaan sistem rutin."
+                        />
+                      </div>
                     </div>
                   ) : null}
                 </div>

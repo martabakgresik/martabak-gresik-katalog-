@@ -42,7 +42,8 @@ export const onRequestGet = async (context) => {
         storeAddress: settingsRow.store_address,
         storePhone: settingsRow.store_phone,
         isEmergencyClosed: Boolean(settingsRow.is_emergency_closed),
-        maintenanceEndTime: settingsRow.maintenance_end_time || ''
+        maintenanceEndTime: settingsRow.maintenance_end_time || '',
+        maintenanceReason: settingsRow.maintenance_reason || ''
       };
     }
 
@@ -101,11 +102,11 @@ export const onRequestPost = async (context) => {
       UPDATE store_settings SET 
         open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
         shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
-        is_emergency_closed = ?, maintenance_end_time = ?, holidays_json = ?
+        is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, holidays_json = ?
       WHERE id = 1
     `).bind(
       s.openHour ?? 15, s.closeHour ?? 23, s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
-      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', JSON.stringify(s.holidays || [])
+      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', JSON.stringify(s.holidays || [])
     ).run();
 
     // UPDATE SWEET MENU (Clear and re-insert for sync)

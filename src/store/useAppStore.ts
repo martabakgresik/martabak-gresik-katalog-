@@ -35,6 +35,7 @@ interface StoreSettings {
   promoStartAt: string | null;
   promoEndAt: string | null;
   maintenanceEndTime?: string | null;
+  maintenanceReason?: string | null;
 }
 
 interface MenuState {
@@ -123,6 +124,7 @@ export const useAppStore = create<AppState>()(
           promoStartAt: null,
           promoEndAt: null,
           maintenanceEndTime: null,
+          maintenanceReason: null,
         },
         
         setStoreSettings: (settings) =>
