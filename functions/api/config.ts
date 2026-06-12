@@ -20,7 +20,7 @@ export const onRequestGet = async (context) => {
     menuSavory: MENU_SAVORY
   };
 
-  if (!d1) return new Response(JSON.stringify(defaults), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  if (!d1) return new Response(JSON.stringify({ error: 'DEBUG_ENV', keys: Object.keys(env) }), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
   try {
     const settingsRow = await d1.prepare("SELECT * FROM store_settings WHERE id = 1").first();
