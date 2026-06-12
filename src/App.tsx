@@ -442,7 +442,7 @@ export default function App() {
           <img src="/logo.webp" alt="Martabak Gresik" className="w-20 h-20 object-contain drop-shadow-xl animate-pulse" />
         </div>
         <h2 className="text-brand-black dark:text-brand-yellow font-black uppercase tracking-widest text-xl mb-2">Martabak Gresik</h2>
-        <p className="text-brand-black/70 dark:text-brand-yellow/70 text-sm font-medium">Memanaskan wajan dan menyiapkan menu...</p>
+        <p className="text-brand-black/70 dark:text-brand-yellow/70 text-sm font-medium animate-pulse">Memuat Katalog Menu...</p>
       </div>
     );
   }
