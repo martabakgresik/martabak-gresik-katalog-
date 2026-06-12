@@ -833,22 +833,44 @@ export const AdminDashboard = () => {
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 flex items-center gap-3">
                       <span className="font-bold opacity-80 w-24">Buka Jam:</span>
-                      <input 
-                        type="time" 
-                        value={config.storeSettings.openHour ?? "15:00"}
-                        onChange={(e) => updateStoreSetting('openHour', e.target.value)}
-                        className="bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-3 font-bold text-lg text-center w-32 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                      />
+                      <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
+                        <select 
+                          value={(config.storeSettings.openHour ?? "15:00").split(':')[0]}
+                          onChange={(e) => updateStoreSetting('openHour', `${e.target.value}:${(config.storeSettings.openHour ?? "15:00").split(':')[1]}`)}
+                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                        >
+                          {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                        </select>
+                        <span className="font-bold opacity-50 text-lg">:</span>
+                        <select 
+                          value={(config.storeSettings.openHour ?? "15:00").split(':')[1]}
+                          onChange={(e) => updateStoreSetting('openHour', `${(config.storeSettings.openHour ?? "15:00").split(':')[0]}:${e.target.value}`)}
+                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                        >
+                          {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                        </select>
+                      </div>
                       <span className="font-bold opacity-50">WIB</span>
                     </div>
                     <div className="flex-1 flex items-center gap-3">
                       <span className="font-bold opacity-80 w-24">Tutup Jam:</span>
-                      <input 
-                        type="time" 
-                        value={config.storeSettings.closeHour ?? "23:00"}
-                        onChange={(e) => updateStoreSetting('closeHour', e.target.value)}
-                        className="bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-3 font-bold text-lg text-center w-32 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                      />
+                      <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
+                        <select 
+                          value={(config.storeSettings.closeHour ?? "23:00").split(':')[0]}
+                          onChange={(e) => updateStoreSetting('closeHour', `${e.target.value}:${(config.storeSettings.closeHour ?? "23:00").split(':')[1]}`)}
+                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                        >
+                          {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                        </select>
+                        <span className="font-bold opacity-50 text-lg">:</span>
+                        <select 
+                          value={(config.storeSettings.closeHour ?? "23:00").split(':')[1]}
+                          onChange={(e) => updateStoreSetting('closeHour', `${(config.storeSettings.closeHour ?? "23:00").split(':')[0]}:${e.target.value}`)}
+                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                        >
+                          {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                        </select>
+                      </div>
                       <span className="font-bold opacity-50">WIB</span>
                     </div>
                   </div>
