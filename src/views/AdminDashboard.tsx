@@ -740,10 +740,11 @@ export const AdminDashboard = () => {
                                   })
                                 });
                                 const data = await res.json();
-                                if (data.response) {
-                                  updateStoreSetting('maintenanceReason', data.response);
+                                const aiText = data.choices?.[0]?.message?.content || data.response;
+                                if (aiText) {
+                                  updateStoreSetting('maintenanceReason', aiText);
                                 } else {
-                                  alert('Gagal menghasilkan teks AI: ' + (data.error || 'Unknown error'));
+                                  alert('Gagal menghasilkan teks AI: ' + (data.error || JSON.stringify(data)));
                                 }
                               } catch (e: any) {
                                 alert('Error: ' + e.message);
