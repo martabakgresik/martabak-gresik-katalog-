@@ -35,7 +35,7 @@ export const onRequestPost = async (context) => {
       body: JSON.stringify({
         messages: apiMessages,
         model: selectedModel,
-        seed: -1
+        seed: body.seed ?? Math.floor(Math.random() * 1000000)
       })
     });
 

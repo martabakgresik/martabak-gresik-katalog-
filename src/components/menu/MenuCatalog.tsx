@@ -68,7 +68,7 @@ export const MenuCatalog: React.FC<MenuCatalogProps> = ({
           <div className="space-y-6">
             {filteredSweet.map((section, idx) => (
               <motion.div
-                key={section.category}
+                key={section?.category || section?.title || `section-${idx}`}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}

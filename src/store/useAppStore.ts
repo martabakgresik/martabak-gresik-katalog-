@@ -36,6 +36,12 @@ interface StoreSettings {
   promoEndAt: string | null;
   maintenanceEndTime?: string | null;
   maintenanceReason?: string | null;
+  eventModalActive: boolean;
+  eventModalTitle: string;
+  eventModalContent: string;
+  eventModalImage: string;
+  eventModalStart: string;
+  eventModalEnd: string;
 }
 
 interface MenuState {
@@ -64,6 +70,7 @@ interface UIState {
   zoomedImage: { src: string; alt: string } | null;
   copied: boolean;
   isConfigLoaded: boolean;
+  isEventModalOpen: boolean;
 }
 
 interface CheckoutState {
@@ -126,6 +133,12 @@ export const useAppStore = create<AppState>()(
           promoEndAt: null,
           maintenanceEndTime: null,
           maintenanceReason: null,
+          eventModalActive: false,
+          eventModalTitle: "",
+          eventModalContent: "",
+          eventModalImage: "",
+          eventModalStart: "",
+          eventModalEnd: "",
         },
         
         setStoreSettings: (settings) =>
@@ -164,6 +177,7 @@ export const useAppStore = create<AppState>()(
           zoomedImage: null,
           copied: false,
           isConfigLoaded: false,
+          isEventModalOpen: false,
         },
 
         checkoutState: {

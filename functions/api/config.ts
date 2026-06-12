@@ -14,7 +14,8 @@ export const onRequestGet = async (context) => {
       activePromoPercent: PROMO_PERCENT, shippingRate: SHIPPING_RATE_PER_KM,
       maxDistance: MAX_SHIPPING_DISTANCE, holidays: HOLIDAYS,
       storeName: STORE_NAME, storeAddress: STORE_ADDRESS, storePhone: STORE_PHONE,
-      isEmergencyClosed: false, maintenanceEndTime: '', maintenanceReason: '', promoStartAt: null, promoEndAt: null
+      isEmergencyClosed: false, maintenanceEndTime: '', maintenanceReason: '', promoStartAt: null, promoEndAt: null,
+      eventModalActive: false, eventModalTitle: '', eventModalContent: '', eventModalImage: '', eventModalStart: '', eventModalEnd: ''
     },
     menuSweet: MENU_SWEET,
     menuSavory: MENU_SAVORY
@@ -43,7 +44,13 @@ export const onRequestGet = async (context) => {
         storePhone: settingsRow.store_phone,
         isEmergencyClosed: Boolean(settingsRow.is_emergency_closed),
         maintenanceEndTime: settingsRow.maintenance_end_time || '',
-        maintenanceReason: settingsRow.maintenance_reason || ''
+        maintenanceReason: settingsRow.maintenance_reason || '',
+        eventModalActive: Boolean(settingsRow.event_modal_active),
+        eventModalTitle: settingsRow.event_modal_title || '',
+        eventModalContent: settingsRow.event_modal_content || '',
+        eventModalImage: settingsRow.event_modal_image || '',
+        eventModalStart: settingsRow.event_modal_start || '',
+        eventModalEnd: settingsRow.event_modal_end || ''
       };
     }
 
@@ -114,11 +121,13 @@ export const onRequestPost = async (context) => {
       UPDATE store_settings SET 
         open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
         shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
-        is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, holidays_json = ?
+        is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, holidays_json = ?,
+        event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?
       WHERE id = 1
     `).bind(
       s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
-      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', JSON.stringify(s.holidays || [])
+      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', JSON.stringify(s.holidays || []),
+      s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? ''
     ).run();
 
     // UPDATE SWEET MENU (Clear and re-insert for sync)

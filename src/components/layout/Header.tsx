@@ -1,7 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
-  X, Send, Sun, Moon, MapPin, Phone, Clock, Search, ChevronDown, ImageIcon, ShoppingBag, Home
+  X, Send, Sun, Moon, MapPin, Phone, Clock, Search, ChevronDown, ImageIcon, ShoppingBag, Home, CalendarHeart
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { SCROLL_SPACING } from "../../data/config";
@@ -50,12 +50,23 @@ export const Header: React.FC<HeaderProps> = ({
     closeHour,
     activePromoCode,
     activePromoPercent,
-    isEmergencyClosed
+    isEmergencyClosed,
+    eventModalActive,
+    eventModalStart,
+    eventModalEnd
   } = storeSettings;
 
   const waPhone = (storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62');
 
   const [isPromoDismissed, setIsPromoDismissed] = React.useState(false);
+
+  const isEventValid = React.useMemo(() => {
+    if (!eventModalActive) return false;
+    const now = new Date().toISOString();
+    const isStarted = !eventModalStart || now >= eventModalStart;
+    const isEnded = eventModalEnd && now > eventModalEnd;
+    return isStarted && !isEnded;
+  }, [eventModalActive, eventModalStart, eventModalEnd]);
 
   return (
     <>
@@ -104,6 +115,20 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {uiLang.toUpperCase()}
           </button>
+
+          {isEventValid && (
+            <button
+              onClick={() => setUiState({ isEventModalOpen: true })}
+              className="p-3 bg-brand-orange hover:bg-brand-orange/80 rounded-full border border-white/20 text-white backdrop-blur-sm shadow-xl flex items-center justify-center relative"
+              title="Pengumuman / Event"
+            >
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+              </span>
+              <CalendarHeart className="w-5 h-5" />
+            </button>
+          )}
 
           <button
             onClick={() => setCurrentView('cart')}

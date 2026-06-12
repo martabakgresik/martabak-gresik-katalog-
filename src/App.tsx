@@ -39,6 +39,7 @@ import { CartPage } from "./views/CartPage";
 import { CartNotification } from "./components/cart/CartNotification";
 import { AddonModal } from "./components/modals/AddonModal";
 import { ModalsContainer } from "./components/modals/ModalsContainer";
+import { EventModal } from "./components/modals/EventModal";
 import { useAppStore } from "./store/useAppStore";
 import { createSlug } from "./utils/slug";
 import { UI_COPY } from "./data/i18n/appCopy";
@@ -85,7 +86,8 @@ export default function App() {
     showCookieConsent,
     searchQuery,
     isSearchOpen,
-    copied
+    copied,
+    isEventModalOpen
   } = uiState;
 
   const {
@@ -165,6 +167,34 @@ export default function App() {
   const handleAcceptCookies = () => {
     localStorage.setItem('martabak_cookie_consent', 'accepted');
     setUiState({ showCookieConsent: false });
+  };
+
+  // Event Modal Logic
+  useEffect(() => {
+    if (!storeSettings.eventModalActive) {
+      setUiState({ isEventModalOpen: false });
+      return;
+    }
+    
+    const now = new Date().toISOString();
+    const isStarted = !storeSettings.eventModalStart || now >= storeSettings.eventModalStart;
+    const isEnded = storeSettings.eventModalEnd && now > storeSettings.eventModalEnd;
+    
+    if (isStarted && !isEnded) {
+      const dismissedTitle = localStorage.getItem('martabak_event_dismissed');
+      if (dismissedTitle !== storeSettings.eventModalTitle) {
+        setUiState({ isEventModalOpen: true });
+      }
+    } else {
+      setUiState({ isEventModalOpen: false });
+    }
+  }, [storeSettings.eventModalActive, storeSettings.eventModalStart, storeSettings.eventModalEnd, storeSettings.eventModalTitle, setUiState]);
+
+  const handleDismissEventModal = () => {
+    if (storeSettings.eventModalTitle) {
+      localStorage.setItem('martabak_event_dismissed', storeSettings.eventModalTitle);
+    }
+    setUiState({ isEventModalOpen: false });
   };
 
   useEffect(() => {
@@ -698,6 +728,11 @@ export default function App() {
         t={t}
         addonsSweet={ADDONS_SWEET}
         addonsSavory={ADDONS_SAVORY}
+      />
+
+      <EventModal 
+        isOpen={isEventModalOpen}
+        onClose={handleDismissEventModal}
       />
 
       <ModalsContainer 

@@ -1,8 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Save, AlertCircle, CheckCircle2, Lock, ArrowLeft, Settings, Pizza, EggFried, Eye, EyeOff, Download, Upload, Plus, Trash2, Search, Image, Star, LayoutDashboard } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Lock, ArrowLeft, Settings, Pizza, EggFried, Eye, EyeOff, Download, Upload, Plus, Trash2, Search, Image, Star, LayoutDashboard, Sparkles, Loader2, ChevronDown, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format, parseISO } from 'date-fns';
+import { id } from 'date-fns/locale';
 import Papa from 'papaparse';
+
+// Register Indonesian locale for the calendar
+registerLocale('id', id);
 import { MENU_SWEET, MENU_SAVORY } from '../data/config';
 
 export const AdminDashboard = () => {
@@ -43,11 +50,114 @@ export const AdminDashboard = () => {
   const [draggedSavoryCat, setDraggedSavoryCat] = useState<number | null>(null);
   const [draggedSavoryVariant, setDraggedSavoryVariant] = useState<{catIdx: number, varIdx: number} | null>(null);
 
+  // Accordion state
+  const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
+    profil: true, promo: false, ongkir: false, jam: false, modal: false, admin: false, masal: false, libur: false
+  });
+  const toggleAccordion = (id: string) => setOpenAccordions(prev => ({...prev, [id]: !prev[id]}));
+
+  // AI Generator state
+  const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [isGeneratingImageField, setIsGeneratingImageField] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+
+  const generateDynamicTitle = async () => {
+    setIsGeneratingTitle(true);
+    const currentTitle = config.storeSettings.eventModalTitle?.trim();
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: currentTitle
+            ? `Berikan 1 ide judul promosi BARU yang sangat kreatif dan BERBEDA gaya bahasanya dari judul ini: "${currentTitle}". Konteks tema: ${aiPrompt || 'Bebas'}. Singkat maksimal 6 kata. (Seed acak: ${Math.random().toString(36).substring(7)})`
+            : `Buat 1 judul event/promo super menarik dan singkat (maksimal 5 kata) untuk toko martabak. Tema / Konteks: ${aiPrompt || 'Promo Spesial'}. Buat relevan dengan tema! (Seed acak: ${Math.random().toString(36).substring(7)})`,
+          systemPrompt: "Kamu adalah copywriter jenius. Jawab HANYA dengan judul tanpa tanda kutip."
+        })
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) {
+        updateStoreSetting('eventModalTitle', data.choices[0].message.content.replace(/["*]/g, ''));
+      }
+    } catch (e) {}
+    setIsGeneratingTitle(false);
+  };
+
+  const generateDynamicContent = async () => {
+    setIsGeneratingContent(true);
+    const currentTitle = config.storeSettings.eventModalTitle?.trim();
+    const currentContent = config.storeSettings.eventModalContent?.trim();
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: currentContent
+            ? `Tulis ulang draf pesan ini dengan gaya bahasa yang SAMA SEKALI BERBEDA (lebih segar/memikat): "${currentContent}". (Konteks event: ${currentTitle || aiPrompt || 'Promo'}). Ajak mereka membeli. (Seed acak: ${Math.random().toString(36).substring(7)})`
+            : `Buat 1 pesan promo singkat (2-3 kalimat) yang sangat memikat untuk toko martabak. Tema event: ${currentTitle || aiPrompt || 'Promo Spesial'}. Ajak pelanggan segera membeli. (Seed acak: ${Math.random().toString(36).substring(7)})`,
+          systemPrompt: "Kamu adalah copywriter jenius. Jawab HANYA dengan pesan tanpa basa-basi."
+        })
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) {
+        updateStoreSetting('eventModalContent', data.choices[0].message.content.replace(/["*]/g, ''));
+      }
+    } catch (e) {}
+    setIsGeneratingContent(false);
+  };
+
+  const generateDynamicImage = async () => {
+    setIsGeneratingImageField(true);
+    const currentTitle = config.storeSettings.eventModalTitle?.trim();
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `Buat 1 prompt gambar (maksimal 20 kata, dalam bahasa Inggris) untuk banner toko. Tema Utama: ${aiPrompt || currentTitle || 'Menarik, menggugah selera'}. Gambar HARUS menonjolkan elemen tema ini secara dominan, dengan tambahan sedikit elemen makanan (pancake).`,
+          systemPrompt: "Jawab HANYA dengan deskripsi bahasa Inggris, tanpa tanda kutip, tanpa basa-basi."
+        })
+      });
+      const data = await res.json();
+      if (data?.choices?.[0]?.message?.content) {
+        let aiPromptStr = data.choices[0].message.content.replace(/["*]/g, '').trim();
+        const safePrompt = encodeURIComponent(aiPromptStr);
+        updateStoreSetting('eventModalImage', `/api/image?prompt=${safePrompt}&model=${selectedImageModel}&width=800&height=400&seed=${Math.floor(Math.random()*1000000)}`);
+      }
+    } catch (e) {}
+    setIsGeneratingImageField(false);
+  };
+  const [imageModels, setImageModels] = useState<any[]>([]);
+  const [selectedImageModel, setSelectedImageModel] = useState("nanobanana");
+  const [isGeneratingMaint, setIsGeneratingMaint] = useState(false);
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchConfig();
+      fetchImageModels();
     }
   }, [isAuthenticated]);
+
+  const fetchImageModels = async () => {
+    try {
+      const res = await fetch('https://gen.pollinations.ai/models');
+      if (res.ok) {
+        const data = await res.json();
+        const imageOnly = data.filter((m: any) => m.type === 'image' || m.category === 'image');
+        setImageModels(imageOnly.length > 0 ? imageOnly : data);
+      } else {
+        const resImg = await fetch('https://gen.pollinations.ai/image/models');
+        if (resImg.ok) {
+          const data = await resImg.json();
+          setImageModels(data);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch image models', e);
+    }
+  };
 
   const fetchConfig = async () => {
     setLoading(true);
@@ -121,6 +231,9 @@ export const AdminDashboard = () => {
   };
 
   const updateStoreSetting = (key: string, value: any) => {
+    if (key === 'eventModalImage') {
+      setIsImageLoading(true);
+    }
     setConfig({
       ...config,
       storeSettings: {
@@ -132,13 +245,13 @@ export const AdminDashboard = () => {
 
   // HOLIDAY MANAGEMENT
   const addHoliday = () => {
-    const newHolidays = [...(config.storeSettings.holidays || []), "2026-01-01"];
+    const newHolidays = [...(config.storeSettings.holidays || []), { start: "2026-01-01", end: "2026-01-01" }];
     updateStoreSetting('holidays', newHolidays);
   };
 
-  const updateHoliday = (index: number, val: string) => {
+  const updateHoliday = (index: number, field: 'start' | 'end', val: string) => {
     const newHolidays = [...config.storeSettings.holidays];
-    newHolidays[index] = val;
+    newHolidays[index] = { ...newHolidays[index], [field]: val };
     updateStoreSetting('holidays', newHolidays);
   };
 
@@ -146,6 +259,7 @@ export const AdminDashboard = () => {
     const newHolidays = config.storeSettings.holidays.filter((_: any, i: number) => i !== index);
     updateStoreSetting('holidays', newHolidays);
   };
+
 
   // CSV EXPORT
   const exportCSV = (type: 'sweet' | 'savory') => {
@@ -660,73 +774,91 @@ export const AdminDashboard = () => {
                 </button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="flex flex-col gap-4 mb-8">
                 {/* Store Profile Settings */}
-                <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all md:col-span-2">
-                  <label className="block text-sm font-bold mb-5 uppercase opacity-70 border-b border-black/10 dark:border-white/10 pb-2">Profil & Kontak Toko</label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-bold mb-2 opacity-70">Nama Toko</label>
-                      <input 
-                        type="text" 
-                        value={config.storeSettings.storeName || ''}
-                        onChange={(e) => updateStoreSetting('storeName', e.target.value)}
-                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                        placeholder="Contoh: Martabak Gresik"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold mb-2 opacity-70">Nomor WhatsApp</label>
-                      <input 
-                        type="text" 
-                        value={config.storeSettings.storePhone || ''}
-                        onChange={(e) => updateStoreSetting('storePhone', e.target.value)}
-                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                        placeholder="Contoh: 6281234567890"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-xs font-bold mb-2 opacity-70">Alamat Lengkap</label>
-                      <textarea 
-                        value={config.storeSettings.storeAddress || ''}
-                        onChange={(e) => updateStoreSetting('storeAddress', e.target.value)}
-                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                        placeholder="Masukkan alamat lengkap toko..."
-                        rows={3}
-                      />
-                    </div>
-                  </div>
+                <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl shadow-sm border border-transparent hover:border-blue-500/30 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('profil')} className="w-full p-6 flex justify-between items-center text-left">
+                    <span className="text-sm font-bold uppercase opacity-80">Profil & Kontak Toko</span>
+                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['profil'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['profil'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-black/5 dark:border-white/5">
+                          <div>
+                            <label className="block text-xs font-bold mb-2 opacity-70">Nama Toko</label>
+                            <input 
+                              type="text" 
+                              value={config.storeSettings.storeName || ''}
+                              onChange={(e) => updateStoreSetting('storeName', e.target.value)}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                              placeholder="Contoh: Martabak Gresik"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold mb-2 opacity-70">Nomor WhatsApp</label>
+                            <input 
+                              type="text" 
+                              value={config.storeSettings.storePhone || ''}
+                              onChange={(e) => updateStoreSetting('storePhone', e.target.value)}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                              placeholder="Contoh: 6281234567890"
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Alamat Lengkap</label>
+                            <textarea 
+                              value={config.storeSettings.storeAddress || ''}
+                              onChange={(e) => updateStoreSetting('storeAddress', e.target.value)}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                              placeholder="Masukkan alamat lengkap toko..."
+                              rows={3}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Promo Setting */}
-                <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all">
-                  <label className="block text-sm font-bold mb-3 uppercase opacity-70 border-b border-black/10 dark:border-white/10 pb-2">Pengaturan Promo Banner</label>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1">
-                      <label className="block text-xs font-bold mb-2 opacity-70">Kode Promo (Kosongkan untuk menonaktifkan banner)</label>
-                      <input 
-                        type="text" 
-                        value={config.storeSettings.activePromoCode || ''}
-                        onChange={(e) => updateStoreSetting('activePromoCode', e.target.value)}
-                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all uppercase"
-                        placeholder="Contoh: MARTABAKBARU"
-                      />
-                    </div>
-                    <div className="w-full md:w-1/3">
-                      <label className="block text-xs font-bold mb-2 opacity-70">Diskon (%)</label>
-                      <div className="relative">
-                        <input 
-                          type="number" 
-                          min="0" max="100"
-                          value={config.storeSettings.activePromoPercent || ''}
-                          onChange={(e) => updateStoreSetting('activePromoPercent', e.target.value === '' ? 0 : Number(e.target.value))}
-                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                          placeholder="0"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">%</span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="bg-green-50/50 dark:bg-green-900/10 rounded-2xl shadow-sm border border-transparent hover:border-green-500/30 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('promo')} className="w-full p-6 flex justify-between items-center text-left">
+                    <span className="text-sm font-bold uppercase opacity-80">Pengaturan Promo Banner</span>
+                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['promo'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['promo'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="flex-1">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Kode Promo (Kosongkan untuk menonaktifkan banner)</label>
+                            <input 
+                              type="text" 
+                              value={config.storeSettings.activePromoCode || ''}
+                              onChange={(e) => updateStoreSetting('activePromoCode', e.target.value)}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all uppercase"
+                              placeholder="Contoh: MARTABAKBARU"
+                            />
+                          </div>
+                          <div className="w-full md:w-1/3">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Diskon (%)</label>
+                            <div className="relative">
+                              <input 
+                                type="number" 
+                                min="0" max="100"
+                                value={config.storeSettings.activePromoPercent || ''}
+                                onChange={(e) => updateStoreSetting('activePromoPercent', e.target.value === '' ? 0 : Number(e.target.value))}
+                                className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                                placeholder="0"
+                              />
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Tutup Darurat (Maintenance) */}
@@ -751,22 +883,27 @@ export const AdminDashboard = () => {
                     <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10 animate-fade-in flex flex-col gap-4">
                       <div>
                         <label className="block text-sm font-bold mb-2 opacity-80">Kapan Aktif Kembali?</label>
-                        <input 
-                          type="datetime-local" 
-                          value={config.storeSettings.maintenanceEndTime || ''}
-                          onChange={(e) => updateStoreSetting('maintenanceEndTime', e.target.value)}
-                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
-                        />
+                        <div className="relative group">
+                          <DatePicker
+                            selected={config.storeSettings.maintenanceEndTime ? parseISO(config.storeSettings.maintenanceEndTime) : null}
+                            onChange={(date) => updateStoreSetting('maintenanceEndTime', date ? format(date, "yyyy-MM-dd'T'HH:mm") : '')}
+                            showTimeSelect
+                            timeFormat="HH:mm"
+                            timeIntervals={15}
+                            dateFormat="d MMMM yyyy, HH:mm"
+                            locale="id"
+                            placeholderText="Pilih tanggal & waktu..."
+                            className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl pl-11 pr-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all dark:[color-scheme:dark]"
+                          />
+                          <Calendar className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
+                        </div>
                       </div>
                       <div>
                         <div className="flex justify-between items-center mb-2">
                           <label className="block text-sm font-bold opacity-80">Deskripsi / Alasan Tutup</label>
                           <button 
                             onClick={async () => {
-                              const btn = document.getElementById('btn-ai-maint') as HTMLButtonElement;
-                              if (btn) btn.disabled = true;
-                              const prevText = btn?.innerText;
-                              if (btn) btn.innerText = 'Menghasilkan...';
+                              setIsGeneratingMaint(true);
                               
                               try {
                                 const res = await fetch('/api/chat', {
@@ -787,16 +924,24 @@ export const AdminDashboard = () => {
                               } catch (e: any) {
                                 alert('Error: ' + e.message);
                               } finally {
-                                if (btn) {
-                                  btn.disabled = false;
-                                  btn.innerText = prevText || '✨ Buat dengan AI';
-                                }
+                                setIsGeneratingMaint(false);
                               }
                             }}
+                            disabled={isGeneratingMaint}
                             id="btn-ai-maint"
-                            className="text-xs bg-brand-orange text-white px-3 py-1 rounded-full font-bold hover:bg-brand-orange/80 transition-colors disabled:opacity-50"
+                            className="text-xs bg-brand-orange text-white px-3 py-1 rounded-full font-bold hover:bg-brand-orange/80 transition-colors disabled:opacity-50 flex items-center justify-center"
                           >
-                            ✨ Buat dengan AI
+                            {isGeneratingMaint ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                Menghasilkan...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3 h-3 mr-1" />
+                                Buat dengan AI
+                              </>
+                            )}
                           </button>
                         </div>
                         <textarea 
@@ -811,164 +956,452 @@ export const AdminDashboard = () => {
                 </div>
                 
                 {/* Shipping Rate */}
-                <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all">
-                  <label className="block text-sm font-bold mb-3 uppercase opacity-70 border-b border-black/10 dark:border-white/10 pb-2">Tarif Ongkir / KM</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-grow">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold opacity-50 text-xl">Rp</span>
-                      <input 
-                        type="number" 
-                        value={config.storeSettings.shippingRate === '' ? '' : (config.storeSettings.shippingRate || 0)}
-                        onFocus={(e) => e.target.select()}
-                        onChange={(e) => updateStoreSetting('shippingRate', e.target.value === '' ? '' : Number(e.target.value))}
-                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 pl-14 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                      />
-                    </div>
-                  </div>
+                <div className="bg-indigo-50/50 dark:bg-indigo-900/10 rounded-2xl shadow-sm border border-transparent hover:border-indigo-500/30 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('ongkir')} className="w-full p-6 flex justify-between items-center text-left">
+                    <span className="text-sm font-bold uppercase opacity-80">Tarif Ongkir / KM</span>
+                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['ongkir'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['ongkir'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="flex gap-2 pt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="relative flex-grow">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold opacity-50 text-xl">Rp</span>
+                            <input 
+                              type="number" 
+                              value={config.storeSettings.shippingRate === '' ? '' : (config.storeSettings.shippingRate || 0)}
+                              onFocus={(e) => e.target.select()}
+                              onChange={(e) => updateStoreSetting('shippingRate', e.target.value === '' ? '' : Number(e.target.value))}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 pl-14 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Jam Buka & Tutup */}
-                <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all md:col-span-2">
-                  <label className="block text-sm font-bold mb-3 uppercase opacity-70 border-b border-black/10 dark:border-white/10 pb-2">Jam Operasional Toko</label>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1 flex items-center gap-3">
-                      <span className="font-bold opacity-80 w-24">Buka Jam:</span>
-                      <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
-                        <select 
-                          value={(config.storeSettings.openHour ?? "15:00").split(':')[0]}
-                          onChange={(e) => updateStoreSetting('openHour', `${e.target.value}:${(config.storeSettings.openHour ?? "15:00").split(':')[1]}`)}
-                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                        >
-                          {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                        </select>
-                        <span className="font-bold opacity-50 text-lg">:</span>
-                        <select 
-                          value={(config.storeSettings.openHour ?? "15:00").split(':')[1]}
-                          onChange={(e) => updateStoreSetting('openHour', `${(config.storeSettings.openHour ?? "15:00").split(':')[0]}:${e.target.value}`)}
-                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                        >
-                          {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                        </select>
-                      </div>
-                      <span className="font-bold opacity-50">WIB</span>
+                <div className="bg-yellow-50/50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-transparent hover:border-yellow-500/30 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('jam')} className="w-full p-6 flex justify-between items-center text-left">
+                    <span className="text-sm font-bold uppercase opacity-80">Jam Operasional Toko</span>
+                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['jam'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['jam'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="flex-1 flex items-center gap-3">
+                            <span className="font-bold opacity-80 w-24">Buka Jam:</span>
+                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
+                              <select 
+                                value={(config.storeSettings.openHour ?? "15:00").split(':')[0]}
+                                onChange={(e) => updateStoreSetting('openHour', `${e.target.value}:${(config.storeSettings.openHour ?? "15:00").split(':')[1]}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                              <span className="font-bold opacity-50 text-lg">:</span>
+                              <select 
+                                value={(config.storeSettings.openHour ?? "15:00").split(':')[1]}
+                                onChange={(e) => updateStoreSetting('openHour', `${(config.storeSettings.openHour ?? "15:00").split(':')[0]}:${e.target.value}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                            </div>
+                            <span className="font-bold opacity-50">WIB</span>
+                          </div>
+                          <div className="flex-1 flex items-center gap-3">
+                            <span className="font-bold opacity-80 w-24">Tutup Jam:</span>
+                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
+                              <select 
+                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[0]}
+                                onChange={(e) => updateStoreSetting('closeHour', `${e.target.value}:${(config.storeSettings.closeHour ?? "23:00").split(':')[1]}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                              <span className="font-bold opacity-50 text-lg">:</span>
+                              <select 
+                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[1]}
+                                onChange={(e) => updateStoreSetting('closeHour', `${(config.storeSettings.closeHour ?? "23:00").split(':')[0]}:${e.target.value}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                            </div>
+                            <span className="font-bold opacity-50">WIB</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Event Modal Pengumuman */}
+                <div className="bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl shadow-sm border border-transparent hover:border-purple-500/30 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('modal')} className="w-full p-6 flex justify-between items-center text-left">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold uppercase opacity-80">Pengumuman / Modal Event</span>
+                      <span className="text-xs opacity-60 mt-1">Munculkan modal otomatis untuk hari raya, event, dll.</span>
                     </div>
-                    <div className="flex-1 flex items-center gap-3">
-                      <span className="font-bold opacity-80 w-24">Tutup Jam:</span>
-                      <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
-                        <select 
-                          value={(config.storeSettings.closeHour ?? "23:00").split(':')[0]}
-                          onChange={(e) => updateStoreSetting('closeHour', `${e.target.value}:${(config.storeSettings.closeHour ?? "23:00").split(':')[1]}`)}
-                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                        >
-                          {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                        </select>
-                        <span className="font-bold opacity-50 text-lg">:</span>
-                        <select 
-                          value={(config.storeSettings.closeHour ?? "23:00").split(':')[1]}
-                          onChange={(e) => updateStoreSetting('closeHour', `${(config.storeSettings.closeHour ?? "23:00").split(':')[0]}:${e.target.value}`)}
-                          className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                        >
-                          {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                        </select>
-                      </div>
-                      <span className="font-bold opacity-50">WIB</span>
-                    </div>
-                  </div>
+                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['modal'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['modal'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5 pb-4">
+                          <label className="text-sm font-bold opacity-70">Aktifkan Modal</label>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input 
+                              type="checkbox" 
+                              className="sr-only peer"
+                              checked={config.storeSettings.eventModalActive ? true : false}
+                              onChange={(e) => updateStoreSetting('eventModalActive', e.target.checked)}
+                            />
+                            <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-orange"></div>
+                          </label>
+                        </div>
+                        
+                        {config.storeSettings.eventModalActive && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 animate-fade-in">
+                            <div className="md:col-span-2 flex flex-col gap-2 bg-brand-orange/5 border border-brand-orange/20 p-3 rounded-xl mb-2">
+                              <label className="block text-[10px] font-bold text-brand-orange uppercase tracking-wider">Konteks AI (Tema Event)</label>
+                              <input 
+                                type="text" 
+                                value={aiPrompt}
+                                onChange={(e) => setAiPrompt(e.target.value)}
+                                className="w-full bg-white dark:bg-black/50 border border-brand-orange/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all placeholder:text-brand-orange/40"
+                                placeholder="Contoh: 17 Agustus, Idul Fitri, Gajian, Weekend..."
+                              />
+                              <p className="text-[10px] opacity-60 italic">Ketik tema event di sini, lalu klik ikon ✨ di kolom bawah untuk memandu AI.</p>
+                            </div>
+
+                            <div className="md:col-span-2">
+                              <label className="block text-xs font-bold mb-2 opacity-70">Judul Event</label>
+                              <div className="flex flex-col gap-2 relative group">
+                                <input 
+                                  type="text" 
+                                  value={config.storeSettings.eventModalTitle || ''}
+                                  onChange={(e) => updateStoreSetting('eventModalTitle', e.target.value)}
+                                  className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 pr-12 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                                  placeholder="Contoh: Selamat Hari Raya Idul Fitri"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.preventDefault(); generateDynamicTitle(); }}
+                                  disabled={isGeneratingTitle}
+                                  title="Bantu isi dengan AI"
+                                  className="absolute right-3 top-2.5 text-brand-orange hover:text-brand-orange/80 disabled:opacity-50 transition-all bg-brand-orange/10 rounded-full p-1.5 hover:scale-110 active:scale-95"
+                                >
+                                  {isGeneratingTitle ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="md:col-span-2">
+                              <label className="block text-xs font-bold mb-2 opacity-70">Pesan / Konten</label>
+                              <div className="flex flex-col gap-2 relative group">
+                                <textarea 
+                                  value={config.storeSettings.eventModalContent || ''}
+                                  onChange={(e) => updateStoreSetting('eventModalContent', e.target.value)}
+                                  className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 pr-12 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all min-h-[80px]"
+                                  placeholder="Pesan untuk pelanggan..."
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.preventDefault(); generateDynamicContent(); }}
+                                  disabled={isGeneratingContent}
+                                  title="Bantu isi dengan AI"
+                                  className="absolute right-3 top-3 text-brand-orange hover:text-brand-orange/80 disabled:opacity-50 transition-all bg-brand-orange/10 rounded-full p-1.5 hover:scale-110 active:scale-95"
+                                >
+                                  {isGeneratingContent ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                </button>
+                              </div>
+                            </div>
+                            <div className="md:col-span-2">
+                              <div className="flex items-center justify-between mb-2">
+                                <label className="block text-xs font-bold opacity-70">URL Gambar Banner (Opsional)</label>
+                                <select
+                                  value={selectedImageModel}
+                                  onChange={(e) => {
+                                    const newModel = e.target.value;
+                                    setSelectedImageModel(newModel);
+                                    if (config.storeSettings.eventModalImage?.includes('/api/image')) {
+                                      try {
+                                        const urlObj = new URL(config.storeSettings.eventModalImage, window.location.origin);
+                                        urlObj.searchParams.set('model', newModel);
+                                        urlObj.searchParams.set('seed', Math.floor(Math.random() * 1000000).toString());
+                                        updateStoreSetting('eventModalImage', urlObj.pathname + urlObj.search);
+                                      } catch (err) {}
+                                    }
+                                  }}
+                                  className="bg-transparent border-none text-[10px] font-bold opacity-60 focus:outline-none cursor-pointer"
+                                  title="Model AI untuk membuat gambar"
+                                >
+                                  <option value="nanobanana">Model: nanobanana</option>
+                                  {imageModels.map((model: any) => {
+                                    const val = model.name || model.id || model;
+                                    if (typeof val !== 'string') return null;
+                                    if (val === 'nanobanana') return null;
+                                    if (val.toLowerCase().includes('video') || val.toLowerCase().includes('text')) return null;
+                                    return <option key={val} value={val}>Model: {val}</option>;
+                                  })}
+                                </select>
+                              </div>
+                              <div className="flex flex-col gap-2 relative group">
+                                <input 
+                                  type="text" 
+                                  value={config.storeSettings.eventModalImage || ''}
+                                  onChange={(e) => updateStoreSetting('eventModalImage', e.target.value)}
+                                  className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 pr-12 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                                  placeholder="/images/promo/lebaran.webp atau https://..."
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.preventDefault(); generateDynamicImage(); }}
+                                  disabled={isGeneratingImageField}
+                                  title="Buat gambar otomatis dengan AI"
+                                  className="absolute right-3 top-2.5 text-brand-orange hover:text-brand-orange/80 disabled:opacity-50 transition-all bg-brand-orange/10 rounded-full p-1.5 hover:scale-110 active:scale-95"
+                                >
+                                  {isGeneratingImageField ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                </button>
+                              </div>
+                              {config.storeSettings.eventModalImage && (
+                                <div className="mt-4 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 relative bg-black/5 dark:bg-white/5 flex flex-col items-center justify-center p-2 min-h-[150px]">
+                                  {isImageLoading && (
+                                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/20 dark:bg-black/60 backdrop-blur-sm">
+                                      <Loader2 className="w-8 h-8 animate-spin mb-2 text-brand-orange" />
+                                      <span className="text-[10px] font-bold text-white uppercase tracking-wider animate-pulse bg-black/50 px-3 py-1 rounded-full">Memuat Gambar AI...</span>
+                                    </div>
+                                  )}
+                                  <span className="text-xs font-bold opacity-50 mb-2 uppercase tracking-wider">Preview Gambar</span>
+                                  <img 
+                                    src={config.storeSettings.eventModalImage} 
+                                    alt="Preview Banner" 
+                                    className={`w-full max-h-[300px] object-cover rounded-lg shadow-sm transition-opacity duration-300 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                                    onError={(e) => {
+                                      setIsImageLoading(false);
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                      const parent = (e.target as HTMLImageElement).parentElement;
+                                      if (parent) {
+                                        let errDiv = parent.querySelector('.img-error');
+                                        if (!errDiv) {
+                                          errDiv = document.createElement('div');
+                                          errDiv.className = 'img-error text-sm font-bold text-red-500 p-4 text-center';
+                                          errDiv.innerHTML = '⚠️ Gagal memuat gambar dari URL tersebut.';
+                                          parent.appendChild(errDiv);
+                                        }
+                                      }
+                                    }}
+                                    onLoad={(e) => {
+                                      setIsImageLoading(false);
+                                      (e.target as HTMLImageElement).style.display = 'block';
+                                      const parent = (e.target as HTMLImageElement).parentElement;
+                                      if (parent) {
+                                        const errDiv = parent.querySelector('.img-error');
+                                        if (errDiv) errDiv.remove();
+                                      }
+                                    }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="relative">
+                                <label className="block text-xs font-bold mb-2 opacity-70">Mulai Aktif</label>
+                                <div className="relative group flex flex-col">
+                                  <DatePicker
+                                    selected={config.storeSettings.eventModalStart ? parseISO(config.storeSettings.eventModalStart) : null}
+                                    onChange={(date) => updateStoreSetting('eventModalStart', date ? format(date, "yyyy-MM-dd'T'HH:mm") : '')}
+                                    showTimeSelect
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    dateFormat="d MMM yyyy, HH:mm"
+                                    locale="id"
+                                    placeholderText="Pilih tanggal mulai..."
+                                    className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all dark:[color-scheme:dark]"
+                                  />
+                                  <Calendar className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
+                                </div>
+                              </div>
+                              <div className="relative">
+                                <label className="block text-xs font-bold mb-2 opacity-70">Selesai (Akhir)</label>
+                                <div className="relative group flex flex-col">
+                                  <DatePicker
+                                    selected={config.storeSettings.eventModalEnd ? parseISO(config.storeSettings.eventModalEnd) : null}
+                                    onChange={(date) => updateStoreSetting('eventModalEnd', date ? format(date, "yyyy-MM-dd'T'HH:mm") : '')}
+                                    showTimeSelect
+                                    timeFormat="HH:mm"
+                                    timeIntervals={15}
+                                    dateFormat="d MMM yyyy, HH:mm"
+                                    locale="id"
+                                    placeholderText="Pilih tanggal selesai..."
+                                    className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl pl-10 pr-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all dark:[color-scheme:dark]"
+                                  />
+                                  <Calendar className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 opacity-50 group-hover:opacity-100 transition-opacity pointer-events-none z-10" />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Admin Management */}
-                <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all md:col-span-2">
-                  <label className="block text-sm font-bold mb-3 uppercase opacity-70 border-b border-black/10 dark:border-white/10 pb-2">Pengaturan Akun Admin</label>
-                  <div className="flex flex-col md:flex-row gap-4 items-center">
-                    <div className="flex-1 w-full">
-                      <p className="text-sm font-medium opacity-80 mb-2">Untuk mengubah password admin, Anda harus mengupdate variabel <code className="bg-black/10 dark:bg-white/10 px-1 rounded">ADMIN_PASSWORD</code> di dashboard Cloudflare Pages atau file <code className="bg-black/10 dark:bg-white/10 px-1 rounded">.env.local</code>.</p>
-                      <input 
-                        type="password"
-                        disabled
-                        value="********"
-                        className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none opacity-50 cursor-not-allowed"
-                        placeholder="Password Baru"
-                      />
-                    </div>
-                    <div className="w-full md:w-auto">
-                      <button disabled className="w-full bg-black/20 dark:bg-white/20 text-brand-black dark:text-white px-6 py-3 rounded-xl font-bold cursor-not-allowed opacity-50">
-                        Ubah Password
-                      </button>
-                    </div>
-                  </div>
+                <div className="bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl shadow-sm border border-transparent hover:border-slate-500/30 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('admin')} className="w-full p-6 flex justify-between items-center text-left">
+                    <span className="text-sm font-bold uppercase opacity-80">Pengaturan Akun Admin</span>
+                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['admin'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['admin'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="flex flex-col md:flex-row gap-4 items-center pt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="flex-1 w-full">
+                            <p className="text-sm font-medium opacity-80 mb-2">Untuk mengubah password admin, Anda harus mengupdate variabel <code className="bg-black/10 dark:bg-white/10 px-1 rounded">ADMIN_PASSWORD</code> di dashboard Cloudflare Pages atau file <code className="bg-black/10 dark:bg-white/10 px-1 rounded">.env.local</code>.</p>
+                            <input 
+                              type="password"
+                              disabled
+                              value="********"
+                              className="w-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none opacity-50 cursor-not-allowed"
+                              placeholder="Password Baru"
+                            />
+                          </div>
+                          <div className="w-full md:w-auto">
+                            <button disabled className="w-full bg-black/20 dark:bg-white/20 text-brand-black dark:text-white px-6 py-3 rounded-xl font-bold cursor-not-allowed opacity-50">
+                              Ubah Password
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* Mass Price Update */}
-                <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-brand-orange/20 hover:border-brand-orange/50 transition-all md:col-span-2">
-                  <label className="block text-sm font-bold mb-3 uppercase opacity-70 border-b border-brand-orange/20 pb-2 text-brand-orange">Manajemen Harga Massal</label>
-                  <div className="flex flex-col md:flex-row gap-4 items-end">
-                    <div className="flex-1 w-full">
-                      <label className="block text-xs font-bold mb-2 opacity-70">Persentase Kenaikan / Penurunan (%)</label>
-                      <div className="relative">
-                        <input 
-                          type="number"
-                          value={massUpdatePercent}
-                          onChange={(e) => setMassUpdatePercent(Number(e.target.value))}
-                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-bold focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all text-lg"
-                          placeholder="Misal: 10 atau -10"
-                        />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">%</span>
-                      </div>
-                      <p className="text-xs font-medium opacity-60 mt-2">Gunakan angka minus (misal: -10) untuk menurunkan harga.</p>
-                    </div>
-                    <div className="flex flex-col gap-2 w-full md:w-auto">
-                      <div className="flex flex-wrap gap-2 w-full">
-                        <button onClick={() => handleMassUpdate('sweet')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
-                          Terapkan ke <br/>Terang Bulan
-                        </button>
-                        <button onClick={() => handleMassUpdate('savory')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
-                          Terapkan ke <br/>Martabak Telor
-                        </button>
-                        <button onClick={() => handleMassUpdate('all')} className="flex-1 md:flex-none bg-brand-orange hover:bg-brand-orange/90 text-white px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-md text-center">
-                          Terapkan ke <br/>Semua Menu
-                        </button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 w-full mt-2 pt-4 border-t border-black/5 dark:border-white/5">
-                        <button onClick={() => handleResetToDefault('sweet')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
-                          Reset Terang Bulan
-                        </button>
-                        <button onClick={() => handleResetToDefault('savory')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
-                          Reset Martabak Telor
-                        </button>
-                        <button onClick={() => handleResetToDefault('all')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
-                          Reset Semua Menu
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                <div className="bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-brand-orange/20 hover:border-brand-orange/50 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('masal')} className="w-full p-6 flex justify-between items-center text-left">
+                    <span className="text-sm font-bold uppercase text-brand-orange">Manajemen Harga Massal</span>
+                    <ChevronDown className={`w-5 h-5 opacity-50 text-brand-orange transition-transform ${openAccordions['masal'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['masal'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="flex flex-col md:flex-row gap-4 items-end pt-2 border-t border-brand-orange/10">
+                          <div className="flex-1 w-full">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Persentase Kenaikan / Penurunan (%)</label>
+                            <div className="relative">
+                              <input 
+                                type="number"
+                                value={massUpdatePercent}
+                                onChange={(e) => setMassUpdatePercent(Number(e.target.value))}
+                                className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-bold focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all text-lg"
+                                placeholder="Misal: 10 atau -10"
+                              />
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">%</span>
+                            </div>
+                            <p className="text-xs font-medium opacity-60 mt-2">Gunakan angka minus (misal: -10) untuk menurunkan harga.</p>
+                          </div>
+                          <div className="flex flex-col gap-2 w-full md:w-auto">
+                            <div className="flex flex-wrap gap-2 w-full">
+                              <button onClick={() => handleMassUpdate('sweet')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
+                                Terapkan ke <br/>Terang Bulan
+                              </button>
+                              <button onClick={() => handleMassUpdate('savory')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
+                                Terapkan ke <br/>Martabak Telor
+                              </button>
+                              <button onClick={() => handleMassUpdate('all')} className="flex-1 md:flex-none bg-brand-orange hover:bg-brand-orange/90 text-white px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-md text-center">
+                                Terapkan ke <br/>Semua Menu
+                              </button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 w-full mt-2 pt-4 border-t border-black/5 dark:border-white/5">
+                              <button onClick={() => handleResetToDefault('sweet')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
+                                Reset Terang Bulan
+                              </button>
+                              <button onClick={() => handleResetToDefault('savory')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
+                                Reset Martabak Telor
+                              </button>
+                              <button onClick={() => handleResetToDefault('all')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
+                                Reset Semua Menu
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
 
               {/* Holiday Management */}
-              <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent transition-all mb-8">
-                <div className="flex justify-between items-center mb-5">
-                  <label className="block text-sm font-bold uppercase opacity-70">Jadwal Libur Toko</label>
-                  <button onClick={addHoliday} className="flex items-center gap-1 text-sm bg-brand-orange/10 text-brand-orange px-3 py-1.5 rounded-lg hover:bg-brand-orange hover:text-white transition-colors cursor-pointer font-bold">
-                    <Plus className="w-4 h-4" /> Tambah Libur
-                  </button>
-                </div>
-                {(!config.storeSettings.holidays || config.storeSettings.holidays.length === 0) ? (
-                  <p className="text-sm opacity-50 italic">Belum ada tanggal libur yang diatur.</p>
-                ) : (
-                  <div className="flex flex-wrap gap-3">
-                    {config.storeSettings.holidays.map((dateStr: string, idx: number) => (
-                      <div key={idx} className="flex items-center bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-2 gap-2">
-                        <input 
-                          type="date" 
-                          value={dateStr}
-                          onChange={(e) => updateHoliday(idx, e.target.value)}
-                          className="bg-transparent border-none focus:outline-none text-sm font-bold px-2 py-1"
-                        />
-                        <button onClick={() => removeHoliday(idx)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer" title="Hapus"><Trash2 className="w-4 h-4" /></button>
+              <div className="bg-teal-50/50 dark:bg-teal-900/10 rounded-2xl shadow-sm border border-transparent hover:border-teal-500/30 transition-all overflow-hidden mb-8">
+                <button onClick={() => toggleAccordion('libur')} className="w-full p-6 flex justify-between items-center text-left">
+                  <span className="text-sm font-bold uppercase opacity-80">Jadwal Libur Toko</span>
+                  <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['libur'] ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                  {openAccordions['libur'] && (
+                    <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                      <div className="flex justify-end mb-5 pt-2 border-t border-black/5 dark:border-white/5">
+                        <button onClick={addHoliday} className="flex items-center gap-1 text-sm bg-brand-orange/10 text-brand-orange px-3 py-1.5 rounded-lg hover:bg-brand-orange hover:text-white transition-colors cursor-pointer font-bold">
+                          <Plus className="w-4 h-4" /> Tambah Libur
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      {(!config.storeSettings.holidays || config.storeSettings.holidays.length === 0) ? (
+                        <p className="text-sm opacity-50 italic">Belum ada tanggal libur yang diatur.</p>
+                      ) : (
+                        <div className="flex flex-wrap gap-3">
+                          {config.storeSettings.holidays.map((dateObj: any, idx: number) => {
+                            const start = typeof dateObj === 'string' ? dateObj : (dateObj?.start || '');
+                            const end = typeof dateObj === 'string' ? dateObj : (dateObj?.end || '');
+                            return (
+                            <div key={idx} className="flex flex-col gap-2 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-3 w-full md:w-auto">
+                              <div className="flex items-center justify-between gap-2 border-b border-black/5 dark:border-white/5 pb-2">
+                                <span className="text-xs font-bold opacity-60">Libur #{idx + 1}</span>
+                                <button onClick={() => removeHoliday(idx)} className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer" title="Hapus"><Trash2 className="w-4 h-4" /></button>
+                              </div>
+                              <div className="flex flex-col sm:flex-row items-center gap-3">
+                                <div className="flex flex-col w-full">
+                                  <span className="text-[10px] opacity-50 font-bold ml-1 mb-1">Mulai</span>
+                                  <div className="relative group flex flex-col">
+                                    <DatePicker
+                                      selected={start ? parseISO(start) : null}
+                                      onChange={(date) => updateHoliday(idx, 'start', date ? format(date, 'yyyy-MM-dd') : '')}
+                                      dateFormat="d MMM yyyy"
+                                      locale="id"
+                                      placeholderText="Pilih tgl..."
+                                      className="w-full bg-black/5 dark:bg-white/5 border border-transparent hover:border-black/10 dark:hover:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 text-sm font-bold pl-9 pr-3 py-2 rounded-lg transition-all dark:[color-scheme:dark]"
+                                    />
+                                    <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-40 group-hover:opacity-80 transition-opacity pointer-events-none z-10" />
+                                  </div>
+                                </div>
+                                <span className="opacity-30 mt-4 hidden sm:block">➔</span>
+                                <div className="flex flex-col w-full">
+                                  <span className="text-[10px] opacity-50 font-bold ml-1 mb-1">Selesai</span>
+                                  <div className="relative group flex flex-col">
+                                    <DatePicker
+                                      selected={end ? parseISO(end) : null}
+                                      onChange={(date) => updateHoliday(idx, 'end', date ? format(date, 'yyyy-MM-dd') : '')}
+                                      dateFormat="d MMM yyyy"
+                                      locale="id"
+                                      placeholderText="Pilih tgl..."
+                                      className="w-full bg-black/5 dark:bg-white/5 border border-transparent hover:border-black/10 dark:hover:border-white/10 focus:outline-none focus:ring-2 focus:ring-brand-orange/50 text-sm font-bold pl-9 pr-3 py-2 rounded-lg transition-all dark:[color-scheme:dark]"
+                                    />
+                                    <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-40 group-hover:opacity-80 transition-opacity pointer-events-none z-10" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )})}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
 
