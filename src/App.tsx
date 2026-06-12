@@ -517,23 +517,54 @@ export default function App() {
 
   if (actuallyEmergencyClosed) {
     return (
-      <div className="min-h-screen bg-brand-yellow dark:bg-brand-black flex flex-col items-center justify-center p-6 text-center text-brand-black dark:text-brand-yellow">
+      <div className="min-h-screen bg-brand-black flex flex-col items-center justify-center p-6 text-center overflow-hidden relative">
         <SEO title={`Maintenance - ${storeName}`} description="Toko sedang dalam perbaikan." />
-        <motion.div initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="bg-white dark:bg-black p-8 md:p-12 rounded-3xl shadow-2xl max-w-lg w-full border border-black/5 dark:border-white/5 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
-          <div className="w-20 h-20 bg-red-100 dark:bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <AlertCircle className="w-10 h-10" />
+        
+        {/* Animated Background Blobs */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-brand-orange/20 blur-[120px]"
+          />
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.3, 1],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            className="absolute top-[60%] -right-[10%] w-[60%] h-[60%] rounded-full bg-brand-yellow/10 blur-[100px]"
+          />
+        </div>
+
+        <motion.div 
+          initial={{opacity:0, y: 30}} 
+          animate={{opacity:1, y: 0}} 
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="bg-white/10 dark:bg-black/40 backdrop-blur-3xl p-8 md:p-12 rounded-[2.5rem] shadow-2xl max-w-lg w-full border border-white/20 dark:border-white/10 relative z-10"
+        >
+          <div className="w-24 h-24 bg-gradient-to-br from-brand-orange to-red-500 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner shadow-white/30 rotate-3 hover:rotate-0 transition-transform duration-300 relative">
+            <div className="absolute inset-0 bg-white/20 rounded-[2rem] blur-md mix-blend-overlay"></div>
+            <AlertCircle className="w-12 h-12 text-white relative z-10 drop-shadow-md" strokeWidth={2} />
           </div>
-          <h1 className="text-2xl md:text-3xl font-black uppercase mb-4 text-brand-black dark:text-brand-yellow">Toko Sedang Tutup</h1>
-          <p className="text-lg opacity-70 mb-6 font-medium whitespace-pre-line">{storeSettings.maintenanceReason || "Mohon maaf, layanan kami saat ini sedang tidak tersedia (mungkin karena bahan habis atau pemeliharaan sistem)."}</p>
+          
+          <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-4 text-white drop-shadow-md">
+            Toko Sedang Tutup
+          </h1>
+          <p className="text-lg text-white/80 mb-8 font-medium leading-relaxed whitespace-pre-line">
+            {storeSettings.maintenanceReason || "Mohon maaf, layanan kami saat ini sedang tidak tersedia. Kami sedang melakukan pemeliharaan sistem atau persiapan bahan."}
+          </p>
           
           {storeSettings.maintenanceEndTime && (
             <MaintenanceCountdown targetDateStr={storeSettings.maintenanceEndTime} />
           )}
           
-          <div className="border-t border-black/10 dark:border-white/10 pt-6">
-            <p className="text-sm opacity-60 mb-3 font-bold uppercase">Butuh Bantuan?</p>
-            <a href={`https://wa.me/${(storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-green-500 text-white px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform shadow-lg shadow-green-500/30">
+          <div className="border-t border-white/20 pt-8 mt-4">
+            <p className="text-xs tracking-[0.2em] text-white/60 mb-4 font-bold uppercase">Butuh Bantuan?</p>
+            <a href={`https://wa.me/${(storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-white text-brand-black px-8 py-4 rounded-2xl font-black hover:scale-105 active:scale-95 transition-all shadow-xl shadow-white/10">
               Hubungi via WhatsApp
             </a>
           </div>

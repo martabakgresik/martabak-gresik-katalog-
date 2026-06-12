@@ -52,18 +52,18 @@ export function MaintenanceCountdown({ targetDateStr }: MaintenanceCountdownProp
 
   if (!isValidDate) {
     return (
-      <div className="bg-brand-yellow/30 dark:bg-brand-yellow/10 p-4 rounded-xl mb-8 border border-brand-orange/20">
-        <p className="text-sm uppercase font-bold opacity-70 mb-1">Pesan / Keterangan:</p>
-        <p className="text-xl font-black text-brand-orange">{targetDateStr}</p>
+      <div className="bg-white/5 p-4 rounded-2xl mb-8 border border-white/10 backdrop-blur-md">
+        <p className="text-sm uppercase font-bold text-white/60 mb-1">Pesan / Keterangan:</p>
+        <p className="text-xl font-black text-brand-yellow">{targetDateStr}</p>
       </div>
     );
   }
 
   if (timeLeft === null) {
     return (
-      <div className="bg-green-500/10 p-4 rounded-xl mb-8 border border-green-500/20 text-green-600 dark:text-green-400">
-        <p className="text-xl font-black uppercase">Segera Buka!</p>
-        <p className="text-sm font-bold opacity-80">Waktu maintenance telah selesai, mohon refresh halaman.</p>
+      <div className="bg-green-500/20 p-5 rounded-2xl mb-8 border border-green-500/30 text-green-300 backdrop-blur-md">
+        <p className="text-2xl font-black uppercase tracking-wide mb-1">Segera Buka!</p>
+        <p className="text-sm font-medium opacity-90">Memuat ulang sistem...</p>
       </div>
     );
   }
@@ -71,42 +71,44 @@ export function MaintenanceCountdown({ targetDateStr }: MaintenanceCountdownProp
   const formatNumber = (num: number) => num.toString().padStart(2, '0');
 
   return (
-    <div className="bg-brand-yellow/30 dark:bg-brand-yellow/10 p-5 rounded-xl mb-8 border border-brand-orange/20">
-      <div className="flex items-center justify-center gap-2 mb-4">
-        <Clock className="w-5 h-5 text-brand-orange" />
-        <p className="text-sm uppercase font-bold opacity-70">Estimasi Buka Kembali</p>
+    <div className="bg-white/5 p-6 rounded-[2rem] mb-8 border border-white/10 backdrop-blur-md shadow-inner shadow-white/5">
+      <div className="flex items-center justify-center gap-2 mb-6">
+        <Clock className="w-5 h-5 text-brand-yellow" />
+        <p className="text-sm tracking-wider font-bold text-white/80 uppercase">Estimasi Buka Kembali</p>
       </div>
       
-      <div className="flex justify-center gap-3">
+      <div className="flex justify-center gap-4">
         {timeLeft.days > 0 && (
           <div className="flex flex-col items-center">
-            <div className="w-14 h-14 bg-white dark:bg-black rounded-xl flex items-center justify-center shadow-inner border border-black/5 dark:border-white/5">
-              <span className="text-2xl font-black text-brand-orange">{formatNumber(timeLeft.days)}</span>
+            <div className="w-16 h-16 bg-black/40 rounded-2xl flex items-center justify-center shadow-inner border border-white/10">
+              <span className="text-3xl font-black text-white">{formatNumber(timeLeft.days)}</span>
             </div>
-            <span className="text-[10px] font-bold uppercase mt-1 opacity-60">Hari</span>
+            <span className="text-[11px] font-bold tracking-wider text-white/50 uppercase mt-2">Hari</span>
           </div>
         )}
         <div className="flex flex-col items-center">
-          <div className="w-14 h-14 bg-white dark:bg-black rounded-xl flex items-center justify-center shadow-inner border border-black/5 dark:border-white/5">
-            <span className="text-2xl font-black text-brand-orange">{formatNumber(timeLeft.hours)}</span>
+          <div className="w-16 h-16 bg-black/40 rounded-2xl flex items-center justify-center shadow-inner border border-white/10">
+            <span className="text-3xl font-black text-white">{formatNumber(timeLeft.hours)}</span>
           </div>
-          <span className="text-[10px] font-bold uppercase mt-1 opacity-60">Jam</span>
+          <span className="text-[11px] font-bold tracking-wider text-white/50 uppercase mt-2">Jam</span>
+        </div>
+        <div className="flex flex-col items-center relative">
+          <div className="w-16 h-16 bg-black/40 rounded-2xl flex items-center justify-center shadow-inner border border-white/10">
+            <span className="text-3xl font-black text-white">{formatNumber(timeLeft.minutes)}</span>
+          </div>
+          <span className="text-[11px] font-bold tracking-wider text-white/50 uppercase mt-2">Menit</span>
+          <div className="absolute top-1/3 -right-2.5 text-white/30 font-black animate-pulse">:</div>
         </div>
         <div className="flex flex-col items-center">
-          <div className="w-14 h-14 bg-white dark:bg-black rounded-xl flex items-center justify-center shadow-inner border border-black/5 dark:border-white/5">
-            <span className="text-2xl font-black text-brand-orange">{formatNumber(timeLeft.minutes)}</span>
+          <div className="w-16 h-16 bg-brand-yellow/20 rounded-2xl flex items-center justify-center shadow-inner border border-brand-yellow/30 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-brand-yellow/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+            <span className="text-3xl font-black text-brand-yellow relative z-10">{formatNumber(timeLeft.seconds)}</span>
           </div>
-          <span className="text-[10px] font-bold uppercase mt-1 opacity-60">Menit</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="w-14 h-14 bg-white dark:bg-black rounded-xl flex items-center justify-center shadow-inner border border-black/5 dark:border-white/5">
-            <span className="text-2xl font-black text-brand-orange">{formatNumber(timeLeft.seconds)}</span>
-          </div>
-          <span className="text-[10px] font-bold uppercase mt-1 opacity-60">Detik</span>
+          <span className="text-[11px] font-bold tracking-wider text-brand-yellow/60 uppercase mt-2">Detik</span>
         </div>
       </div>
       
-      <p className="text-xs font-medium opacity-60 mt-4 text-center">
+      <p className="text-sm font-medium text-white/50 mt-6 text-center">
         {new Date(targetDateStr).toLocaleString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })} WIB
       </p>
     </div>
