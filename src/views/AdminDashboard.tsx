@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Save, AlertCircle, CheckCircle2, Lock, ArrowLeft, Settings, Pizza, EggFried, Eye, EyeOff, Download, Upload, Plus, Trash2, Search, Image, Star, LayoutDashboard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
+import { MENU_SWEET, MENU_SAVORY } from '../data/config';
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -260,6 +261,18 @@ export const AdminDashboard = () => {
     
     setConfig(newConfig);
     setMessage({ type: 'success', text: `Berhasil mengubah harga ${target === 'all' ? 'semua menu' : target === 'sweet' ? 'terang bulan' : 'martabak telor'} sebesar ${massUpdatePercent}%. Jangan lupa klik Simpan Pengaturan.` });
+  };
+
+  const handleResetToDefault = (target: 'sweet' | 'savory' | 'all') => {
+    const newConfig = { ...config };
+    if (target === 'sweet' || target === 'all') {
+      newConfig.menuSweet = JSON.parse(JSON.stringify(MENU_SWEET));
+    }
+    if (target === 'savory' || target === 'all') {
+      newConfig.menuSavory = JSON.parse(JSON.stringify(MENU_SAVORY));
+    }
+    setConfig(newConfig);
+    setMessage({ type: 'success', text: `Berhasil mereset harga ${target === 'all' ? 'semua menu' : target === 'sweet' ? 'terang bulan' : 'martabak telor'} ke bawaan pabrik. Jangan lupa klik Simpan Pengaturan.` });
   };
 
   // SWEET MANAGEMENT
@@ -869,16 +882,29 @@ export const AdminDashboard = () => {
                       </div>
                       <p className="text-xs font-medium opacity-60 mt-2">Gunakan angka minus (misal: -10) untuk menurunkan harga.</p>
                     </div>
-                    <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                      <button onClick={() => handleMassUpdate('sweet')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
-                        Terapkan ke <br/>Terang Bulan
-                      </button>
-                      <button onClick={() => handleMassUpdate('savory')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
-                        Terapkan ke <br/>Martabak Telor
-                      </button>
-                      <button onClick={() => handleMassUpdate('all')} className="flex-1 md:flex-none bg-brand-orange hover:bg-brand-orange/90 text-white px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-md text-center">
-                        Terapkan ke <br/>Semua Menu
-                      </button>
+                    <div className="flex flex-col gap-2 w-full md:w-auto">
+                      <div className="flex flex-wrap gap-2 w-full">
+                        <button onClick={() => handleMassUpdate('sweet')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
+                          Terapkan ke <br/>Terang Bulan
+                        </button>
+                        <button onClick={() => handleMassUpdate('savory')} className="flex-1 md:flex-none bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 px-4 py-3 rounded-xl font-bold text-sm transition-all border border-black/5 dark:border-white/5 text-center">
+                          Terapkan ke <br/>Martabak Telor
+                        </button>
+                        <button onClick={() => handleMassUpdate('all')} className="flex-1 md:flex-none bg-brand-orange hover:bg-brand-orange/90 text-white px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-md text-center">
+                          Terapkan ke <br/>Semua Menu
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 w-full mt-2 pt-4 border-t border-black/5 dark:border-white/5">
+                        <button onClick={() => handleResetToDefault('sweet')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
+                          Reset Terang Bulan
+                        </button>
+                        <button onClick={() => handleResetToDefault('savory')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
+                          Reset Martabak Telor
+                        </button>
+                        <button onClick={() => handleResetToDefault('all')} className="flex-1 md:flex-none bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 px-4 py-2 rounded-xl font-bold text-xs transition-all text-center">
+                          Reset Semua Menu
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
