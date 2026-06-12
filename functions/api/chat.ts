@@ -4,16 +4,15 @@ export const onRequestPost = async (context) => {
   try {
     const body = await request.json();
     const { messages, prompt, systemPrompt, model } = body;
-    const apiKey = env.POLLINATIONS_API_KEY || env.VITE_POLLINATIONS_API_KEY;
-
-    if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'API Key not configured on server' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
-    }
+    const apiKey = env.POLLINATIONS_API_KEY || env.VITE_POLLINATIONS_API_KEY || '';
 
     const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'Content-Type': 'application/json'
     };
+    
+    if (apiKey) {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
 
     let apiMessages = Array.isArray(messages) ? messages : null;
     
