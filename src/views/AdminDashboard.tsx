@@ -662,15 +662,51 @@ export const AdminDashboard = () => {
 
                 {/* Promo Setting */}
                 <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all">
-                  <label className="block text-sm font-bold mb-3 uppercase opacity-70 border-b border-black/10 dark:border-white/10 pb-2">Pesan Promo Banner</label>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      value={config.storeSettings.promoMessage || ''}
-                      onChange={(e) => updateStoreSetting('promoMessage', e.target.value)}
-                      className="flex-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                      placeholder="Contoh: Diskon 20% untuk semua menu!"
-                    />
+                  <label className="block text-sm font-bold mb-3 uppercase opacity-70 border-b border-black/10 dark:border-white/10 pb-2">Pengaturan Promo Banner</label>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-1">
+                      <label className="block text-xs font-bold mb-2 opacity-70">Kode Promo (Kosongkan untuk menonaktifkan banner)</label>
+                      <input 
+                        type="text" 
+                        value={config.storeSettings.activePromoCode || ''}
+                        onChange={(e) => updateStoreSetting('activePromoCode', e.target.value)}
+                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all uppercase"
+                        placeholder="Contoh: MARTABAKBARU"
+                      />
+                    </div>
+                    <div className="w-full md:w-1/3">
+                      <label className="block text-xs font-bold mb-2 opacity-70">Diskon (%)</label>
+                      <div className="relative">
+                        <input 
+                          type="number" 
+                          min="0" max="100"
+                          value={config.storeSettings.activePromoPercent || ''}
+                          onChange={(e) => updateStoreSetting('activePromoPercent', e.target.value === '' ? 0 : Number(e.target.value))}
+                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                          placeholder="0"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tutup Darurat (Maintenance) */}
+                <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all md:col-span-2 mt-4 mb-4 border-l-4 border-l-red-500">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-lg text-red-600 dark:text-red-400">Mode Tutup Darurat / Maintenance</h3>
+                      <p className="text-sm opacity-70 mt-1">Aktifkan ini jika toko harus ditutup mendadak (misalnya bahan habis atau sistem maintenance).</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer"
+                        checked={config.storeSettings.isEmergencyClosed ? true : false}
+                        onChange={(e) => updateStoreSetting('isEmergencyClosed', e.target.checked ? 1 : 0)}
+                      />
+                      <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                    </label>
                   </div>
                 </div>
                 
