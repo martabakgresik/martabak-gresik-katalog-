@@ -14,7 +14,7 @@ export const onRequestOptions = () => new Response(null, { headers: corsHeaders 
 
 export const onRequestGet = async (context) => {
   const { env } = context;
-  const d1 = env.MARTABAK_D1;
+  const d1 = env.MARTABAK_D1 || env["MARTABAK_D1 "] || env["MARTABAK_D1  "];
   
   let config = {
     storeSettings: {

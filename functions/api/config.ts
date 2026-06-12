@@ -6,7 +6,7 @@ import {
 
 export const onRequestGet = async (context) => {
   const { env } = context;
-  const d1 = env.MARTABAK_D1;
+  const d1 = env.MARTABAK_D1 || env["MARTABAK_D1 "] || env["MARTABAK_D1  "];
   
   const defaults = {
     storeSettings: {
@@ -85,7 +85,7 @@ export const onRequestGet = async (context) => {
 
 export const onRequestPost = async (context) => {
   const { request, env } = context;
-  const d1 = env.MARTABAK_D1;
+  const d1 = env.MARTABAK_D1 || env["MARTABAK_D1 "] || env["MARTABAK_D1  "];
   
   try {
     const body = await request.json();
