@@ -735,7 +735,7 @@ export const AdminDashboard = () => {
                                   method: 'POST',
                                   headers: { 'Content-Type': 'application/json' },
                                   body: JSON.stringify({
-                                    prompt: 'Buatkan 1 kalimat (maksimal 20 kata) lucu, santai, dan menarik yang menjelaskan bahwa toko martabak gresik sedang tutup sementara karena suatu alasan (bisa karena kehabisan bahan, istirahat, atau cuaca). Jangan gunakan tanda kutip.',
+                                    prompt: 'Buatkan 1 kalimat (maksimal 20 kata) yang profesional, sopan, dan jelas untuk menginformasikan pelanggan bahwa layanan toko Martabak Gresik sedang ditutup sementara (bisa karena pemeliharaan rutin, kehabisan bahan, atau cuaca buruk). Jangan gunakan tanda kutip.',
                                     model: 'openai'
                                   })
                                 });
