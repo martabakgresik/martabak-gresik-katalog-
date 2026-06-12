@@ -713,11 +713,10 @@ export const AdminDashboard = () => {
                     <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10 animate-fade-in">
                       <label className="block text-sm font-bold mb-2 opacity-80">Pesan / Kapan Aktif Kembali?</label>
                       <input 
-                        type="text" 
+                        type="datetime-local" 
                         value={config.storeSettings.maintenanceEndTime || ''}
                         onChange={(e) => updateStoreSetting('maintenanceEndTime', e.target.value)}
                         className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
-                        placeholder="Contoh: Buka kembali besok jam 15:00 WIB"
                       />
                     </div>
                   ) : null}
