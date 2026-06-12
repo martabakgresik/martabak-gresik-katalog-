@@ -167,6 +167,7 @@ export const AdminDashboard = () => {
         const data = await res.json();
         if (!data.menuSweet) data.menuSweet = [];
         if (!data.menuSavory) data.menuSavory = [];
+        if (!data.storeSettings) data.storeSettings = {};
         if (!data.storeSettings.holidays) data.storeSettings.holidays = [];
         setConfig(data);
       }
