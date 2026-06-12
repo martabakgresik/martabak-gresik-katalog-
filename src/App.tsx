@@ -29,6 +29,7 @@ import { AboutMe } from "./components/AboutMe";
 import { CookieConsent } from "./components/CookieConsent";
 import { BlogView } from "./components/BlogView";
 import { SEO } from "./components/SEO";
+import { MaintenanceCountdown } from "./components/MaintenanceCountdown";
 import { FAQ } from "./components/FAQ";
 import { Header } from "./components/layout/Header";
 import { Footer } from "./components/layout/Footer";
@@ -445,10 +446,7 @@ export default function App() {
           <p className="text-lg opacity-70 mb-6 font-medium">Mohon maaf, layanan kami saat ini sedang tidak tersedia (mungkin karena bahan habis atau pemeliharaan sistem).</p>
           
           {storeSettings.maintenanceEndTime && (
-            <div className="bg-brand-yellow/30 dark:bg-brand-yellow/10 p-4 rounded-xl mb-8 border border-brand-orange/20">
-              <p className="text-sm uppercase font-bold opacity-70 mb-1">Kapan Aktif Kembali?</p>
-              <p className="text-xl font-black text-brand-orange">{storeSettings.maintenanceEndTime}</p>
-            </div>
+            <MaintenanceCountdown targetDateStr={storeSettings.maintenanceEndTime} />
           )}
           
           <div className="border-t border-black/10 dark:border-white/10 pt-6">
