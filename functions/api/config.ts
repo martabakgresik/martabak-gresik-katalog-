@@ -14,7 +14,7 @@ export const onRequestGet = async (context) => {
       activePromoPercent: PROMO_PERCENT, shippingRate: SHIPPING_RATE_PER_KM,
       maxDistance: MAX_SHIPPING_DISTANCE, holidays: HOLIDAYS,
       storeName: STORE_NAME, storeAddress: STORE_ADDRESS, storePhone: STORE_PHONE,
-      isEmergencyClosed: false, promoStartAt: null, promoEndAt: null
+      isEmergencyClosed: false, maintenanceEndTime: '', promoStartAt: null, promoEndAt: null
     },
     menuSweet: MENU_SWEET,
     menuSavory: MENU_SAVORY
@@ -41,7 +41,8 @@ export const onRequestGet = async (context) => {
         storeName: settingsRow.store_name,
         storeAddress: settingsRow.store_address,
         storePhone: settingsRow.store_phone,
-        isEmergencyClosed: Boolean(settingsRow.is_emergency_closed)
+        isEmergencyClosed: Boolean(settingsRow.is_emergency_closed),
+        maintenanceEndTime: settingsRow.maintenance_end_time || ''
       };
     }
 
@@ -100,11 +101,11 @@ export const onRequestPost = async (context) => {
       UPDATE store_settings SET 
         open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
         shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
-        is_emergency_closed = ?, holidays_json = ?
+        is_emergency_closed = ?, maintenance_end_time = ?, holidays_json = ?
       WHERE id = 1
     `).bind(
       s.openHour ?? 15, s.closeHour ?? 23, s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
-      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, JSON.stringify(s.holidays || [])
+      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', JSON.stringify(s.holidays || [])
     ).run();
 
     // UPDATE SWEET MENU (Clear and re-insert for sync)

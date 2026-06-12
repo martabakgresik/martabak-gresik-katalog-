@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  Plus
+  Plus,
+  AlertCircle
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart, type CartItem, type Addon, formatPrice } from "./hooks/useCart";
@@ -430,6 +431,36 @@ export default function App() {
     if (end && now > end) return false;
     return true;
   }, [storeSettings.promoStartAt, storeSettings.promoEndAt, isHoliday, isEmergencyClosed]);
+
+  if (isEmergencyClosed) {
+    return (
+      <div className="min-h-screen bg-brand-yellow dark:bg-brand-black flex flex-col items-center justify-center p-6 text-center text-brand-black dark:text-brand-yellow">
+        <SEO title={`Maintenance - ${storeName}`} description="Toko sedang dalam perbaikan." />
+        <motion.div initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="bg-white dark:bg-black p-8 md:p-12 rounded-3xl shadow-2xl max-w-lg w-full border border-black/5 dark:border-white/5 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+          <div className="w-20 h-20 bg-red-100 dark:bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-10 h-10" />
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black uppercase mb-4 text-brand-black dark:text-brand-yellow">Toko Sedang Tutup</h1>
+          <p className="text-lg opacity-70 mb-6 font-medium">Mohon maaf, layanan kami saat ini sedang tidak tersedia (mungkin karena bahan habis atau pemeliharaan sistem).</p>
+          
+          {storeSettings.maintenanceEndTime && (
+            <div className="bg-brand-yellow/30 dark:bg-brand-yellow/10 p-4 rounded-xl mb-8 border border-brand-orange/20">
+              <p className="text-sm uppercase font-bold opacity-70 mb-1">Kapan Aktif Kembali?</p>
+              <p className="text-xl font-black text-brand-orange">{storeSettings.maintenanceEndTime}</p>
+            </div>
+          )}
+          
+          <div className="border-t border-black/10 dark:border-white/10 pt-6">
+            <p className="text-sm opacity-60 mb-3 font-bold uppercase">Butuh Bantuan?</p>
+            <a href={`https://wa.me/${(storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-green-500 text-white px-6 py-3 rounded-xl font-bold hover:scale-105 transition-transform shadow-lg shadow-green-500/30">
+              Hubungi via WhatsApp
+            </a>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-brand-yellow dark:bg-brand-black text-brand-black dark:text-brand-yellow selection:bg-brand-orange selection:text-white transition-colors duration-300">

@@ -693,10 +693,10 @@ export const AdminDashboard = () => {
 
                 {/* Tutup Darurat (Maintenance) */}
                 <div className="p-6 bg-white/50 dark:bg-white/5 rounded-2xl shadow-sm border border-transparent hover:border-brand-orange/30 transition-all md:col-span-2 mt-4 mb-4 border-l-4 border-l-red-500">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-4">
                     <div>
                       <h3 className="font-bold text-lg text-red-600 dark:text-red-400">Mode Tutup Darurat / Maintenance</h3>
-                      <p className="text-sm opacity-70 mt-1">Aktifkan ini jika toko harus ditutup mendadak (misalnya bahan habis atau sistem maintenance).</p>
+                      <p className="text-sm opacity-70 mt-1">Aktifkan ini jika toko harus ditutup mendadak (misalnya bahan habis atau sistem maintenance). Mode ini akan memblokir semua akses pengunjung.</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input 
@@ -708,6 +708,19 @@ export const AdminDashboard = () => {
                       <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
                     </label>
                   </div>
+                  
+                  {config.storeSettings.isEmergencyClosed ? (
+                    <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10 animate-fade-in">
+                      <label className="block text-sm font-bold mb-2 opacity-80">Pesan / Kapan Aktif Kembali?</label>
+                      <input 
+                        type="text" 
+                        value={config.storeSettings.maintenanceEndTime || ''}
+                        onChange={(e) => updateStoreSetting('maintenanceEndTime', e.target.value)}
+                        className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+                        placeholder="Contoh: Buka kembali besok jam 15:00 WIB"
+                      />
+                    </div>
+                  ) : null}
                 </div>
                 
                 {/* Shipping Rate */}

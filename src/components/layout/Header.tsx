@@ -55,11 +55,13 @@ export const Header: React.FC<HeaderProps> = ({
 
   const waPhone = (storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62');
 
+  const [isPromoDismissed, setIsPromoDismissed] = React.useState(false);
+
   return (
     <>
       {/* Promo Banner */}
       <AnimatePresence>
-        {(showPromo && isPromoScheduledActive) && (
+        {(!isPromoDismissed && isPromoScheduledActive && activePromoCode) && (
           <motion.div
             initial={{ y: -50 }}
             animate={{ y: 0 }}
@@ -68,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             {typeof t?.promoText === 'function' ? t.promoText(activePromoCode, activePromoPercent) : ""}
             <button
-              onClick={() => setUiState({ showPromo: false })}
+              onClick={() => setIsPromoDismissed(true)}
               className="p-1 hover:bg-white/20 rounded-full transition-colors"
             >
               <X className="w-3 h-3" />
