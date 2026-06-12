@@ -34,6 +34,7 @@ interface StoreSettings {
   isEmergencyClosed: boolean;
   promoStartAt: string | null;
   promoEndAt: string | null;
+  maintenanceEndTime?: string | null;
 }
 
 interface MenuState {
@@ -121,6 +122,7 @@ export const useAppStore = create<AppState>()(
           isEmergencyClosed: false,
           promoStartAt: null,
           promoEndAt: null,
+          maintenanceEndTime: null,
         },
         
         setStoreSettings: (settings) =>
