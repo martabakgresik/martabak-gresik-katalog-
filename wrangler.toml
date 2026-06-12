@@ -1,0 +1,6 @@
+name = "martabak-gresik-catalog"
+compatibility_date = "2024-03-20"
+[[d1_databases]]
+binding = "MARTABAK_D1"
+database_name = "martabak-db"
+database_id = "8e68712b-1597-4771-8938-95a60df9e8a9"
