@@ -494,7 +494,7 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="w-full min-h-screen pt-20 pb-12"
+              className="w-full min-h-screen bg-neutral-50 dark:bg-brand-black pb-12"
             >
               <SEO 
                 title={SEO_COPY[uiLang][currentView].title}

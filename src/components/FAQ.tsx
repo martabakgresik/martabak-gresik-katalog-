@@ -21,7 +21,7 @@ export const FAQ = ({ isPage = false, onClose }: { isPage?: boolean, onClose?: (
     <Container
       initial={isPage ? undefined : { opacity: 0 }}
       animate={isPage ? undefined : { opacity: 1 }}
-      className={isPage ? "min-h-screen bg-neutral-50 dark:bg-brand-black pb-20 mt-16 md:mt-24" : "fixed inset-0 z-[1200] flex items-center justify-center bg-brand-black/60 backdrop-blur-sm p-4"}
+      className={isPage ? "min-h-screen bg-neutral-50 dark:bg-brand-black pb-20 pt-8" : "fixed inset-0 z-[1200] flex items-center justify-center bg-brand-black/60 backdrop-blur-sm p-4"}
     >
       <motion.div
         initial={isPage ? { opacity: 0, y: 10 } : { opacity: 0, scale: 0.9, y: 20 }}

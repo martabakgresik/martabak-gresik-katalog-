@@ -33,7 +33,7 @@ export const LegalPages: React.FC<LegalPagesProps> = ({ type, onClose, isPage = 
       initial={isPage ? undefined : { opacity: 0 }}
       animate={isPage ? undefined : { opacity: 1 }}
       exit={isPage ? undefined : { opacity: 0 }}
-      className={isPage ? "min-h-screen bg-neutral-50 dark:bg-brand-black pb-20 mt-16 md:mt-24" : "fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md overflow-y-auto"}
+      className={isPage ? "min-h-screen bg-neutral-50 dark:bg-brand-black pb-20 pt-8" : "fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md overflow-y-auto"}
     >
       <motion.div
         initial={isPage ? { opacity: 0, y: 10 } : { scale: 0.9, y: 20 }}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Save, AlertCircle, CheckCircle2, Lock, ArrowLeft, Settings, Pizza, EggFried, Eye, EyeOff, Download, Upload, Plus, Trash2, Search, Image, Star } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Lock, ArrowLeft, Settings, Pizza, EggFried, Eye, EyeOff, Download, Upload, Plus, Trash2, Search, Image, Star, LayoutDashboard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 
@@ -14,7 +14,7 @@ export const AdminDashboard = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
-  const [activeTab, setActiveTab] = useState<'umum' | 'sweet' | 'savory'>('umum');
+  const [activeTab, setActiveTab] = useState<'overview' | 'umum' | 'sweet' | 'savory'>('overview');
   
   // Filter states
   const [searchSweet, setSearchSweet] = useState('');
@@ -25,6 +25,15 @@ export const AdminDashboard = () => {
   
   // Mass price update state
   const [massUpdatePercent, setMassUpdatePercent] = useState<number>(10);
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean, title: string, message: string, onConfirm: () => void } | null>(null);
+
+  // Drag and Drop state
+  const [draggedSweetCat, setDraggedSweetCat] = useState<number | null>(null);
+  const [draggedSweetItem, setDraggedSweetItem] = useState<{catIdx: number, itemIdx: number} | null>(null);
+  const [draggedSavoryCat, setDraggedSavoryCat] = useState<number | null>(null);
+  const [draggedSavoryVariant, setDraggedSavoryVariant] = useState<{catIdx: number, varIdx: number} | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -253,8 +262,16 @@ export const AdminDashboard = () => {
     setConfig({ ...config, menuSweet: [{ category: 'Kategori Baru', items: [] }, ...config.menuSweet] });
   };
   const removeSweetCategory = (idx: number) => {
-    const newMenu = config.menuSweet.filter((_: any, i: number) => i !== idx);
-    setConfig({ ...config, menuSweet: newMenu });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Hapus Kategori',
+      message: 'Yakin ingin menghapus kategori ini beserta semua menunya?',
+      onConfirm: () => {
+        const newMenu = config.menuSweet.filter((_: any, i: number) => i !== idx);
+        setConfig({ ...config, menuSweet: newMenu });
+        setConfirmDialog(null);
+      }
+    });
   };
   const addSweetItem = (catIdx: number) => {
     const newMenu = [...config.menuSweet];
@@ -262,10 +279,17 @@ export const AdminDashboard = () => {
     setConfig({ ...config, menuSweet: newMenu });
   };
   const removeSweetItem = (catIdx: number, itemIdx: number) => {
-    if (!window.confirm('Yakin ingin menghapus menu ini?')) return;
-    const newMenu = [...config.menuSweet];
-    newMenu[catIdx].items.splice(itemIdx, 1);
-    setConfig({ ...config, menuSweet: newMenu });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Hapus Menu',
+      message: 'Yakin ingin menghapus menu ini?',
+      onConfirm: () => {
+        const newMenu = [...config.menuSweet];
+        newMenu[catIdx].items.splice(itemIdx, 1);
+        setConfig({ ...config, menuSweet: newMenu });
+        setConfirmDialog(null);
+      }
+    });
   };
 
   const toggleSweetBestSeller = (catIdx: number, itemIdx: number) => {
@@ -274,13 +298,46 @@ export const AdminDashboard = () => {
     setConfig({ ...config, menuSweet: newMenu });
   };
 
+  // Drag and drop handlers - Sweet
+  const handleSweetCatDrop = (idx: number) => {
+    if (draggedSweetCat !== null && draggedSweetCat !== idx && searchSweet === '') {
+      const newMenu = [...config.menuSweet];
+      const draggedItem = newMenu.splice(draggedSweetCat, 1)[0];
+      newMenu.splice(idx, 0, draggedItem);
+      setConfig({ ...config, menuSweet: newMenu });
+    }
+    setDraggedSweetCat(null);
+  };
+
+  const handleSweetItemDrop = (catIdx: number, itemIdx: number) => {
+    if (draggedSweetItem !== null && searchSweet === '') {
+      if (draggedSweetItem.catIdx === catIdx && draggedSweetItem.itemIdx === itemIdx) {
+        setDraggedSweetItem(null);
+        return;
+      }
+      const newMenu = [...config.menuSweet];
+      const draggedItem = newMenu[draggedSweetItem.catIdx].items.splice(draggedSweetItem.itemIdx, 1)[0];
+      newMenu[catIdx].items.splice(itemIdx, 0, draggedItem);
+      setConfig({ ...config, menuSweet: newMenu });
+    }
+    setDraggedSweetItem(null);
+  };
+
   // SAVORY MANAGEMENT
   const addSavoryCategory = () => {
     setConfig({ ...config, menuSavory: [{ title: 'Kategori Baru', variants: [] }, ...config.menuSavory] });
   };
   const removeSavoryCategory = (idx: number) => {
-    const newMenu = config.menuSavory.filter((_: any, i: number) => i !== idx);
-    setConfig({ ...config, menuSavory: newMenu });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Hapus Kategori',
+      message: 'Yakin ingin menghapus kategori ini beserta semua variannya?',
+      onConfirm: () => {
+        const newMenu = config.menuSavory.filter((_: any, i: number) => i !== idx);
+        setConfig({ ...config, menuSavory: newMenu });
+        setConfirmDialog(null);
+      }
+    });
   };
   const addSavoryVariant = (catIdx: number) => {
     const newMenu = [...config.menuSavory];
@@ -288,9 +345,17 @@ export const AdminDashboard = () => {
     setConfig({ ...config, menuSavory: newMenu });
   };
   const removeSavoryVariant = (catIdx: number, varIdx: number) => {
-    const newMenu = [...config.menuSavory];
-    newMenu[catIdx].variants = newMenu[catIdx].variants.filter((_: any, i: number) => i !== varIdx);
-    setConfig({ ...config, menuSavory: newMenu });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Hapus Varian',
+      message: 'Yakin ingin menghapus varian ini?',
+      onConfirm: () => {
+        const newMenu = [...config.menuSavory];
+        newMenu[catIdx].variants = newMenu[catIdx].variants.filter((_: any, i: number) => i !== varIdx);
+        setConfig({ ...config, menuSavory: newMenu });
+        setConfirmDialog(null);
+      }
+    });
   };
   const addSavoryPrice = (catIdx: number, varIdx: number) => {
     const newMenu = [...config.menuSavory];
@@ -298,9 +363,42 @@ export const AdminDashboard = () => {
     setConfig({ ...config, menuSavory: newMenu });
   };
   const removeSavoryPrice = (catIdx: number, varIdx: number, priceIdx: number) => {
-    const newMenu = [...config.menuSavory];
-    newMenu[catIdx].variants[varIdx].prices = newMenu[catIdx].variants[varIdx].prices.filter((_: any, i: number) => i !== priceIdx);
-    setConfig({ ...config, menuSavory: newMenu });
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Hapus Harga',
+      message: 'Yakin ingin menghapus harga ini?',
+      onConfirm: () => {
+        const newMenu = [...config.menuSavory];
+        newMenu[catIdx].variants[varIdx].prices = newMenu[catIdx].variants[varIdx].prices.filter((_: any, i: number) => i !== priceIdx);
+        setConfig({ ...config, menuSavory: newMenu });
+        setConfirmDialog(null);
+      }
+    });
+  };
+
+  // Drag and drop handlers - Savory
+  const handleSavoryCatDrop = (idx: number) => {
+    if (draggedSavoryCat !== null && draggedSavoryCat !== idx && searchSavory === '') {
+      const newMenu = [...config.menuSavory];
+      const draggedItem = newMenu.splice(draggedSavoryCat, 1)[0];
+      newMenu.splice(idx, 0, draggedItem);
+      setConfig({ ...config, menuSavory: newMenu });
+    }
+    setDraggedSavoryCat(null);
+  };
+
+  const handleSavoryVariantDrop = (catIdx: number, varIdx: number) => {
+    if (draggedSavoryVariant !== null && searchSavory === '') {
+      if (draggedSavoryVariant.catIdx === catIdx && draggedSavoryVariant.varIdx === varIdx) {
+        setDraggedSavoryVariant(null);
+        return;
+      }
+      const newMenu = [...config.menuSavory];
+      const draggedItem = newMenu[draggedSavoryVariant.catIdx].variants.splice(draggedSavoryVariant.varIdx, 1)[0];
+      newMenu[catIdx].variants.splice(varIdx, 0, draggedItem);
+      setConfig({ ...config, menuSavory: newMenu });
+    }
+    setDraggedSavoryVariant(null);
   };
 
   if (!isAuthenticated) {
@@ -415,6 +513,13 @@ export const AdminDashboard = () => {
         {/* Tab Navigation */}
         <div className="flex flex-wrap gap-2 p-2 bg-white/40 dark:bg-black/20 rounded-2xl border border-black/5 dark:border-white/5 mb-8">
           <button 
+            onClick={() => setActiveTab('overview')}
+            className={`flex-1 min-w-[120px] px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${activeTab === 'overview' ? 'bg-white dark:bg-brand-black shadow-md text-brand-orange scale-[1.02]' : 'opacity-60 hover:bg-white/50 dark:hover:bg-white/5 hover:opacity-100'}`}
+          >
+            <LayoutDashboard className="w-5 h-5" />
+            Ringkasan
+          </button>
+          <button 
             onClick={() => setActiveTab('umum')}
             className={`flex-1 min-w-[120px] px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${activeTab === 'umum' ? 'bg-white dark:bg-brand-black shadow-md text-brand-orange scale-[1.02]' : 'opacity-60 hover:bg-white/50 dark:hover:bg-white/5 hover:opacity-100'}`}
           >
@@ -440,6 +545,70 @@ export const AdminDashboard = () => {
         {/* Content Area */}
         <div className="bg-white dark:bg-brand-black rounded-[2rem] p-6 md:p-10 shadow-lg border border-black/5 dark:border-white/10 relative overflow-hidden">
           
+          {activeTab === 'overview' && (
+            <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{duration:0.3}}>
+              <div className="mb-8">
+                <h2 className="text-2xl font-black uppercase flex items-center gap-3">
+                  <span className="w-2 h-8 bg-brand-orange rounded-full"></span>
+                  Ringkasan Toko
+                </h2>
+                <p className="opacity-60 font-medium mt-2">Ringkasan status toko dan statistik menu saat ini.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white/50 dark:bg-white/5 p-6 rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex flex-col gap-2">
+                  <div className="w-10 h-10 rounded-full bg-brand-orange/10 text-brand-orange flex justify-center items-center mb-2">
+                    <Pizza className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold opacity-60">Total Terang Bulan</span>
+                  <span className="text-3xl font-black">{config.menuSweet?.reduce((acc: number, cat: any) => acc + (cat.items?.length || 0), 0) || 0} Menu</span>
+                </div>
+                
+                <div className="bg-white/50 dark:bg-white/5 p-6 rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex flex-col gap-2">
+                  <div className="w-10 h-10 rounded-full bg-brand-orange/10 text-brand-orange flex justify-center items-center mb-2">
+                    <EggFried className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold opacity-60">Total Martabak Telor</span>
+                  <span className="text-3xl font-black">{config.menuSavory?.reduce((acc: number, cat: any) => acc + (cat.variants?.reduce((varAcc: number, v: any) => varAcc + (v.prices?.length || 0), 0) || 0), 0) || 0} Varian</span>
+                </div>
+
+                <div className="bg-white/50 dark:bg-white/5 p-6 rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex flex-col gap-2">
+                  <div className="w-10 h-10 rounded-full bg-brand-orange/10 text-brand-orange flex justify-center items-center mb-2">
+                    <Settings className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold opacity-60">Jam Operasional</span>
+                  <span className="text-xl font-black">{config.storeSettings?.openHour ?? 15}.00 - {config.storeSettings?.closeHour ?? 23}.00</span>
+                </div>
+
+                <div className="bg-white/50 dark:bg-white/5 p-6 rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex flex-col gap-2">
+                  <div className="w-10 h-10 rounded-full bg-brand-orange/10 text-brand-orange flex justify-center items-center mb-2">
+                    <AlertCircle className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-bold opacity-60">Status Toko Saat Ini</span>
+                  <span className="text-xl font-black flex items-center gap-2">
+                    {(() => {
+                      const now = new Date();
+                      const dateString = now.toISOString().split('T')[0];
+                      const hour = now.getHours();
+                      const holidays = config.storeSettings?.holidays || [];
+                      const isEmergencyClosed = config.storeSettings?.isEmergencyClosed;
+                      const openHour = config.storeSettings?.openHour ?? 15;
+                      const closeHour = config.storeSettings?.closeHour ?? 23;
+                      
+                      const isHoliday = holidays.some((h: any) => h === dateString);
+                      const isOpen = !isHoliday && !isEmergencyClosed && (hour >= openHour && hour < closeHour);
+
+                      if (isEmergencyClosed) return <><span className="w-3 h-3 rounded-full bg-red-500"></span>Tutup Darurat</>;
+                      if (isHoliday) return <><span className="w-3 h-3 rounded-full bg-gray-500"></span>Libur</>;
+                      if (isOpen) return <><span className="w-3 h-3 rounded-full bg-green-500"></span>Buka</>;
+                      return <><span className="w-3 h-3 rounded-full bg-orange-500"></span>Tutup (Luar Jam Kerja)</>;
+                    })()}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === 'umum' && (
             <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{duration:0.3}}>
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
@@ -688,7 +857,24 @@ export const AdminDashboard = () => {
                       {cat.items.map((item: any, itemIdx: number) => {
                         const originalItemIdx = config.menuSweet[originalCatIdx].items.findIndex((i: any) => i.name === item.name);
                         return (
-                        <div key={itemIdx} className="flex flex-col gap-4 p-4 bg-white/60 dark:bg-black/40 rounded-2xl border border-transparent hover:border-brand-orange/30 transition-all shadow-sm group/item">
+                        <div 
+                          key={itemIdx} 
+                          draggable={searchSweet === ''}
+                          onDragStart={(e) => {
+                            e.stopPropagation();
+                            searchSweet === '' && setDraggedSweetItem({catIdx: originalCatIdx, itemIdx: originalItemIdx});
+                          }}
+                          onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                          onDrop={(e) => {
+                            e.stopPropagation();
+                            handleSweetItemDrop(originalCatIdx, originalItemIdx);
+                          }}
+                          onDragEnd={(e) => {
+                            e.stopPropagation();
+                            setDraggedSweetItem(null);
+                          }}
+                          className={`flex flex-col gap-4 p-4 bg-white/60 dark:bg-black/40 rounded-2xl border border-transparent hover:border-brand-orange/30 transition-all shadow-sm group/item ${draggedSweetItem?.catIdx === originalCatIdx && draggedSweetItem?.itemIdx === originalItemIdx ? 'opacity-50 scale-95' : ''}`}
+                        >
                           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mb-3">
                             <div className="flex items-center gap-3 flex-grow w-full">
                               <button onClick={() => toggleSweetBestSeller(originalCatIdx, originalItemIdx)} className={`p-2 rounded-xl transition-all cursor-pointer flex-shrink-0 ${item.isBestSeller ? 'bg-brand-orange text-white' : 'bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/40 hover:bg-black/10'}`} title={item.isBestSeller ? 'Hapus dari Best Seller' : 'Jadikan Best Seller'}>
@@ -925,6 +1111,50 @@ export const AdminDashboard = () => {
 
         </div>
       </div>
+
+      {/* Confirm Dialog Modal */}
+      <AnimatePresence>
+        {confirmDialog?.isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setConfirmDialog(null)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl border border-black/10 dark:border-white/10"
+            >
+              <div className="w-16 h-16 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <AlertCircle className="w-8 h-8" />
+              </div>
+              <h3 className="text-2xl font-black text-center mb-2">{confirmDialog.title}</h3>
+              <p className="text-center opacity-70 font-medium mb-8">
+                {confirmDialog.message}
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setConfirmDialog(null)}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 transition-all"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={confirmDialog.onConfirm}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 transition-all"
+                >
+                  Ya, Hapus
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };
