@@ -51,7 +51,7 @@ export const AdminDashboard = () => {
   const fetchConfig = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/config');
+      const res = await fetch(`/api/config?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (!data.menuSweet) data.menuSweet = [];
