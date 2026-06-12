@@ -171,23 +171,29 @@ export default function App() {
 
   // Event Modal Logic
   useEffect(() => {
-    if (!storeSettings.eventModalActive) {
-      setUiState({ isEventModalOpen: false });
-      return;
-    }
-    
-    const now = new Date().toISOString();
-    const isStarted = !storeSettings.eventModalStart || now >= storeSettings.eventModalStart;
-    const isEnded = storeSettings.eventModalEnd && now > storeSettings.eventModalEnd;
-    
-    if (isStarted && !isEnded) {
-      const dismissedTitle = localStorage.getItem('martabak_event_dismissed');
-      if (dismissedTitle !== storeSettings.eventModalTitle) {
-        setUiState({ isEventModalOpen: true });
+    const checkEventModal = () => {
+      if (!storeSettings.eventModalActive) {
+        setUiState({ isEventModalOpen: false });
+        return;
       }
-    } else {
-      setUiState({ isEventModalOpen: false });
-    }
+      
+      const now = new Date().toISOString();
+      const isStarted = !storeSettings.eventModalStart || now >= storeSettings.eventModalStart;
+      const isEnded = storeSettings.eventModalEnd && now > storeSettings.eventModalEnd;
+      
+      if (isStarted && !isEnded) {
+        const dismissedTitle = localStorage.getItem('martabak_event_dismissed');
+        if (dismissedTitle !== storeSettings.eventModalTitle) {
+          setUiState({ isEventModalOpen: true });
+        }
+      } else {
+        setUiState({ isEventModalOpen: false });
+      }
+    };
+
+    checkEventModal();
+    const timer = setInterval(checkEventModal, 60000); // Re-check every minute
+    return () => clearInterval(timer);
   }, [storeSettings.eventModalActive, storeSettings.eventModalStart, storeSettings.eventModalEnd, storeSettings.eventModalTitle, setUiState]);
 
   const handleDismissEventModal = () => {
