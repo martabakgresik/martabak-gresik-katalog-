@@ -433,6 +433,15 @@ export default function App() {
     return true;
   }, [storeSettings.promoStartAt, storeSettings.promoEndAt, isHoliday, isEmergencyClosed]);
 
+  if (!uiState.isConfigLoaded) {
+    return (
+      <div className="min-h-screen bg-brand-yellow dark:bg-brand-black flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 border-8 border-brand-black/20 dark:border-brand-yellow/20 border-t-brand-black dark:border-t-brand-yellow rounded-full animate-spin mb-4"></div>
+        <p className="text-brand-black dark:text-brand-yellow font-black uppercase tracking-widest animate-pulse">Memuat...</p>
+      </div>
+    );
+  }
+
   if (isEmergencyClosed) {
     return (
       <div className="min-h-screen bg-brand-yellow dark:bg-brand-black flex flex-col items-center justify-center p-6 text-center text-brand-black dark:text-brand-yellow">

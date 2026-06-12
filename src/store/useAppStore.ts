@@ -63,6 +63,7 @@ interface UIState {
   shareItem: { name: string; price: number; category?: string } | null;
   zoomedImage: { src: string; alt: string } | null;
   copied: boolean;
+  isConfigLoaded: boolean;
 }
 
 interface CheckoutState {
@@ -162,6 +163,7 @@ export const useAppStore = create<AppState>()(
           shareItem: null,
           zoomedImage: null,
           copied: false,
+          isConfigLoaded: false,
         },
 
         checkoutState: {
@@ -236,6 +238,10 @@ export const useAppStore = create<AppState>()(
             }
           } catch (e) {
             console.error('Failed to fetch config:', e);
+          } finally {
+            set((state) => ({
+              uiState: { ...state.uiState, isConfigLoaded: true }
+            }));
           }
         },
       }),
