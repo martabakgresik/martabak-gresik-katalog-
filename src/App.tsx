@@ -437,8 +437,12 @@ export default function App() {
   if (!uiState.isConfigLoaded) {
     return (
       <div className="min-h-screen bg-brand-yellow dark:bg-brand-black flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-16 h-16 border-8 border-brand-black/20 dark:border-brand-yellow/20 border-t-brand-black dark:border-t-brand-yellow rounded-full animate-spin mb-4"></div>
-        <p className="text-brand-black dark:text-brand-yellow font-black uppercase tracking-widest animate-pulse">Memuat...</p>
+        <div className="relative flex items-center justify-center mb-8">
+          <div className="absolute w-28 h-28 border-4 border-brand-black/10 dark:border-brand-yellow/10 border-t-brand-black dark:border-t-brand-yellow rounded-full animate-spin"></div>
+          <img src="/logo.webp" alt="Martabak Gresik" className="w-20 h-20 object-contain drop-shadow-xl animate-pulse" />
+        </div>
+        <h2 className="text-brand-black dark:text-brand-yellow font-black uppercase tracking-widest text-xl mb-2">Martabak Gresik</h2>
+        <p className="text-brand-black/70 dark:text-brand-yellow/70 text-sm font-medium">Memanaskan wajan dan menyiapkan menu...</p>
       </div>
     );
   }
