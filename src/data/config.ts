@@ -179,16 +179,16 @@ export const getMenuSavory = (t: any) => [
 
 // ➕ ADD-ONS (Tambahan)
 export const getAddonsSweet = (t: any): Addon[] => [
-  { name: t.addonCoklat, price: 3000 },
-  { name: t.addonKacang, price: 2000 },
-  { name: t.addonKeju, price: 7000 },
-  { name: t.addonMilo, price: 5000 },
+  { name: t.addonCoklat, price: 3000, minQty: 1, maxQty: 10, defaultQty: 1 },
+  { name: t.addonKacang, price: 2000, minQty: 1, maxQty: 10, defaultQty: 1 },
+  { name: t.addonKeju, price: 7000, minQty: 1, maxQty: 10, defaultQty: 1 },
+  { name: t.addonMilo, price: 5000, minQty: 1, maxQty: 10, defaultQty: 1 },
 ];
 
 export const getAddonsSavory = (t: any): Addon[] => [
   { name: t.addonSosis, price: 2000, minQty: 1, maxQty: 20, defaultQty: 3 },
-  { name: t.addonKornet, price: 13000, disabled: true },
-  { name: t.addonJamur, price: 10000, disabled: true },
+  { name: t.addonKornet, price: 13000, disabled: true, minQty: 1, maxQty: 10, defaultQty: 1 },
+  { name: t.addonJamur, price: 10000, disabled: true, minQty: 1, maxQty: 10, defaultQty: 1 },
   { name: t.addonAcar, price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
   { name: t.addonCabe, price: 400, minQty: 1, maxQty: 20, defaultQty: 5 },
   { name: t.addonSaus, price: 2000, minQty: 1, maxQty: 20, defaultQty: 1 },
