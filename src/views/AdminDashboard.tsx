@@ -23,6 +23,23 @@ export const AdminDashboard = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
   useEffect(() => {
+    const savedAuth = localStorage.getItem('mg_auth');
+    if (savedAuth) {
+      try {
+        const { pass, expiresAt } = JSON.parse(savedAuth);
+        if (Date.now() < expiresAt) {
+          setPassword(pass);
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem('mg_auth');
+        }
+      } catch (e) {
+        localStorage.removeItem('mg_auth');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (message) {
       const timer = setTimeout(() => setMessage(null), 3000);
       return () => clearTimeout(timer);
@@ -193,6 +210,7 @@ export const AdminDashboard = () => {
       const result = await res.json();
       if (res.ok && result.success) {
         setIsAuthenticated(true);
+        localStorage.setItem('mg_auth', JSON.stringify({ pass: password, expiresAt: Date.now() + 3600000 }));
         setMessage(null);
       } else {
         setMessage({ type: 'error', text: 'Password salah!' });
@@ -649,7 +667,7 @@ export const AdminDashboard = () => {
           </div>
           
           <div className="flex items-center">
-            <button onClick={() => {setIsAuthenticated(false); setPassword('');}} className="bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 text-brand-black dark:text-brand-yellow px-6 py-3 rounded-full font-bold transition-all flex items-center justify-center gap-2 cursor-pointer text-sm">
+            <button onClick={() => {setIsAuthenticated(false); setPassword(''); localStorage.removeItem('mg_auth');}} className="bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 text-brand-black dark:text-brand-yellow px-6 py-3 rounded-full font-bold transition-all flex items-center justify-center gap-2 cursor-pointer text-sm">
               <Lock className="w-4 h-4" />
               Logout
             </button>
