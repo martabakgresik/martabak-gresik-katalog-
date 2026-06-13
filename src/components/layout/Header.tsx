@@ -53,8 +53,11 @@ export const Header: React.FC<HeaderProps> = ({
     isEmergencyClosed,
     eventModalActive,
     eventModalStart,
-    eventModalEnd
+    eventModalEnd,
+    storeLogo
   } = storeSettings;
+
+  const currentLogo = storeLogo || "/logo.webp";
 
   const waPhone = (storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62');
 
@@ -159,12 +162,12 @@ export const Header: React.FC<HeaderProps> = ({
                 navigate('/');
               }}
             >
-              {!imagesLoaded['/logo.webp'] && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />}
+              {!imagesLoaded[currentLogo] && <div className="absolute inset-0 bg-white/10 animate-pulse rounded-2xl" />}
               <img
-                src="/logo.webp"
+                src={currentLogo}
                 alt="Logo"
-                className={`w-24 md:w-48 h-auto transition-opacity duration-500 ${imagesLoaded['/logo.webp'] ? 'opacity-100' : 'opacity-0'}`}
-                onLoad={() => handleImageLoad('/logo.webp')}
+                className={`w-24 md:w-48 h-auto transition-opacity duration-500 ${imagesLoaded[currentLogo] ? 'opacity-100' : 'opacity-0'}`}
+                onLoad={() => handleImageLoad(currentLogo)}
               />
             </div>
             <div className="text-left">
@@ -310,7 +313,7 @@ export const Header: React.FC<HeaderProps> = ({
         <header className="fixed top-0 left-0 w-full bg-brand-black/90 backdrop-blur-md text-white py-4 px-6 z-50 border-b border-white/10">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <div className="flex items-center gap-2 cursor-pointer" onClick={() => { setCurrentView('catalog'); navigate('/'); }}>
-              <img src="/logo.webp" alt="Logo" className="w-10 h-10 object-contain" />
+              <img src={currentLogo} alt="Logo" className="w-10 h-10 object-contain" />
               <span className="font-display font-black uppercase text-brand-yellow">{storeName}</span>
             </div>
             <button onClick={() => { setCurrentView('catalog'); navigate('/'); }} className="text-[10px] font-black uppercase tracking-widest text-brand-orange flex items-center gap-1">

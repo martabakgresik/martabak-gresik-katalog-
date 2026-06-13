@@ -1,7 +1,7 @@
 import {
   OPEN_HOUR, CLOSE_HOUR, PROMO_CODE, PROMO_PERCENT, SHIPPING_RATE_PER_KM, 
   MAX_SHIPPING_DISTANCE, HOLIDAYS, MENU_SWEET, MENU_SAVORY, 
-  STORE_NAME, STORE_ADDRESS, STORE_PHONE
+  STORE_NAME, STORE_ADDRESS, STORE_PHONE, ADDONS_SWEET, ADDONS_SAVORY
 } from '../../src/data/config';
 
 export const onRequestGet = async (context) => {
@@ -14,11 +14,14 @@ export const onRequestGet = async (context) => {
       activePromoPercent: PROMO_PERCENT, shippingRate: SHIPPING_RATE_PER_KM,
       maxDistance: MAX_SHIPPING_DISTANCE, holidays: HOLIDAYS,
       storeName: STORE_NAME, storeAddress: STORE_ADDRESS, storePhone: STORE_PHONE,
-      isEmergencyClosed: false, maintenanceEndTime: '', maintenanceReason: '', promoStartAt: null, promoEndAt: null,
-      eventModalActive: false, eventModalTitle: '', eventModalContent: '', eventModalImage: '', eventModalStart: '', eventModalEnd: ''
+      isEmergencyClosed: false, maintenanceEndTime: '', maintenanceReason: '', maintenanceTitle: '', promoStartAt: null, promoEndAt: null,
+      eventModalActive: false, eventModalTitle: '', eventModalContent: '', eventModalImage: '', eventModalStart: '', eventModalEnd: '',
+      storeLogo: '/logo.webp', maintenanceLogo: ''
     },
     menuSweet: MENU_SWEET,
-    menuSavory: MENU_SAVORY
+    menuSavory: MENU_SAVORY,
+    addonsSweet: ADDONS_SWEET,
+    addonsSavory: ADDONS_SAVORY
   };
 
   if (!d1) return new Response(JSON.stringify({ error: 'DEBUG_ENV', keys: Object.keys(env) }), { status: 200, headers: { 'Content-Type': 'application/json' } });
@@ -45,12 +48,15 @@ export const onRequestGet = async (context) => {
         isEmergencyClosed: Boolean(settingsRow.is_emergency_closed),
         maintenanceEndTime: settingsRow.maintenance_end_time || '',
         maintenanceReason: settingsRow.maintenance_reason || '',
+        maintenanceTitle: settingsRow.maintenance_title || '',
         eventModalActive: Boolean(settingsRow.event_modal_active),
         eventModalTitle: settingsRow.event_modal_title || '',
         eventModalContent: settingsRow.event_modal_content || '',
         eventModalImage: settingsRow.event_modal_image || '',
         eventModalStart: settingsRow.event_modal_start || '',
-        eventModalEnd: settingsRow.event_modal_end || ''
+        eventModalEnd: settingsRow.event_modal_end || '',
+        storeLogo: settingsRow.store_logo || '/logo.webp',
+        maintenanceLogo: settingsRow.maintenance_logo || ''
       };
     }
 
@@ -85,6 +91,22 @@ export const onRequestGet = async (context) => {
       }));
     }
 
+    // Load Addons Sweet
+    const { results: dbAddonsSweet } = await d1.prepare("SELECT * FROM addons_sweet ORDER BY id").all();
+    if (dbAddonsSweet && dbAddonsSweet.length > 0) {
+      responseData.addonsSweet = dbAddonsSweet.map((a: any) => ({
+        name: a.name, price: a.price, minQty: a.min_qty, maxQty: a.max_qty, defaultQty: a.default_qty, disabled: Boolean(a.disabled)
+      }));
+    }
+
+    // Load Addons Savory
+    const { results: dbAddonsSavory } = await d1.prepare("SELECT * FROM addons_savory ORDER BY id").all();
+    if (dbAddonsSavory && dbAddonsSavory.length > 0) {
+      responseData.addonsSavory = dbAddonsSavory.map((a: any) => ({
+        name: a.name, price: a.price, minQty: a.min_qty, maxQty: a.max_qty, defaultQty: a.default_qty, disabled: Boolean(a.disabled)
+      }));
+    }
+
     return new Response(JSON.stringify(responseData), { 
       status: 200, 
       headers: { 
@@ -115,19 +137,30 @@ export const onRequestPost = async (context) => {
     if (adminPassword !== validPassword) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     if (!d1) return new Response(JSON.stringify({ error: 'D1 not configured' }), { status: 500 });
 
-    // UPDATE SETTINGS
+    const isValidImageUrl = (url) => {
+      if (!url) return true;
+      if (url.startsWith('/')) return true;
+      if (url.startsWith('http://') || url.startsWith('https://')) return true;
+      return false;
+    };
+
     const s = configData.storeSettings || {};
+
+    if (!isValidImageUrl(s.storeLogo) || !isValidImageUrl(s.maintenanceLogo) || !isValidImageUrl(s.eventModalImage)) {
+      return new Response(JSON.stringify({ error: 'Format URL Gambar tidak valid. Harus diawali http://, https://, atau /' }), { status: 400 });
+    }
+
     await d1.prepare(`
       UPDATE store_settings SET 
         open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
         shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
-        is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, holidays_json = ?,
-        event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?
+        is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, maintenance_title = ?, holidays_json = ?,
+        event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?
       WHERE id = 1
     `).bind(
       s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
-      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', JSON.stringify(s.holidays || []),
-      s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? ''
+      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', s.maintenanceTitle ?? '', JSON.stringify(s.holidays || []),
+      s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? ''
     ).run();
 
     // UPDATE SWEET MENU (Clear and re-insert for sync)
@@ -157,6 +190,24 @@ export const onRequestPost = async (context) => {
           await d1.prepare(`INSERT INTO menu_savory_prices (variant_id, qty, price, desc, image, is_best_seller, highlight) VALUES (?, ?, ?, ?, ?, ?, ?)`)
             .bind(varId, Number(p.qty) || 0, Number(p.price) || 0, p.desc ?? null, p.image ?? null, p.isBestSeller ? 1 : 0, p.highlight ? 1 : 0).run();
         }
+      }
+    }
+
+    // UPDATE ADDONS SWEET
+    if (configData.addonsSweet) {
+      await d1.prepare("DELETE FROM addons_sweet").run();
+      for (const a of configData.addonsSweet) {
+        await d1.prepare("INSERT INTO addons_sweet (name, price, min_qty, max_qty, default_qty, disabled) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(a.name ?? '', Number(a.price) || 0, Number(a.minQty) || 1, Number(a.maxQty) || 20, Number(a.defaultQty) || 1, a.disabled ? 1 : 0).run();
+      }
+    }
+
+    // UPDATE ADDONS SAVORY
+    if (configData.addonsSavory) {
+      await d1.prepare("DELETE FROM addons_savory").run();
+      for (const a of configData.addonsSavory) {
+        await d1.prepare("INSERT INTO addons_savory (name, price, min_qty, max_qty, default_qty, disabled) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(a.name ?? '', Number(a.price) || 0, Number(a.minQty) || 1, Number(a.maxQty) || 20, Number(a.defaultQty) || 1, a.disabled ? 1 : 0).run();
       }
     }
 

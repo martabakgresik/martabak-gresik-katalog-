@@ -10,7 +10,7 @@ import Papa from 'papaparse';
 
 // Register Indonesian locale for the calendar
 registerLocale('id', id);
-import { MENU_SWEET, MENU_SAVORY } from '../data/config';
+import { MENU_SWEET, MENU_SAVORY, ADDONS_SWEET, ADDONS_SAVORY } from '../data/config';
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export const AdminDashboard = () => {
     }
   }, [message]);
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'umum' | 'sweet' | 'savory'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'umum' | 'sweet' | 'savory' | 'addons'>('overview');
   
   // Filter states
   const [searchSweet, setSearchSweet] = useState('');
@@ -382,9 +382,14 @@ export const AdminDashboard = () => {
     const newConfig = { ...config };
     if (target === 'sweet' || target === 'all') {
       newConfig.menuSweet = JSON.parse(JSON.stringify(MENU_SWEET));
+      newConfig.addonsSweet = JSON.parse(JSON.stringify(ADDONS_SWEET));
     }
     if (target === 'savory' || target === 'all') {
       newConfig.menuSavory = JSON.parse(JSON.stringify(MENU_SAVORY));
+      newConfig.addonsSavory = JSON.parse(JSON.stringify(ADDONS_SAVORY));
+    }
+    if (target === 'all') {
+      newConfig.storeSettings = { ...newConfig.storeSettings, activePromoPercent: 10 };
     }
     setConfig(newConfig);
     setMessage({ type: 'success', text: `Berhasil mereset harga ${target === 'all' ? 'semua menu' : target === 'sweet' ? 'terang bulan' : 'martabak telor'} ke bawaan pabrik. Jangan lupa klik Simpan Pengaturan.` });
@@ -681,10 +686,17 @@ export const AdminDashboard = () => {
             <EggFried className="w-5 h-5" />
             Martabak Telor
           </button>
+          <button 
+            onClick={() => setActiveTab('addons')}
+            className={`flex-1 min-w-[120px] px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${activeTab === 'addons' ? 'bg-white dark:bg-brand-black shadow-md text-brand-orange scale-[1.02]' : 'opacity-60 hover:bg-white/50 dark:hover:bg-white/5 hover:opacity-100'}`}
+          >
+            <Plus className="w-5 h-5" />
+            Addons
+          </button>
         </div>
 
         {/* Content Area */}
-        <div className="bg-white dark:bg-brand-black rounded-[2rem] p-6 md:p-10 shadow-lg border border-black/5 dark:border-white/10 relative overflow-hidden">
+        <div className="bg-white dark:bg-brand-black rounded-[2rem] p-6 md:p-10 shadow-lg border border-black/5 dark:border-white/10 relative">
           
           {activeTab === 'overview' && (
             <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{duration:0.3}}>
@@ -816,6 +828,16 @@ export const AdminDashboard = () => {
                               rows={3}
                             />
                           </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-xs font-bold mb-2 opacity-70">URL Logo Toko</label>
+                            <input 
+                              type="text" 
+                              value={config.storeSettings.storeLogo || ''}
+                              onChange={(e) => updateStoreSetting('storeLogo', e.target.value)}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                              placeholder="/logo.webp atau https://..."
+                            />
+                          </div>
                         </div>
                       </motion.div>
                     )}
@@ -900,6 +922,44 @@ export const AdminDashboard = () => {
                         </div>
                       </div>
                       <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-sm font-bold opacity-80">URL Icon / Logo Maintenance</label>
+                        </div>
+                        <input 
+                          type="text"
+                          value={config.storeSettings.maintenanceLogo || ''}
+                          onChange={(e) => updateStoreSetting('maintenanceLogo', e.target.value)}
+                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 mb-2 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+                          placeholder="Kosongkan untuk menggunakan Logo Toko utama"
+                        />
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <button
+                            type="button"
+                            onClick={() => updateStoreSetting('maintenanceLogo', '/maintenance.png')}
+                            className="px-3 py-1.5 text-xs font-bold bg-black/5 dark:bg-white/10 rounded-lg hover:bg-brand-orange hover:text-white transition-colors"
+                          >
+                            Pakai /maintenance.png
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateStoreSetting('maintenanceLogo', '')}
+                            className="px-3 py-1.5 text-xs font-bold bg-black/5 dark:bg-white/10 rounded-lg hover:bg-brand-orange hover:text-white transition-colors"
+                          >
+                            Gunakan Logo Utama
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-sm font-bold opacity-80">Judul Pengumuman</label>
+                        </div>
+                        <input 
+                          type="text"
+                          value={config.storeSettings.maintenanceTitle || ''}
+                          onChange={(e) => updateStoreSetting('maintenanceTitle', e.target.value)}
+                          className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 mb-4 font-medium focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+                          placeholder="Contoh: Toko Sedang Tutup Sementara"
+                        />
                         <div className="flex justify-between items-center mb-2">
                           <label className="block text-sm font-bold opacity-80">Deskripsi / Alasan Tutup</label>
                           <button 
@@ -1041,7 +1101,7 @@ export const AdminDashboard = () => {
                 </div>
 
                 {/* Event Modal Pengumuman */}
-                <div className="bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl shadow-sm border border-transparent hover:border-purple-500/30 transition-all overflow-hidden">
+                <div className="bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl shadow-sm border border-transparent hover:border-purple-500/30 transition-all overflow-visible">
                   <button onClick={() => toggleAccordion('modal')} className="w-full p-6 flex justify-between items-center text-left">
                     <div className="flex flex-col">
                       <span className="text-sm font-bold uppercase opacity-80">Pengumuman / Modal Event</span>
@@ -1051,7 +1111,7 @@ export const AdminDashboard = () => {
                   </button>
                   <AnimatePresence>
                     {openAccordions['modal'] && (
-                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-visible">
                         <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5 pb-4">
                           <label className="text-sm font-bold opacity-70">Aktifkan Modal</label>
                           <label className="relative inline-flex items-center cursor-pointer">
@@ -1339,14 +1399,14 @@ export const AdminDashboard = () => {
               </div>
 
               {/* Holiday Management */}
-              <div className="bg-teal-50/50 dark:bg-teal-900/10 rounded-2xl shadow-sm border border-transparent hover:border-teal-500/30 transition-all overflow-hidden mb-8">
+              <div className="bg-teal-50/50 dark:bg-teal-900/10 rounded-2xl shadow-sm border border-transparent hover:border-teal-500/30 transition-all mb-8">
                 <button onClick={() => toggleAccordion('libur')} className="w-full p-6 flex justify-between items-center text-left">
                   <span className="text-sm font-bold uppercase opacity-80">Jadwal Libur Toko</span>
                   <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['libur'] ? 'rotate-180' : ''}`} />
                 </button>
                 <AnimatePresence>
                   {openAccordions['libur'] && (
-                    <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                    <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-visible">
                       <div className="flex justify-end mb-5 pt-2 border-t border-black/5 dark:border-white/5">
                         <button onClick={addHoliday} className="flex items-center gap-1 text-sm bg-brand-orange/10 text-brand-orange px-3 py-1.5 rounded-lg hover:bg-brand-orange hover:text-white transition-colors cursor-pointer font-bold">
                           <Plus className="w-4 h-4" /> Tambah Libur
@@ -1710,6 +1770,208 @@ export const AdminDashboard = () => {
                     <p className="text-sm opacity-60">Misal: Martabak Sultan</p>
                   </div>
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'addons' && (
+            <motion.div initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{duration:0.3}}>
+              <div className="mb-8">
+                <h2 className="text-2xl font-black uppercase flex items-center gap-3">
+                  <span className="w-2 h-8 bg-brand-orange rounded-full"></span>
+                  Harga Add-ons / Topping
+                </h2>
+                <p className="opacity-60 font-medium mt-2">Kelola topping tambahan untuk Terang Bulan dan Martabak Telor.</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                {/* SWEET ADDONS */}
+                <div className="bg-white/50 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-[2rem] p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-black flex items-center gap-2 text-brand-orange">
+                      <Pizza className="w-6 h-6" />
+                      Topping Manis
+                    </h3>
+                    <button onClick={() => {
+                      setConfig({...config, addonsSweet: [...(config.addonsSweet || []), { name: 'Topping Baru', price: 0, minQty: 1, maxQty: 20, defaultQty: 1, disabled: false }]});
+                    }} className="bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange p-2 rounded-xl transition-colors">
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    {(config.addonsSweet || []).map((addon: any, idx: number) => (
+                      <div key={idx} className="bg-white dark:bg-black/20 border border-black/5 dark:border-white/5 rounded-2xl p-4 flex flex-col gap-3 group relative">
+                        <div className="flex justify-between items-start gap-2">
+                          <input
+                            type="text"
+                            value={addon.name}
+                            onChange={(e) => {
+                              const newAddons = [...config.addonsSweet];
+                              newAddons[idx].name = e.target.value;
+                              setConfig({...config, addonsSweet: newAddons});
+                            }}
+                            className="font-bold text-lg bg-transparent border-b border-transparent focus:border-brand-orange focus:outline-none flex-1"
+                            placeholder="Nama Topping"
+                          />
+                          <button onClick={() => {
+                            const newAddons = [...config.addonsSweet];
+                            newAddons.splice(idx, 1);
+                            setConfig({...config, addonsSweet: newAddons});
+                          }} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/10 rounded-lg">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col flex-1">
+                            <span className="text-[10px] font-bold opacity-50 uppercase">Harga (+Rp)</span>
+                            <input
+                              type="number"
+                              value={addon.price}
+                              onChange={(e) => {
+                                const newAddons = [...config.addonsSweet];
+                                newAddons[idx].price = parseInt(e.target.value) || 0;
+                                setConfig({...config, addonsSweet: newAddons});
+                              }}
+                              className="font-black text-brand-orange bg-transparent focus:outline-none"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs font-bold opacity-60 flex items-center gap-1 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={!addon.disabled}
+                                onChange={(e) => {
+                                  const newAddons = [...config.addonsSweet];
+                                  newAddons[idx].disabled = !e.target.checked;
+                                  setConfig({...config, addonsSweet: newAddons});
+                                }}
+                                className="accent-brand-orange"
+                              /> Tersedia
+                            </label>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 border-t border-black/5 dark:border-white/5 pt-3 mt-1">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold opacity-50 uppercase mb-1">Min Qty</span>
+                            <input type="number" value={addon.minQty} onChange={e => { const n = [...config.addonsSweet]; n[idx].minQty = parseInt(e.target.value)||1; setConfig({...config, addonsSweet: n})}} className="bg-black/5 dark:bg-white/5 rounded-md px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 ring-brand-orange" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold opacity-50 uppercase mb-1">Max Qty</span>
+                            <input type="number" value={addon.maxQty} onChange={e => { const n = [...config.addonsSweet]; n[idx].maxQty = parseInt(e.target.value)||20; setConfig({...config, addonsSweet: n})}} className="bg-black/5 dark:bg-white/5 rounded-md px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 ring-brand-orange" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold opacity-50 uppercase mb-1">Default Qty</span>
+                            <input type="number" value={addon.defaultQty} onChange={e => { const n = [...config.addonsSweet]; n[idx].defaultQty = parseInt(e.target.value)||1; setConfig({...config, addonsSweet: n})}} className="bg-black/5 dark:bg-white/5 rounded-md px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 ring-brand-orange" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(config.addonsSweet?.length === 0) && (
+                      <div className="text-center p-6 opacity-50 font-bold border-2 border-dashed border-black/10 rounded-xl">Belum ada topping manis</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* SAVORY ADDONS */}
+                <div className="bg-white/50 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-[2rem] p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-black flex items-center gap-2 text-brand-orange">
+                      <EggFried className="w-6 h-6" />
+                      Topping Asin
+                    </h3>
+                    <button onClick={() => {
+                      setConfig({...config, addonsSavory: [...(config.addonsSavory || []), { name: 'Topping Baru', price: 0, minQty: 1, maxQty: 20, defaultQty: 1, disabled: false }]});
+                    }} className="bg-brand-orange/10 hover:bg-brand-orange/20 text-brand-orange p-2 rounded-xl transition-colors">
+                      <Plus className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="space-y-4">
+                    {(config.addonsSavory || []).map((addon: any, idx: number) => (
+                      <div key={idx} className="bg-white dark:bg-black/20 border border-black/5 dark:border-white/5 rounded-2xl p-4 flex flex-col gap-3 group relative">
+                        <div className="flex justify-between items-start gap-2">
+                          <input
+                            type="text"
+                            value={addon.name}
+                            onChange={(e) => {
+                              const newAddons = [...config.addonsSavory];
+                              newAddons[idx].name = e.target.value;
+                              setConfig({...config, addonsSavory: newAddons});
+                            }}
+                            className="font-bold text-lg bg-transparent border-b border-transparent focus:border-brand-orange focus:outline-none flex-1"
+                            placeholder="Nama Topping"
+                          />
+                          <button onClick={() => {
+                            const newAddons = [...config.addonsSavory];
+                            newAddons.splice(idx, 1);
+                            setConfig({...config, addonsSavory: newAddons});
+                          }} className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-500/10 rounded-lg">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="flex flex-col flex-1">
+                            <span className="text-[10px] font-bold opacity-50 uppercase">Harga (+Rp)</span>
+                            <input
+                              type="number"
+                              value={addon.price}
+                              onChange={(e) => {
+                                const newAddons = [...config.addonsSavory];
+                                newAddons[idx].price = parseInt(e.target.value) || 0;
+                                setConfig({...config, addonsSavory: newAddons});
+                              }}
+                              className="font-black text-brand-orange bg-transparent focus:outline-none"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs font-bold opacity-60 flex items-center gap-1 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                checked={!addon.disabled}
+                                onChange={(e) => {
+                                  const newAddons = [...config.addonsSavory];
+                                  newAddons[idx].disabled = !e.target.checked;
+                                  setConfig({...config, addonsSavory: newAddons});
+                                }}
+                                className="accent-brand-orange"
+                              /> Tersedia
+                            </label>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 border-t border-black/5 dark:border-white/5 pt-3 mt-1">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold opacity-50 uppercase mb-1">Min Qty</span>
+                            <input type="number" value={addon.minQty} onChange={e => { const n = [...config.addonsSavory]; n[idx].minQty = parseInt(e.target.value)||1; setConfig({...config, addonsSavory: n})}} className="bg-black/5 dark:bg-white/5 rounded-md px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 ring-brand-orange" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold opacity-50 uppercase mb-1">Max Qty</span>
+                            <input type="number" value={addon.maxQty} onChange={e => { const n = [...config.addonsSavory]; n[idx].maxQty = parseInt(e.target.value)||20; setConfig({...config, addonsSavory: n})}} className="bg-black/5 dark:bg-white/5 rounded-md px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 ring-brand-orange" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] font-bold opacity-50 uppercase mb-1">Default Qty</span>
+                            <input type="number" value={addon.defaultQty} onChange={e => { const n = [...config.addonsSavory]; n[idx].defaultQty = parseInt(e.target.value)||1; setConfig({...config, addonsSavory: n})}} className="bg-black/5 dark:bg-white/5 rounded-md px-2 py-1 text-sm font-bold text-center outline-none focus:ring-1 ring-brand-orange" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(config.addonsSavory?.length === 0) && (
+                      <div className="text-center p-6 opacity-50 font-bold border-2 border-dashed border-black/10 rounded-xl">Belum ada topping asin</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <button 
+                  onClick={handleSave} 
+                  disabled={saving}
+                  className="bg-brand-orange text-white px-8 py-4 rounded-2xl font-black uppercase tracking-wider hover:opacity-90 transition-all flex items-center gap-3 shadow-xl shadow-brand-orange/20 hover:-translate-y-1 active:translate-y-0 disabled:opacity-50"
+                >
+                  {saving ? (
+                    <><Loader2 className="w-6 h-6 animate-spin" /> MENYIMPAN...</>
+                  ) : (
+                    <><Save className="w-6 h-6" /> SIMPAN ADD-ONS</>
+                  )}
+                </button>
               </div>
             </motion.div>
           )}

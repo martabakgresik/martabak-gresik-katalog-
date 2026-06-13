@@ -10,7 +10,11 @@ import {
   PROMO_PERCENT, 
   SHIPPING_RATE_PER_KM, 
   MAX_SHIPPING_DISTANCE,
-  HOLIDAYS
+  HOLIDAYS,
+  MENU_SWEET,
+  MENU_SAVORY,
+  ADDONS_SWEET,
+  ADDONS_SAVORY
 } from '../data/config';
 import { UI_COPY } from '../data/i18n/appCopy';
 
@@ -42,11 +46,16 @@ interface StoreSettings {
   eventModalImage: string;
   eventModalStart: string;
   eventModalEnd: string;
+  maintenanceTitle?: string | null;
+  maintenanceLogo?: string | null;
+  storeLogo: string;
 }
 
 interface MenuState {
   menuSweet: any[];
   menuSavory: any[];
+  addonsSweet: any[];
+  addonsSavory: any[];
 }
 
 interface UIState {
@@ -139,6 +148,9 @@ export const useAppStore = create<AppState>()(
           eventModalImage: "",
           eventModalStart: "",
           eventModalEnd: "",
+          maintenanceTitle: null,
+          maintenanceLogo: null,
+          storeLogo: "/logo.webp",
         },
         
         setStoreSettings: (settings) =>
@@ -147,8 +159,10 @@ export const useAppStore = create<AppState>()(
           })),
 
         menuState: {
-          menuSweet: [],
-          menuSavory: [],
+          menuSweet: [...MENU_SWEET],
+          menuSavory: [...MENU_SAVORY],
+          addonsSweet: [...ADDONS_SWEET],
+          addonsSavory: [...ADDONS_SAVORY],
         },
 
         setMenuState: (state) =>
@@ -243,10 +257,12 @@ export const useAppStore = create<AppState>()(
             if (res.ok) {
               const data = await res.json();
               if (data.storeSettings) get().setStoreSettings(data.storeSettings);
-              if (data.menuSweet || data.menuSavory) {
+              if (data.menuSweet || data.menuSavory || data.addonsSweet || data.addonsSavory) {
                 get().setMenuState({
                   menuSweet: data.menuSweet || get().menuState.menuSweet,
-                  menuSavory: data.menuSavory || get().menuState.menuSavory
+                  menuSavory: data.menuSavory || get().menuState.menuSavory,
+                  addonsSweet: data.addonsSweet || get().menuState.addonsSweet,
+                  addonsSavory: data.addonsSavory || get().menuState.addonsSavory
                 });
               }
             }

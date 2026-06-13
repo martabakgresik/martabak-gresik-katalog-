@@ -620,7 +620,7 @@ FITUR KHUSUS:
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className="relative">
                   <div className="w-8 h-8 sm:w-9 sm:h-9 bg-brand-yellow rounded-full overflow-hidden flex items-center justify-center shadow-inner">
-                    <img src="/logo.webp" alt="Martabak Gresik Logo" className="w-full h-full object-cover" />
+                    <img src={storeSettings?.storeLogo || "/logo.webp"} alt="Martabak Gresik Logo" className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-brand-black shadow-[0_0_8px_rgba(34,197,94,0.8)] animate-[pulse_2s_ease-in-out_infinite]" title="AI Online" />
                 </div>

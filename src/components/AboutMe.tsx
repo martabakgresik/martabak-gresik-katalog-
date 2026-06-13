@@ -59,7 +59,7 @@ const ABOUT_COPY: Record<UiLang, {
 };
 
 export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => {
-  const { uiState } = useAppStore();
+  const { uiState, storeSettings } = useAppStore();
   const { uiLang } = uiState;
   const content = ABOUT_COPY[uiLang];
 
@@ -89,7 +89,7 @@ export const AboutMe: React.FC<AboutMeProps> = ({ onClose, isPage = false }) => 
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-tr from-brand-orange to-brand-yellow rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
               <img 
-                src="/logo.webp" 
+                src={storeSettings?.storeLogo || "/logo.webp"} 
                 alt="Martabak Gresik Logo" 
                 className="relative w-26 h-26 md:w-24 md:h-24 object-contain"
               />

@@ -38,6 +38,8 @@ export const SEO: React.FC<SEOProps> = ({
   const locale = lang === 'en' ? 'en_US' : 'id_ID';
 
   const { menuSweet, menuSavory } = useAppStore(state => state.menuState);
+  const { storeLogo } = useAppStore(state => state.storeSettings);
+  const currentLogo = storeLogo || '/logo.webp';
   const allMenu = [...menuSweet, ...menuSavory];
 
   const itemListSchema = (url === BASE_URL || url === `${BASE_URL}/`) && allMenu.length > 0 ? {
@@ -57,7 +59,7 @@ export const SEO: React.FC<SEOProps> = ({
     "name": SITE_NAME,
     "description": "Terang Bulan (Manis) dan Martabak Telor (Asin) Autentik dengan cita rasa premium. Buka setiap hari pukul 16.00–23.00 WIB.",
     "image": `${BASE_URL}/metaseo.webp`,
-    "logo": `${BASE_URL}/logo.webp`,
+    "logo": currentLogo.startsWith('http') ? currentLogo : `${BASE_URL}${currentLogo}`,
     "url": BASE_URL,
     "telephone": phone,
     "priceRange": "Rp",
@@ -130,7 +132,7 @@ export const SEO: React.FC<SEOProps> = ({
       "name": SITE_NAME,
       "logo": {
         "@type": "ImageObject",
-        "url": `${BASE_URL}/logo.webp`
+        "url": currentLogo.startsWith('http') ? currentLogo : `${BASE_URL}${currentLogo}`
       }
     },
     "publisher": {
@@ -138,7 +140,7 @@ export const SEO: React.FC<SEOProps> = ({
       "name": SITE_NAME,
       "logo": {
         "@type": "ImageObject",
-        "url": `${BASE_URL}/logo.webp`
+        "url": currentLogo.startsWith('http') ? currentLogo : `${BASE_URL}${currentLogo}`
       }
     },
     "mainEntityOfPage": {

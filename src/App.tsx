@@ -499,7 +499,7 @@ export default function App() {
       <div className="min-h-screen bg-brand-yellow dark:bg-brand-black flex flex-col items-center justify-center p-6 text-center">
         <div className="relative flex items-center justify-center mb-8">
           <div className="absolute w-28 h-28 border-4 border-brand-black/10 dark:border-brand-yellow/10 border-t-brand-black dark:border-t-brand-yellow rounded-full animate-spin"></div>
-          <img src="/logo.webp" alt="Martabak Gresik" className="w-20 h-20 object-contain drop-shadow-xl animate-pulse" />
+          <img src={storeSettings?.storeLogo || "/logo.webp"} alt="Martabak Gresik" className="w-20 h-20 object-contain drop-shadow-xl animate-pulse" />
         </div>
         <h2 className="text-brand-black dark:text-brand-yellow font-black uppercase tracking-widest text-xl mb-2">Martabak Gresik</h2>
         <p className="text-brand-black/70 dark:text-brand-yellow/70 text-sm font-medium animate-pulse">Memuat Katalog Menu...</p>
@@ -544,16 +544,16 @@ export default function App() {
           initial={{opacity:0, y: 30}} 
           animate={{opacity:1, y: 0}} 
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="bg-brand-black p-6 md:p-8 rounded-[2rem] shadow-2xl max-w-4xl w-full border border-black/10 dark:border-white/10 relative z-10 mx-auto"
+          className="bg-zinc-900 p-4 md:p-6 lg:p-8 rounded-[1.5rem] md:rounded-[2rem] shadow-2xl max-w-4xl w-full border border-white opacity-90 relative z-10 mx-auto"
         >
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-brand-yellow rounded-2xl md:rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-inner shadow-black/20 rotate-3 hover:rotate-0 transition-transform duration-300 relative">
-            <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-brand-black relative z-10 drop-shadow-sm" strokeWidth={2.5} />
+          <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center mx-auto mb-1 md:mb-2 hover:scale-105 transition-transform duration-300 relative overflow-hidden">
+            <img src={storeSettings?.maintenanceLogo || storeSettings?.storeLogo || "/logo.webp"} alt="Maintenance Logo" className="w-full h-full object-contain relative z-10 drop-shadow-sm" />
           </div>
           
-          <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tight mb-2 text-white">
-            Toko Sedang Tutup
+          <h1 className="text-xl md:text-3xl lg:text-4xl font-black uppercase tracking-tight mb-1 md:mb-2 text-white">
+            {storeSettings.maintenanceTitle || "Toko Sedang Tutup"}
           </h1>
-          <p className="text-sm md:text-base text-brand-yellow opacity-90 mb-6 font-medium leading-relaxed whitespace-pre-line max-w-2xl mx-auto">
+          <p className="text-xs md:text-sm lg:text-base mb-3 md:mb-4 font-medium leading-snug whitespace-pre-line max-w-2xl mx-auto text-yellow-300 drop-shadow-sm">
             {storeSettings.maintenanceReason || "Mohon maaf, layanan kami saat ini sedang tidak tersedia. Kami sedang melakukan pemeliharaan sistem atau persiapan bahan."}
           </p>
           
@@ -563,10 +563,10 @@ export default function App() {
             </div>
           )}
           
-          <div className="border-t border-white opacity-20 pt-4 md:pt-6 mt-2 md:mt-4"></div>
-          <div className="mt-2">
-            <p className="text-[10px] md:text-xs tracking-[0.2em] text-white opacity-50 mb-3 font-bold uppercase">Butuh Bantuan?</p>
-            <a href={`https://wa.me/${(storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-brand-yellow text-brand-black px-6 md:px-8 py-3 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:scale-105 active:scale-95 transition-all shadow-xl shadow-brand-yellow opacity-90">
+          <div className="border-t border-white opacity-20 pt-3 md:pt-5 mt-2 md:mt-3"></div>
+          <div className="mt-1 md:mt-2">
+            <p className="text-[9px] md:text-[10px] tracking-[0.2em] mb-2 font-bold uppercase text-white opacity-60">Butuh Bantuan?</p>
+            <a href={`https://wa.me/${(storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 bg-yellow-300 text-zinc-900 px-5 md:px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-black text-xs md:text-sm hover:scale-105 active:scale-95 transition-all shadow-xl">
               Hubungi via WhatsApp
             </a>
           </div>

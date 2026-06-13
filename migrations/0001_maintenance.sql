@@ -1,1 +1,0 @@
-﻿ALTER TABLE store_settings ADD COLUMN maintenance_end_time TEXT DEFAULT '';

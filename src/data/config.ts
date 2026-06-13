@@ -196,7 +196,40 @@ export const getAddonsSavory = (t: any): Addon[] => [
 ];
 
 // LEGACY EXPORTS (Optional: provide fallback for direct imports if needed, but better to update call sites)
-export const MENU_SWEET = getMenuSweet({ catSweetStandard: "Terang Bulan Standard", itemKacang: "Kacang", itemCoklat: "Coklat", itemKeju: "Keju", itemPandan: "Pandan", itemRedVelvet: "Red Velvet", itemBlackforest: "Blackforest" });
-export const MENU_SAVORY = getMenuSavory({ catSavoryBeef: "Daging Sapi", itemTelorAyam: "Telor Ayam", itemTelorBebek: "Telor Bebek", catSavoryChicken: "Daging Ayam", catSavorySpicy: "Menu Pedas", itemSamyangAyam: "Samyang Ayam Pedas", itemSamyangSapi: "Samyang Sapi Pedas" });
+export const MENU_SWEET = getMenuSweet({ 
+  catSweetStandard: "Terang Bulan Standard", 
+  itemKacang: "Kacang", 
+  itemCoklat: "Coklat", 
+  itemKeju: "Keju", 
+  itemPandan: "Pandan", 
+  itemRedVelvet: "Red Velvet", 
+  itemBlackforest: "Blackforest",
+  catSweetPandan: "Terang Bulan Pandan",
+  catSweetRedVelvet: "Terang Bulan Red Velvet",
+  catSweetBlackforest: "Terang Bulan Blackforest",
+  descKacang: "Topping kacang sangrai berlimpah",
+  descCoklat: "Coklat meses manis dan lumer",
+  descKacangCoklat: "Perpaduan klasik kacang dan coklat",
+  descKacangCoklatKeju: "Kombinasi juara kacang, coklat, dan keju",
+  descKeju: "Keju parut melimpah",
+  descKejuKacang: "Perpaduan gurih keju dan kacang",
+  descKejuCoklat: "Kombinasi keju dan coklat lumer",
+  descPandan: "Adonan pandan wangi",
+  descRedVelvet: "Adonan red velvet premium",
+  descBlackforest: "Adonan blackforest legit"
+});
+
+export const MENU_SAVORY = getMenuSavory({ 
+  catSavoryBeef: "Daging Sapi", 
+  itemTelorAyam: "Telor Ayam", 
+  itemTelorBebek: "Telor Bebek", 
+  catSavoryChicken: "Daging Ayam", 
+  catSavorySpicy: "Menu Pedas", 
+  itemSamyangAyam: "Samyang Ayam Pedas", 
+  itemSamyangSapi: "Samyang Sapi Pedas",
+  descSavoryStandard: "Martabak telor dengan daging pilihan",
+  descSavoryBebek: "Martabak telor bebek yang lebih gurih",
+  descSamyang: "Sensasi pedas samyang Korea"
+});
 export const ADDONS_SWEET = getAddonsSweet({ addonCoklat: "Tambah Coklat", addonKacang: "Tambah Kacang", addonKeju: "Tambah Keju", addonMilo: "Tambah Milo" });
 export const ADDONS_SAVORY = getAddonsSavory({ addonSosis: "Tambah Sosis", addonKornet: "Tambah Kornet", addonJamur: "Tambah Jamur", addonAcar: "Tambah Acar", addonCabe: "Tambah Irisan Cabe", addonSaus: "Tambah Saus", addonSambal: "Tambah Sambal Pedas" });
