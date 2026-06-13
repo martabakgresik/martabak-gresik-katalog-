@@ -176,10 +176,19 @@ export default function App() {
         setUiState({ isEventModalOpen: false });
         return;
       }
+      const now = new Date().getTime();
       
-      const now = new Date().toISOString();
-      const isStarted = !storeSettings.eventModalStart || now >= storeSettings.eventModalStart;
-      const isEnded = storeSettings.eventModalEnd && now > storeSettings.eventModalEnd;
+      let isStarted = true;
+      if (storeSettings.eventModalStart) {
+        const startDate = new Date(storeSettings.eventModalStart).getTime();
+        if (!isNaN(startDate)) isStarted = now >= startDate;
+      }
+      
+      let isEnded = false;
+      if (storeSettings.eventModalEnd) {
+        const endDate = new Date(storeSettings.eventModalEnd).getTime();
+        if (!isNaN(endDate)) isEnded = now > endDate;
+      }
       
       if (isStarted && !isEnded) {
         const dismissedTitle = localStorage.getItem('martabak_event_dismissed');
