@@ -240,6 +240,8 @@ export const AdminDashboard = () => {
       if (res.ok && result.success) {
         setMessage({ type: 'success', text: 'Semua perubahan berhasil disimpan!' });
         setIsAuthenticated(true);
+        // Refresh global store data behind the scenes so "Kembali ke Katalog" works instantly
+        useAppStore.getState().fetchConfig();
       } else {
         setMessage({ type: 'error', text: result.error || 'Gagal menyimpan. Password salah?' });
       }
