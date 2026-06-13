@@ -150,35 +150,70 @@ export const onRequestPost = async (context) => {
       return new Response(JSON.stringify({ error: 'Format URL Gambar tidak valid. Harus diawali http://, https://, atau /' }), { status: 400 });
     }
 
-    await d1.prepare(`
-      UPDATE store_settings SET 
-        open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
-        shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
-        is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, maintenance_title = ?, holidays_json = ?,
-        event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?
-      WHERE id = 1
-    `).bind(
-      s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
-      s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', s.maintenanceTitle ?? '', JSON.stringify(s.holidays || []),
-      s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? ''
-    ).run();
+    const batchStmts = [];
 
-    // UPDATE SWEET MENU (Clear and re-insert for sync)
-    await d1.prepare("DELETE FROM menu_sweet_items").run();
-    await d1.prepare("DELETE FROM menu_sweet_categories").run();
-    for (const cat of (configData.menuSweet || [])) {
-      const { success, meta } = await d1.prepare("INSERT INTO menu_sweet_categories (name) VALUES (?)").bind(cat.category ?? 'Uncategorized').run();
-      const catId = meta.last_row_id;
-      for (const item of (cat.items || [])) {
-        await d1.prepare(`INSERT INTO menu_sweet_items (category_id, name, price, description, image, is_best_seller, highlight) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-          .bind(catId, item.name ?? 'New Menu', Number(item.price) || 0, item.description ?? null, item.image ?? null, item.isBestSeller ? 1 : 0, item.highlight ? 1 : 0).run();
+    // 1. SETTINGS UPDATE
+    batchStmts.push(
+      d1.prepare(`
+        UPDATE store_settings SET 
+          open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
+          shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
+          is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, maintenance_title = ?, holidays_json = ?,
+          event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?
+        WHERE id = 1
+      `).bind(
+        s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
+        s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', s.maintenanceTitle ?? '', JSON.stringify(s.holidays || []),
+        s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? ''
+      )
+    );
+
+    // 2. CLEAR OLD DATA
+    batchStmts.push(d1.prepare("DELETE FROM menu_sweet_items"));
+    batchStmts.push(d1.prepare("DELETE FROM menu_sweet_categories"));
+    batchStmts.push(d1.prepare("DELETE FROM menu_savory_prices"));
+    batchStmts.push(d1.prepare("DELETE FROM menu_savory_variants"));
+    batchStmts.push(d1.prepare("DELETE FROM menu_savory_categories"));
+
+    // 3. PREPARE ADDONS
+    if (configData.addonsSweet) {
+      batchStmts.push(d1.prepare("DELETE FROM addons_sweet"));
+      for (const a of configData.addonsSweet) {
+        batchStmts.push(
+          d1.prepare("INSERT INTO addons_sweet (name, price, min_qty, max_qty, default_qty, disabled) VALUES (?, ?, ?, ?, ?, ?)")
+            .bind(a.name ?? '', Number(a.price) || 0, Number(a.minQty) || 1, Number(a.maxQty) || 20, Number(a.defaultQty) || 1, a.disabled ? 1 : 0)
+        );
+      }
+    }
+    if (configData.addonsSavory) {
+      batchStmts.push(d1.prepare("DELETE FROM addons_savory"));
+      for (const a of configData.addonsSavory) {
+        batchStmts.push(
+          d1.prepare("INSERT INTO addons_savory (name, price, min_qty, max_qty, default_qty, disabled) VALUES (?, ?, ?, ?, ?, ?)")
+            .bind(a.name ?? '', Number(a.price) || 0, Number(a.minQty) || 1, Number(a.maxQty) || 20, Number(a.defaultQty) || 1, a.disabled ? 1 : 0)
+        );
       }
     }
 
-    // UPDATE SAVORY MENU (Clear and re-insert for sync)
-    await d1.prepare("DELETE FROM menu_savory_prices").run();
-    await d1.prepare("DELETE FROM menu_savory_variants").run();
-    await d1.prepare("DELETE FROM menu_savory_categories").run();
+    // Execute first batch (Settings + Deletes + Addons)
+    await d1.batch(batchStmts);
+
+    // 4. INSERT SWEET MENU (Iterative for categories to get ID, batched for items)
+    const sweetItemsBatch = [];
+    for (const cat of (configData.menuSweet || [])) {
+      const { meta } = await d1.prepare("INSERT INTO menu_sweet_categories (name) VALUES (?)").bind(cat.category ?? 'Uncategorized').run();
+      const catId = meta.last_row_id;
+      for (const item of (cat.items || [])) {
+        sweetItemsBatch.push(
+          d1.prepare(`INSERT INTO menu_sweet_items (category_id, name, price, description, image, is_best_seller, highlight) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+            .bind(catId, item.name ?? 'New Menu', Number(item.price) || 0, item.description ?? null, item.image ?? null, item.isBestSeller ? 1 : 0, item.highlight ? 1 : 0)
+        );
+      }
+    }
+    if (sweetItemsBatch.length > 0) await d1.batch(sweetItemsBatch);
+
+    // 5. INSERT SAVORY MENU (Iterative for categories/variants to get IDs, batched for prices)
+    const savoryItemsBatch = [];
     for (const cat of (configData.menuSavory || [])) {
       const { meta: catMeta } = await d1.prepare("INSERT INTO menu_savory_categories (title) VALUES (?)").bind(cat.title ?? 'Uncategorized').run();
       const catId = catMeta.last_row_id;
@@ -187,29 +222,14 @@ export const onRequestPost = async (context) => {
           .bind(catId, v.type ?? 'New Variant', v.description ?? null).run();
         const varId = varMeta.last_row_id;
         for (const p of (v.prices || [])) {
-          await d1.prepare(`INSERT INTO menu_savory_prices (variant_id, qty, price, desc, image, is_best_seller, highlight) VALUES (?, ?, ?, ?, ?, ?, ?)`)
-            .bind(varId, Number(p.qty) || 0, Number(p.price) || 0, p.desc ?? null, p.image ?? null, p.isBestSeller ? 1 : 0, p.highlight ? 1 : 0).run();
+          savoryItemsBatch.push(
+            d1.prepare(`INSERT INTO menu_savory_prices (variant_id, qty, price, desc, image, is_best_seller, highlight) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+              .bind(varId, Number(p.qty) || 0, Number(p.price) || 0, p.desc ?? null, p.image ?? null, p.isBestSeller ? 1 : 0, p.highlight ? 1 : 0)
+          );
         }
       }
     }
-
-    // UPDATE ADDONS SWEET
-    if (configData.addonsSweet) {
-      await d1.prepare("DELETE FROM addons_sweet").run();
-      for (const a of configData.addonsSweet) {
-        await d1.prepare("INSERT INTO addons_sweet (name, price, min_qty, max_qty, default_qty, disabled) VALUES (?, ?, ?, ?, ?, ?)")
-          .bind(a.name ?? '', Number(a.price) || 0, Number(a.minQty) || 1, Number(a.maxQty) || 20, Number(a.defaultQty) || 1, a.disabled ? 1 : 0).run();
-      }
-    }
-
-    // UPDATE ADDONS SAVORY
-    if (configData.addonsSavory) {
-      await d1.prepare("DELETE FROM addons_savory").run();
-      for (const a of configData.addonsSavory) {
-        await d1.prepare("INSERT INTO addons_savory (name, price, min_qty, max_qty, default_qty, disabled) VALUES (?, ?, ?, ?, ?, ?)")
-          .bind(a.name ?? '', Number(a.price) || 0, Number(a.minQty) || 1, Number(a.maxQty) || 20, Number(a.defaultQty) || 1, a.disabled ? 1 : 0).run();
-      }
-    }
+    if (savoryItemsBatch.length > 0) await d1.batch(savoryItemsBatch);
 
     return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json' } });
   } catch (error) {
