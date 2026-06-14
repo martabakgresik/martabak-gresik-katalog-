@@ -13,38 +13,39 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept, onViewPr
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 20, opacity: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] md:w-auto md:min-w-[400px] z-[2000]"
+          initial={{ y: 40, opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: 20, opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full px-4 sm:w-auto sm:px-0 z-[2000] flex justify-center"
         >
-          <div className="flex flex-col md:flex-row items-center gap-3 md:gap-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-brand-black/10 dark:border-brand-yellow/20 p-4 md:p-2.5 md:pl-4 md:pr-3 rounded-3xl md:rounded-full shadow-2xl">
-            <div className="flex items-center gap-3 text-center md:text-left">
-              <div className="flex-shrink-0 bg-brand-orange/10 p-2 rounded-full">
-                <Cookie className="w-5 h-5 text-brand-orange" />
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-black/5 dark:border-white/10 p-3 sm:p-2 sm:pr-2.5 sm:pl-4 rounded-3xl sm:rounded-full shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] w-full sm:w-auto max-w-md">
+            
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="bg-brand-orange/10 p-1.5 rounded-full flex-shrink-0">
+                <Cookie className="w-4 h-4 text-brand-orange" />
               </div>
-              <p className="text-[11px] md:text-xs font-bold text-brand-black dark:text-white/90 leading-tight">
+              <p className="text-[12px] font-medium text-brand-black/70 dark:text-white/70 leading-snug flex-1">
                 Kami menggunakan cookies untuk pengalaman yang lebih lezat.
               </p>
             </div>
             
-            <div className="flex items-center gap-4 md:gap-2 w-full md:w-auto justify-center md:justify-start pt-2 md:pt-0 border-t md:border-t-0 border-brand-black/5 dark:border-white/5">
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:border-l sm:border-black/10 sm:dark:border-white/10 sm:pl-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5 dark:border-white/5">
               <button
                 onClick={onViewPrivacy}
-                className="text-[10px] uppercase font-black tracking-widest text-brand-black/40 dark:text-white/40 hover:text-brand-orange transition-colors px-2 py-1"
+                className="text-[11px] font-bold text-brand-black/40 dark:text-white/40 hover:text-brand-orange transition-colors px-2 py-1.5"
               >
                 Detail
               </button>
               
               <button
                 onClick={onAccept}
-                className="bg-brand-black dark:bg-brand-yellow text-white dark:text-brand-black px-6 md:px-4 py-2.5 md:py-2 rounded-full font-black uppercase text-[10px] tracking-wider flex items-center gap-1.5 hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-all shadow-md active:scale-95"
+                className="bg-brand-black dark:bg-white text-white dark:text-brand-black px-5 py-1.5 rounded-full font-bold text-[11px] hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-colors active:scale-95 flex items-center gap-1.5"
               >
-                <Check className="w-3.5 h-3.5 md:w-3 md:h-3" />
-                OK!
+                Mengerti
               </button>
             </div>
+
           </div>
         </motion.div>
       )}
