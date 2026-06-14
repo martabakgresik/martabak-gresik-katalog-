@@ -56,6 +56,8 @@ export const onRequestGet = async (context) => {
         eventModalStart: settingsRow.event_modal_start || '',
         eventModalEnd: settingsRow.event_modal_end || '',
         isStoreClosed: Boolean(settingsRow.is_store_closed),
+        promoStartAt: settingsRow.promo_start_at || '',
+        promoEndAt: settingsRow.promo_end_at || '',
         storeLogo: settingsRow.store_logo || '/logo.webp',
         maintenanceLogo: settingsRow.maintenance_logo || ''
       };
@@ -67,10 +69,15 @@ export const onRequestGet = async (context) => {
       const { results: sweetItems } = await d1.prepare("SELECT * FROM menu_sweet_items").all();
       responseData.menuSweet = sweetCats.map((cat: any) => ({
         category: cat.name,
-        items: sweetItems.filter((i: any) => i.category_id === cat.id).map((i: any) => ({
-          name: i.name, price: i.price, description: i.description, image: i.image, 
-          isBestSeller: Boolean(i.is_best_seller), highlight: Boolean(i.highlight)
-        }))
+        items: sweetItems.filter((i: any) => i.category_id === cat.id).map((i: any) => {
+          const defaultCat = defaults.menuSweet.find(c => c.category === cat.name);
+          const defaultItem = defaultCat?.items?.find(item => item.name === i.name);
+          return {
+            name: i.name, price: i.price, description: i.description, 
+            image: i.image || defaultItem?.image || '', 
+            isBestSeller: Boolean(i.is_best_seller), highlight: Boolean(i.highlight)
+          };
+        })
       }));
     }
 
@@ -84,10 +91,16 @@ export const onRequestGet = async (context) => {
         title: cat.title,
         variants: savoryVars.filter((v: any) => v.category_id === cat.id).map((v: any) => ({
           type: v.type, description: v.description,
-          prices: savoryPrices.filter((p: any) => p.variant_id === v.id).map((p: any) => ({
-            qty: p.qty, price: p.price, desc: p.desc, image: p.image,
-            isBestSeller: Boolean(p.is_best_seller), highlight: Boolean(p.highlight)
-          }))
+          prices: savoryPrices.filter((p: any) => p.variant_id === v.id).map((p: any) => {
+            const defaultCat = defaults.menuSavory.find(c => c.title === cat.title);
+            const defaultVariant = defaultCat?.variants?.find(dv => dv.type === v.type);
+            const defaultPrice = defaultVariant?.prices?.find(dp => dp.qty === p.qty);
+            return {
+              qty: p.qty, price: p.price, desc: p.desc, 
+              image: p.image || defaultPrice?.image || '',
+              isBestSeller: Boolean(p.is_best_seller), highlight: Boolean(p.highlight)
+            };
+          })
         }))
       }));
     }
@@ -160,12 +173,12 @@ export const onRequestPost = async (context) => {
           open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
           shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
           is_emergency_closed = ?, is_store_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, maintenance_title = ?, holidays_json = ?,
-          event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?
+          event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?, promo_start_at = ?, promo_end_at = ?
         WHERE id = 1
       `).bind(
         s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
         s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.isStoreClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', s.maintenanceTitle ?? '', JSON.stringify(s.holidays || []),
-        s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? ''
+        s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? '', s.promoStartAt ?? '', s.promoEndAt ?? ''
       )
     );
     batchStmts.push(d1.prepare("DELETE FROM menu_sweet_items"));

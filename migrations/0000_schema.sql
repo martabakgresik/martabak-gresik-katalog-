@@ -51,7 +51,9 @@ CREATE TABLE store_settings (
   event_modal_start TEXT DEFAULT '',
   event_modal_end TEXT DEFAULT '',
   maintenance_reason TEXT DEFAULT '',
-  maintenance_title TEXT
+  maintenance_title TEXT,
+  promo_start_at TEXT DEFAULT '',
+  promo_end_at TEXT DEFAULT ''
 );
 
 CREATE TABLE menu_sweet_categories (
@@ -98,9 +100,9 @@ CREATE TABLE menu_savory_prices (
 
 -- Insert default store settings
 INSERT INTO store_settings 
-(id, open_hour, close_hour, active_promo_code, active_promo_percent, shipping_rate, max_distance, store_name, store_address, store_phone, is_emergency_closed, is_store_closed, holidays_json, store_logo, maintenance_logo, maintenance_end_time, event_modal_active, event_modal_title, event_modal_content, event_modal_image, event_modal_start, event_modal_end, maintenance_reason, maintenance_title)
+(id, open_hour, close_hour, active_promo_code, active_promo_percent, shipping_rate, max_distance, store_name, store_address, store_phone, is_emergency_closed, is_store_closed, holidays_json, store_logo, maintenance_logo, maintenance_end_time, event_modal_active, event_modal_title, event_modal_content, event_modal_image, event_modal_start, event_modal_end, maintenance_reason, maintenance_title, promo_start_at, promo_end_at)
 VALUES 
-(1, '15:00', '23:59', 'MARTABAKBARU', 10, 2500, 15, 'Martabak Gresik ', 'Jl. Usman Sadar NO. 10, Gresik', '+6281330763633', 0, 0, '["2026-06-04"]', '/logo.webp', NULL, '', 0, '', '', '', '', '', '', '');
+(1, '15:00', '23:59', 'MARTABAKBARU', 10, 2500, 15, 'Martabak Gresik ', 'Jl. Usman Sadar NO. 10, Gresik', '+6281330763633', 0, 0, '["2026-06-04"]', '/logo.webp', NULL, '', 0, '', '', '', '', '', '', '', '', '');
 
 
 

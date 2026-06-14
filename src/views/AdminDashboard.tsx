@@ -809,6 +809,84 @@ export const AdminDashboard = () => {
               </div>
               
               <div className="flex flex-col gap-4 mb-8">
+                {/* Tutup Toko Manual */}
+                <div className="bg-white/50 dark:bg-white/5 p-6 rounded-2xl border border-red-500/50 shadow-sm flex items-center justify-between gap-4">
+                  <div>
+                    <h4 className="text-base font-bold uppercase text-red-600 dark:text-red-400">Tutup Toko Manual</h4>
+                    <p className="text-sm opacity-70">Aktifkan untuk menutup toko secara manual sekarang juga tanpa memengaruhi jam operasional.</p>
+                    {config.storeSettings.isStoreClosed && (
+                      <p className="text-sm font-bold text-red-600 mt-1">Toko sedang DITUTUP MANUAL.</p>
+                    )}
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={config.storeSettings.isStoreClosed ?? false}
+                      onChange={(e) => updateStoreSetting('isStoreClosed', e.target.checked)}
+                    />
+                    <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                  </label>
+                </div>
+
+                {/* Jam Buka & Tutup */}
+                <div className="bg-yellow-50/50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-transparent hover:border-yellow-500/30 transition-all overflow-hidden">
+                  <button onClick={() => toggleAccordion('jam')} className="w-full p-6 flex justify-between items-center text-left">
+                    <span className="text-sm font-bold uppercase opacity-80">Jam Operasional Toko</span>
+                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['jam'] ? 'rotate-180' : ''}`} />
+                  </button>
+                  <AnimatePresence>
+                    {openAccordions['jam'] && (
+                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
+                        <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="flex-1 flex items-center gap-3">
+                            <span className="font-bold opacity-80 w-24">Buka Jam:</span>
+                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
+                              <select 
+                                value={(config.storeSettings.openHour ?? "15:00").split(':')[0]}
+                                onChange={(e) => updateStoreSetting('openHour', `${e.target.value}:${(config.storeSettings.openHour ?? "15:00").split(':')[1]}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                              <span className="font-bold opacity-50 text-lg">:</span>
+                              <select 
+                                value={(config.storeSettings.openHour ?? "15:00").split(':')[1]}
+                                onChange={(e) => updateStoreSetting('openHour', `${(config.storeSettings.openHour ?? "15:00").split(':')[0]}:${e.target.value}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                            </div>
+                            <span className="font-bold opacity-50">WIB</span>
+                          </div>
+                          <div className="flex-1 flex items-center gap-3">
+                            <span className="font-bold opacity-80 w-24">Tutup Jam:</span>
+                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
+                              <select 
+                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[0]}
+                                onChange={(e) => updateStoreSetting('closeHour', `${e.target.value}:${(config.storeSettings.closeHour ?? "23:00").split(':')[1]}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                              <span className="font-bold opacity-50 text-lg">:</span>
+                              <select 
+                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[1]}
+                                onChange={(e) => updateStoreSetting('closeHour', `${(config.storeSettings.closeHour ?? "23:00").split(':')[0]}:${e.target.value}`)}
+                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
+                              >
+                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                              </select>
+                            </div>
+                            <span className="font-bold opacity-50">WIB</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 {/* Store Profile Settings */}
                 <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl shadow-sm border border-transparent hover:border-blue-500/30 transition-all overflow-hidden">
                   <button onClick={() => toggleAccordion('profil')} className="w-full p-6 flex justify-between items-center text-left">
@@ -885,7 +963,7 @@ export const AdminDashboard = () => {
                               placeholder="Contoh: MARTABAKBARU"
                             />
                           </div>
-                          <div className="w-full md:w-1/3">
+                          <div className="w-full md:w-1/4">
                             <label className="block text-xs font-bold mb-2 opacity-70">Diskon (%)</label>
                             <div className="relative">
                               <input 
@@ -898,6 +976,27 @@ export const AdminDashboard = () => {
                               />
                               <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">%</span>
                             </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col md:flex-row gap-4 pt-4 mt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="flex-1">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Waktu Mulai Promo (Opsional)</label>
+                            <input 
+                              type="datetime-local" 
+                              value={config.storeSettings.promoStartAt || ''}
+                              onChange={(e) => updateStoreSetting('promoStartAt', e.target.value)}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Waktu Berakhir Promo (Opsional)</label>
+                            <input 
+                              type="datetime-local" 
+                              value={config.storeSettings.promoEndAt || ''}
+                              onChange={(e) => updateStoreSetting('promoEndAt', e.target.value)}
+                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-medium focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                            />
                           </div>
                         </div>
                       </motion.div>
@@ -1046,16 +1145,32 @@ export const AdminDashboard = () => {
                   <AnimatePresence>
                     {openAccordions['ongkir'] && (
                       <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
-                        <div className="flex gap-2 pt-2 border-t border-black/5 dark:border-white/5">
-                          <div className="relative flex-grow">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold opacity-50 text-xl">Rp</span>
-                            <input 
-                              type="number" 
-                              value={config.storeSettings.shippingRate === '' ? '' : (config.storeSettings.shippingRate || 0)}
-                              onFocus={(e) => e.target.select()}
-                              onChange={(e) => updateStoreSetting('shippingRate', e.target.value === '' ? '' : Number(e.target.value))}
-                              className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 pl-14 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                            />
+                        <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="flex-1">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Tarif per KM</label>
+                            <div className="relative">
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold opacity-50 text-xl">Rp</span>
+                              <input 
+                                type="number" 
+                                value={config.storeSettings.shippingRate === '' ? '' : (config.storeSettings.shippingRate || 0)}
+                                onFocus={(e) => e.target.select()}
+                                onChange={(e) => updateStoreSetting('shippingRate', e.target.value === '' ? '' : Number(e.target.value))}
+                                className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 pl-14 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                              />
+                            </div>
+                          </div>
+                          <div className="w-full md:w-1/3">
+                            <label className="block text-xs font-bold mb-2 opacity-70">Jarak Maksimal</label>
+                            <div className="relative">
+                              <input 
+                                type="number" 
+                                value={config.storeSettings.maxDistance === '' ? '' : (config.storeSettings.maxDistance || 0)}
+                                onFocus={(e) => e.target.select()}
+                                onChange={(e) => updateStoreSetting('maxDistance', e.target.value === '' ? '' : Number(e.target.value))}
+                                className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                              />
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">KM</span>
+                            </div>
                           </div>
                         </div>
                       </motion.div>
@@ -1063,85 +1178,7 @@ export const AdminDashboard = () => {
                   </AnimatePresence>
                 </div>
 
-                {/* Jam Buka & Tutup */}
-                <div className="bg-yellow-50/50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-transparent hover:border-yellow-500/30 transition-all overflow-hidden">
-                  <button onClick={() => toggleAccordion('jam')} className="w-full p-6 flex justify-between items-center text-left">
-                    <span className="text-sm font-bold uppercase opacity-80">Jam Operasional Toko</span>
-                    <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['jam'] ? 'rotate-180' : ''}`} />
-                  </button>
-                  <AnimatePresence>
-                    {openAccordions['jam'] && (
-                      <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
-                        <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-black/5 dark:border-white/5">
-                          <div className="flex-1 flex items-center gap-3">
-                            <span className="font-bold opacity-80 w-24">Buka Jam:</span>
-                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
-                              <select 
-                                value={(config.storeSettings.openHour ?? "15:00").split(':')[0]}
-                                onChange={(e) => updateStoreSetting('openHour', `${e.target.value}:${(config.storeSettings.openHour ?? "15:00").split(':')[1]}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                              <span className="font-bold opacity-50 text-lg">:</span>
-                              <select 
-                                value={(config.storeSettings.openHour ?? "15:00").split(':')[1]}
-                                onChange={(e) => updateStoreSetting('openHour', `${(config.storeSettings.openHour ?? "15:00").split(':')[0]}:${e.target.value}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                            </div>
-                            <span className="font-bold opacity-50">WIB</span>
-                          </div>
-                          <div className="flex-1 flex items-center gap-3">
-                            <span className="font-bold opacity-80 w-24">Tutup Jam:</span>
-                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
-                              <select 
-                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[0]}
-                                onChange={(e) => updateStoreSetting('closeHour', `${e.target.value}:${(config.storeSettings.closeHour ?? "23:00").split(':')[1]}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                              <span className="font-bold opacity-50 text-lg">:</span>
-                              <select 
-                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[1]}
-                                onChange={(e) => updateStoreSetting('closeHour', `${(config.storeSettings.closeHour ?? "23:00").split(':')[0]}:${e.target.value}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                            </div>
-                            <span className="font-bold opacity-50">WIB</span>
-                          </div>
-                        </div>
-                        <div className="mt-6 pt-6 border-t border-black/5 dark:border-white/5">
-                          <div className="flex items-center justify-between gap-4 mb-3">
-                            <div>
-                              <h4 className="text-sm font-bold uppercase opacity-80">Tutup Toko Manual</h4>
-                              <p className="text-xs opacity-70">Aktifkan untuk menutup toko secara manual tanpa memengaruhi jam operasional.</p>
-                            </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input
-                                type="checkbox"
-                                className="sr-only peer"
-                                checked={config.storeSettings.isStoreClosed ?? false}
-                                onChange={(e) => updateStoreSetting('isStoreClosed', e.target.checked)}
-                              />
-                              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
-                            </label>
-                          </div>
-                          {config.storeSettings.isStoreClosed && (
-                            <div className="rounded-xl border border-red-200 dark:border-red-700/60 bg-red-50/80 dark:bg-red-950/20 p-4 text-sm text-red-700 dark:text-red-200">
-                              Toko akan tetap ditutup sampai switch ini dimatikan lagi.
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                {/* Bagian Jam Buka & Tutup dan Tutup Toko Manual sudah dipindah ke atas */}
 
                 {/* Event Modal Pengumuman */}
                 <div className="bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl shadow-sm border border-transparent hover:border-purple-500/30 transition-all overflow-visible">
