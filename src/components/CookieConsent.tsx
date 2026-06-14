@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cookie, Check } from 'lucide-react';
+import { Cookie } from 'lucide-react';
 
 interface CookieConsentProps {
   onAccept: () => void;
@@ -13,38 +13,34 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({ onAccept, onViewPr
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ y: 40, opacity: 0, scale: 0.95 }}
+          initial={{ y: 50, opacity: 0, scale: 0.95 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 20, opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full px-4 sm:w-auto sm:px-0 z-[2000] flex justify-center"
+          transition={{ type: "spring", stiffness: 350, damping: 25 }}
+          className="fixed bottom-4 sm:bottom-6 left-0 right-0 px-4 z-[2000] flex justify-center pointer-events-none"
         >
-          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-black/5 dark:border-white/10 p-3 sm:p-2 sm:pr-2.5 sm:pl-4 rounded-3xl sm:rounded-full shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] w-full sm:w-auto max-w-md">
+          <div className="pointer-events-auto flex items-center justify-between gap-3 sm:gap-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-black/5 dark:border-white/10 p-2 pl-3 sm:pl-4 pr-2 rounded-[1.25rem] sm:rounded-full shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] w-full max-w-[360px] sm:max-w-max mx-auto ring-1 ring-black/5 dark:ring-white/5">
             
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="bg-brand-orange/10 p-1.5 rounded-full flex-shrink-0">
-                <Cookie className="w-4 h-4 text-brand-orange" />
+            <div className="flex items-center gap-3 py-1">
+              <div className="bg-brand-orange/10 p-2 rounded-full flex-shrink-0">
+                <Cookie className="w-4 h-4 sm:w-4 sm:h-4 text-brand-orange" />
               </div>
-              <p className="text-[12px] font-medium text-brand-black/70 dark:text-white/70 leading-snug flex-1">
-                Kami menggunakan cookies untuk pengalaman yang lebih lezat.
-              </p>
+              <div className="flex flex-col">
+                <p className="text-[12px] sm:text-[13px] font-bold text-brand-black dark:text-white leading-tight">
+                  Cookies & Privasi
+                </p>
+                <p className="text-[10px] sm:text-[11px] font-medium text-brand-black/50 dark:text-white/50 leading-snug mt-0.5">
+                  Digunakan untuk <button onClick={onViewPrivacy} className="underline decoration-brand-black/20 dark:decoration-white/20 hover:text-brand-orange hover:decoration-brand-orange transition-colors">pengalaman</button> terbaik.
+                </p>
+              </div>
             </div>
             
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:border-l sm:border-black/10 sm:dark:border-white/10 sm:pl-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5 dark:border-white/5">
-              <button
-                onClick={onViewPrivacy}
-                className="text-[11px] font-bold text-brand-black/40 dark:text-white/40 hover:text-brand-orange transition-colors px-2 py-1.5"
-              >
-                Detail
-              </button>
-              
-              <button
-                onClick={onAccept}
-                className="bg-brand-black dark:bg-white text-white dark:text-brand-black px-5 py-1.5 rounded-full font-bold text-[11px] hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white transition-colors active:scale-95 flex items-center gap-1.5"
-              >
-                Mengerti
-              </button>
-            </div>
+            <button
+              onClick={onAccept}
+              className="bg-brand-black dark:bg-white text-white dark:text-brand-black px-4 sm:px-5 py-2.5 sm:py-2 rounded-[0.85rem] sm:rounded-full font-bold text-[11px] sm:text-[12px] hover:bg-brand-orange dark:hover:bg-brand-orange dark:hover:text-white active:scale-95 transition-all shadow-md flex-shrink-0"
+            >
+              Terima
+            </button>
 
           </div>
         </motion.div>
