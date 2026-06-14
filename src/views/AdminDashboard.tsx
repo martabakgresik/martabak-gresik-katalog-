@@ -1116,6 +1116,28 @@ export const AdminDashboard = () => {
                             <span className="font-bold opacity-50">WIB</span>
                           </div>
                         </div>
+                        <div className="mt-6 pt-6 border-t border-black/5 dark:border-white/5">
+                          <div className="flex items-center justify-between gap-4 mb-3">
+                            <div>
+                              <h4 className="text-sm font-bold uppercase opacity-80">Tutup Toko Manual</h4>
+                              <p className="text-xs opacity-70">Aktifkan untuk menutup toko secara manual tanpa memengaruhi jam operasional.</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={config.storeSettings.isStoreClosed ?? false}
+                                onChange={(e) => updateStoreSetting('isStoreClosed', e.target.checked)}
+                              />
+                              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+                            </label>
+                          </div>
+                          {config.storeSettings.isStoreClosed && (
+                            <div className="rounded-xl border border-red-200 dark:border-red-700/60 bg-red-50/80 dark:bg-red-950/20 p-4 text-sm text-red-700 dark:text-red-200">
+                              Toko akan tetap ditutup sampai switch ini dimatikan lagi.
+                            </div>
+                          )}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>

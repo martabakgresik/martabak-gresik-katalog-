@@ -36,6 +36,7 @@ interface StoreSettings {
   maxDistance: number;
   holidays: { start: string; end: string }[];
   isEmergencyClosed: boolean;
+  isStoreClosed: boolean;
   promoStartAt: string | null;
   promoEndAt: string | null;
   maintenanceEndTime?: string | null;
@@ -138,6 +139,7 @@ export const useAppStore = create<AppState>()(
           maxDistance: MAX_SHIPPING_DISTANCE,
           holidays: [...HOLIDAYS],
           isEmergencyClosed: false,
+          isStoreClosed: false,
           promoStartAt: null,
           promoEndAt: null,
           maintenanceEndTime: null,

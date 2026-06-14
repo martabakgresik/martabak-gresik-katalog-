@@ -14,7 +14,7 @@ export const onRequestGet = async (context) => {
       activePromoPercent: PROMO_PERCENT, shippingRate: SHIPPING_RATE_PER_KM,
       maxDistance: MAX_SHIPPING_DISTANCE, holidays: HOLIDAYS,
       storeName: STORE_NAME, storeAddress: STORE_ADDRESS, storePhone: STORE_PHONE,
-      isEmergencyClosed: false, maintenanceEndTime: '', maintenanceReason: '', maintenanceTitle: '', promoStartAt: null, promoEndAt: null,
+      isEmergencyClosed: false, isStoreClosed: false, maintenanceEndTime: '', maintenanceReason: '', maintenanceTitle: '', promoStartAt: null, promoEndAt: null,
       eventModalActive: false, eventModalTitle: '', eventModalContent: '', eventModalImage: '', eventModalStart: '', eventModalEnd: '',
       storeLogo: '/logo.webp', maintenanceLogo: ''
     },
@@ -55,6 +55,7 @@ export const onRequestGet = async (context) => {
         eventModalImage: settingsRow.event_modal_image || '',
         eventModalStart: settingsRow.event_modal_start || '',
         eventModalEnd: settingsRow.event_modal_end || '',
+        isStoreClosed: Boolean(settingsRow.is_store_closed),
         storeLogo: settingsRow.store_logo || '/logo.webp',
         maintenanceLogo: settingsRow.maintenance_logo || ''
       };
@@ -158,17 +159,15 @@ export const onRequestPost = async (context) => {
         UPDATE store_settings SET 
           open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
           shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
-          is_emergency_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, maintenance_title = ?, holidays_json = ?,
+          is_emergency_closed = ?, is_store_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, maintenance_title = ?, holidays_json = ?,
           event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?
         WHERE id = 1
       `).bind(
         s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
-        s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', s.maintenanceTitle ?? '', JSON.stringify(s.holidays || []),
+        s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.isStoreClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', s.maintenanceTitle ?? '', JSON.stringify(s.holidays || []),
         s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? ''
       )
     );
-
-    // 2. CLEAR OLD DATA
     batchStmts.push(d1.prepare("DELETE FROM menu_sweet_items"));
     batchStmts.push(d1.prepare("DELETE FROM menu_sweet_categories"));
     batchStmts.push(d1.prepare("DELETE FROM menu_savory_prices"));

@@ -101,7 +101,8 @@ export default function App() {
     shippingRate,
     maxDistance,
     holidays,
-    isEmergencyClosed
+    isEmergencyClosed,
+    isStoreClosed
   } = storeSettings;
 
   const menuSweet = useMemo(() => menuState.menuSweet && menuState.menuSweet.length > 0 ? menuState.menuSweet : getMenuSweet(t), [t, menuState.menuSweet]);
@@ -245,10 +246,12 @@ export default function App() {
       }
 
       let isOpenCalc = false;
-      if (closeMins < openMins) {
-        isOpenCalc = !holidayFound && !actuallyEmergencyClosed && (currentMins >= openMins || currentMins < closeMins);
-      } else {
-        isOpenCalc = !holidayFound && !actuallyEmergencyClosed && (currentMins >= openMins && currentMins < closeMins);
+      if (!isStoreClosed) {
+        if (closeMins < openMins) {
+          isOpenCalc = !holidayFound && !actuallyEmergencyClosed && (currentMins >= openMins || currentMins < closeMins);
+        } else {
+          isOpenCalc = !holidayFound && !actuallyEmergencyClosed && (currentMins >= openMins && currentMins < closeMins);
+        }
       }
 
       setUiState({ 
@@ -259,7 +262,7 @@ export default function App() {
     checkStatus();
     const timer = setInterval(checkStatus, 60000); // Re-check every minute
     return () => clearInterval(timer);
-  }, [holidays, isEmergencyClosed, storeSettings.maintenanceEndTime, openHour, closeHour, setUiState]);
+  }, [holidays, isEmergencyClosed, isStoreClosed, storeSettings.maintenanceEndTime, openHour, closeHour, setUiState]);
 
   // Add-ons modal state
   const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);
