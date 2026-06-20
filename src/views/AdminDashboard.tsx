@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Save, AlertCircle, CheckCircle2, Lock, ArrowLeft, Settings, Pizza, EggFried, Eye, EyeOff, Download, Upload, Plus, Trash2, Search, Image, Star, LayoutDashboard, Sparkles, Loader2, ChevronDown, Calendar } from 'lucide-react';
+import { Save, AlertCircle, CheckCircle2, Lock, ArrowLeft, Settings, Pizza, EggFried, Eye, EyeOff, Download, Upload, Plus, Trash2, Search, Image, Star, LayoutDashboard, Sparkles, Loader2, ChevronDown, Calendar, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -1145,33 +1145,54 @@ export const AdminDashboard = () => {
                   <AnimatePresence>
                     {openAccordions['ongkir'] && (
                       <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
-                        <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-black/5 dark:border-white/5">
-                          <div className="flex-1">
-                            <label className="block text-xs font-bold mb-2 opacity-70">Tarif per KM</label>
-                            <div className="relative">
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold opacity-50 text-xl">Rp</span>
-                              <input 
-                                type="number" 
-                                value={config.storeSettings.shippingRate === '' ? '' : (config.storeSettings.shippingRate || 0)}
-                                onFocus={(e) => e.target.select()}
-                                onChange={(e) => updateStoreSetting('shippingRate', e.target.value === '' ? '' : Number(e.target.value))}
-                                className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 pl-14 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
-                              />
+                        <div className="flex flex-col gap-4 pt-2 border-t border-black/5 dark:border-white/5">
+                          <div className="flex items-center justify-between pb-4 border-b border-black/5 dark:border-white/5">
+                            <div>
+                              <h4 className="text-sm font-bold opacity-80">Gunakan API Kurir (Gojek/Grab)</h4>
+                              <p className="text-xs opacity-60 mt-1">Jika aktif, ongkir dihitung otomatis via API Biteship. Jika mati, ongkir dihitung per KM.</p>
                             </div>
-                          </div>
-                          <div className="w-full md:w-1/3">
-                            <label className="block text-xs font-bold mb-2 opacity-70">Jarak Maksimal</label>
-                            <div className="relative">
-                              <input 
-                                type="number" 
-                                value={config.storeSettings.maxDistance === '' ? '' : (config.storeSettings.maxDistance || 0)}
-                                onFocus={(e) => e.target.select()}
-                                onChange={(e) => updateStoreSetting('maxDistance', e.target.value === '' ? '' : Number(e.target.value))}
-                                className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                            <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={config.storeSettings.useShippingAPI ?? false}
+                                onChange={(e) => updateStoreSetting('useShippingAPI', e.target.checked)}
                               />
-                              <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">KM</span>
-                            </div>
+                              <div className="w-14 h-7 bg-black/20 peer-focus:outline-none rounded-full peer dark:bg-white/10 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-orange"></div>
+                            </label>
                           </div>
+                          <AnimatePresence>
+                            {!config.storeSettings.useShippingAPI && (
+                              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="flex flex-col md:flex-row gap-4 overflow-hidden">
+                                <div className="flex-1">
+                                  <label className="block text-xs font-bold mb-2 opacity-70">Tarif per KM</label>
+                                  <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold opacity-50 text-xl">Rp</span>
+                                    <input 
+                                      type="number" 
+                                      value={config.storeSettings.shippingRate === '' ? '' : (config.storeSettings.shippingRate || 0)}
+                                      onFocus={(e) => e.target.select()}
+                                      onChange={(e) => updateStoreSetting('shippingRate', e.target.value === '' ? '' : Number(e.target.value))}
+                                      className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 pl-14 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="w-full md:w-1/3">
+                                  <label className="block text-xs font-bold mb-2 opacity-70">Jarak Maksimal</label>
+                                  <div className="relative">
+                                    <input 
+                                      type="number" 
+                                      value={config.storeSettings.maxDistance === '' ? '' : (config.storeSettings.maxDistance || 0)}
+                                      onFocus={(e) => e.target.select()}
+                                      onChange={(e) => updateStoreSetting('maxDistance', e.target.value === '' ? '' : Number(e.target.value))}
+                                      className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl p-4 font-bold text-xl focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all"
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 font-bold opacity-50">KM</span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       </motion.div>
                     )}

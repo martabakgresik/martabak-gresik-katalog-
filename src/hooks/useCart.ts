@@ -102,7 +102,11 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
     const itemAddonsPrice = item.addons ? item.addons.reduce((a, b) => a + (b.price * (b.quantity || 1)), 0) : 0;
     return sum + ((item.price + itemAddonsPrice) * item.quantity);
   }, 0);
-  const shippingCost = deliveryMethod === 'delivery' ? distance * rate : 0;
+  const shippingCost = deliveryMethod === 'delivery' 
+    ? (storeSettings.useShippingAPI 
+        ? (checkoutState.selectedCourier?.price || 0) 
+        : Math.ceil(distance) * (storeSettings.shippingRate || 0))
+    : 0;
   const discountAmount = Math.round(itemsPrice * (discountPercent / 100));
   const totalPrice = itemsPrice + shippingCost - discountAmount;
 
@@ -224,8 +228,11 @@ export const useCart = (customShippingRate?: number, customMaxDistance?: number)
 
     message += `--------------------------\n`;
     message += `${t.waMethod}: *${deliveryMethod === 'pickup' ? t.waPickup : t.waDelivery}*\n`;
-    if (deliveryMethod === 'delivery' && distance > 0) {
-      message += `${t.waShipping} (${distance}km): ${formatPrice(shippingCost)}\n`;
+    if (deliveryMethod === 'delivery') {
+      const courierName = storeSettings.useShippingAPI && checkoutState.selectedCourier 
+        ? `${checkoutState.selectedCourier.courier_name} - ${checkoutState.selectedCourier.courier_service_name}` 
+        : `Kurir Standar (${distance}km)`;
+      message += `${t.waShipping} (${courierName}): ${formatPrice(shippingCost)}\n`;
     }
     if (discountAmount > 0) {
       message += `${t.waDiscount} (${promoCode}): -${formatPrice(discountAmount)}\n`;

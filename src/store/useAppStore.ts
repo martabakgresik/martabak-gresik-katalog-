@@ -50,6 +50,7 @@ interface StoreSettings {
   maintenanceTitle?: string | null;
   maintenanceLogo?: string | null;
   storeLogo: string;
+  useShippingAPI?: boolean;
 }
 
 interface MenuState {
@@ -94,6 +95,9 @@ interface CheckoutState {
   promoMessage: { status: 'success' | 'error', text: string } | null;
   isAiProcessing: boolean;
   isLocationConfirmed: boolean;
+  availableCouriers: any[];
+  selectedCourier: any | null;
+  isLoadingShipping: boolean;
 }
 
 interface AppState {
@@ -153,6 +157,7 @@ export const useAppStore = create<AppState>()(
           maintenanceTitle: null,
           maintenanceLogo: null,
           storeLogo: "/logo.webp",
+          useShippingAPI: false,
         },
         
         setStoreSettings: (settings) =>
@@ -207,6 +212,9 @@ export const useAppStore = create<AppState>()(
           promoMessage: null,
           isAiProcessing: false,
           isLocationConfirmed: false,
+          availableCouriers: [],
+          selectedCourier: null,
+          isLoadingShipping: false,
         },
 
         setCheckoutState: (state) =>

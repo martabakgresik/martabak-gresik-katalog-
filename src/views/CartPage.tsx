@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { 
   ShoppingBag, MapPin, Trash2, Minus, Plus, Map, Check, ChevronLeft, ShoppingCart, User, Info, Receipt
@@ -44,11 +44,41 @@ export const CartPage: React.FC<CartPageProps> = ({
   
   const [showInlineMap, setShowInlineMap] = useState(true);
   const { isHoliday, isOpen } = uiState;
-  const { customerName, customerAddress, addressNotes, coordinates, deliveryMethod, distance, promoCodeInput, promoMessage } = checkoutState;
+  const { customerName, customerAddress, addressNotes, coordinates, deliveryMethod, distance, promoCodeInput, promoMessage, availableCouriers, selectedCourier, isLoadingShipping } = checkoutState;
   const { maxDistance, isEmergencyClosed } = storeSettings;
 
-  const isFormValid = customerName.trim() && (deliveryMethod === 'pickup' || (customerAddress.trim() && coordinates));
+  const isFormValid = customerName.trim() && (deliveryMethod === 'pickup' || (customerAddress.trim() && coordinates && (storeSettings.useShippingAPI ? selectedCourier : true)));
   const isOrderBlocked = distance > maxDistance || isHoliday || !isOpen || isEmergencyClosed;
+
+  useEffect(() => {
+    if (deliveryMethod === 'delivery' && coordinates && checkoutState.isLocationConfirmed) {
+      if (storeSettings.useShippingAPI) {
+        setCheckoutState({ isLoadingShipping: true });
+        fetch('/api/shipping/rates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            destination_lat: coordinates.lat,
+            destination_lng: coordinates.lng
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.couriers && data.couriers.length > 0) {
+            setCheckoutState({ availableCouriers: data.couriers, selectedCourier: data.couriers[0], isLoadingShipping: false });
+          } else {
+            setCheckoutState({ availableCouriers: [], selectedCourier: null, isLoadingShipping: false });
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching rates:", err);
+          setCheckoutState({ availableCouriers: [], selectedCourier: null, isLoadingShipping: false });
+        });
+      } else {
+        setCheckoutState({ availableCouriers: [], selectedCourier: null, isLoadingShipping: false });
+      }
+    }
+  }, [coordinates?.lat, coordinates?.lng, deliveryMethod, checkoutState.isLocationConfirmed, storeSettings.useShippingAPI, setCheckoutState]);
 
   const handleBack = () => {
     setUiState({ currentView: 'catalog' });
@@ -296,13 +326,60 @@ export const CartPage: React.FC<CartPageProps> = ({
                       <span>{formatPrice(totalPrice - (deliveryMethod === 'delivery' ? shippingCost : 0) + discountAmount)}</span>
                    </div>
                    {deliveryMethod === 'delivery' && (
-                     <div className="flex justify-between items-center text-sm font-bold opacity-60">
-                        <div className="flex items-center gap-2">
-                           <span>Ongkos Kirim</span>
-                           <span className="bg-brand-black/10 dark:bg-white/10 px-2 py-0.5 rounded text-[10px]">{distance.toFixed(1)}km</span>
-                        </div>
-                        <span>{formatPrice(shippingCost)}</span>
-                     </div>
+                     <>
+                       {storeSettings.useShippingAPI ? (
+                         isLoadingShipping ? (
+                            <div className="flex justify-center py-2">
+                               <span className="text-xs font-bold animate-pulse text-brand-orange">Menghitung ongkos kirim...</span>
+                            </div>
+                         ) : availableCouriers && availableCouriers.length > 0 ? (
+                            <div className="space-y-2 pt-2 border-t border-brand-black/5 dark:border-white/5">
+                              <label className="block text-xs font-black uppercase tracking-widest opacity-60 mb-2">Pilih Layanan Pengiriman</label>
+                              <div className="space-y-2">
+                                {availableCouriers.map((c: any, idx: number) => (
+                                  <button
+                                    key={idx}
+                                    onClick={() => setCheckoutState({ selectedCourier: c })}
+                                    className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${selectedCourier?.courier_service_name === c.courier_service_name ? 'border-brand-orange bg-brand-orange/5' : 'border-transparent bg-brand-black/5 dark:bg-white/5 hover:border-brand-black/10 dark:hover:border-white/10'}`}
+                                  >
+                                    <div className="flex flex-col items-start text-left">
+                                      <span className="font-bold text-sm">{c.courier_name}</span>
+                                      <span className="text-xs opacity-60">{c.courier_service_name} • {c.duration}</span>
+                                    </div>
+                                    <span className="font-black text-brand-orange">{formatPrice(c.price)}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                         ) : coordinates && checkoutState.isLocationConfirmed ? (
+                            <div className="text-xs text-red-500 font-bold p-3 bg-red-500/10 rounded-xl text-center">
+                              Kurir tidak tersedia untuk rute ini.
+                            </div>
+                         ) : (
+                            <div className="text-xs opacity-60 p-3 bg-brand-black/5 dark:bg-white/5 rounded-xl text-center">
+                              Silakan tentukan titik lokasi pada peta terlebih dahulu untuk melihat opsi pengiriman.
+                            </div>
+                         )
+                       ) : (
+                         <div className="flex justify-between items-center text-sm font-bold opacity-60">
+                           <span>Ongkos Kirim ({distance} km)</span>
+                           <span>{formatPrice(shippingCost)}</span>
+                         </div>
+                       )}
+                       <div className="mt-4 p-4 bg-brand-orange/10 dark:bg-brand-orange/20 rounded-xl flex items-start gap-3">
+                         <svg className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                         </svg>
+                         <div className="text-xs opacity-80 leading-relaxed space-y-2">
+                           <p>
+                             <strong>Transparansi Pengiriman:</strong> Biaya yang tertera merupakan estimasi tarif resmi ojek online. Pesanan Anda akan diantarkan menggunakan layanan pihak ketiga (GoSend/GrabExpress).
+                           </p>
+                           <p>
+                             <strong>Alur Pemesanan:</strong> Setelah menekan tombol <em>"Pesan via WhatsApp"</em>, Anda akan menerima detail tagihan beserta QRIS. Segera setelah pembayaran Anda kami verifikasi, kami akan langsung memesankan kurir untuk mengirimkan hidangan selagi hangat.
+                           </p>
+                         </div>
+                       </div>
+                     </>
                    )}
                    {discountAmount > 0 && (
                      <div className="flex justify-between items-center text-sm font-bold text-green-500">
@@ -349,6 +426,7 @@ export const CartPage: React.FC<CartPageProps> = ({
                         if (!customerName.trim()) { alert("Nama pemesan wajib diisi!"); return; }
                         if (deliveryMethod === 'delivery' && !customerAddress.trim()) { alert("Alamat pengiriman wajib diisi!"); return; }
                         if (deliveryMethod === 'delivery' && !coordinates) { alert("Tolong tentukan titik lokasi pada peta."); setShowInlineMap(true); return; }
+                        if (deliveryMethod === 'delivery' && storeSettings.useShippingAPI && !selectedCourier) { alert("Pilih kurir pengiriman terlebih dahulu!"); return; }
                         setIsOrderConfirmationOpen(true);
                       }}
                       disabled={isOrderBlocked}
