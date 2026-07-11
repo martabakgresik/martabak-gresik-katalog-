@@ -57,7 +57,7 @@ export const AdminDashboard = () => {
   const [importType, setImportType] = useState<'sweet'|'savory'|null>(null);
   
   // Mass price update state
-  const [massUpdatePercent, setMassUpdatePercent] = useState<number>(10);
+  const [massUpdatePercent, setMassUpdatePercent] = useState<number | string>(10);
 
   // Confirm dialog state
   const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean, title: string, message: string, onConfirm: () => void } | null>(null);
@@ -368,8 +368,8 @@ export const AdminDashboard = () => {
   };
 
   const handleMassUpdate = (target: 'sweet' | 'savory' | 'all') => {
-    if (massUpdatePercent === 0) return;
-    const multiplier = 1 + (massUpdatePercent / 100);
+    if (massUpdatePercent === 0 || massUpdatePercent === '') return;
+    const multiplier = 1 + (Number(massUpdatePercent) / 100);
     const newConfig = { ...config };
     
     if (target === 'sweet' || target === 'all') {
@@ -1460,7 +1460,7 @@ export const AdminDashboard = () => {
                               <input 
                                 type="number"
                                 value={massUpdatePercent}
-                                onChange={(e) => setMassUpdatePercent(Number(e.target.value))}
+                                onChange={(e) => setMassUpdatePercent(e.target.value === '' ? '' : Number(e.target.value))}
                                 className="w-full bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 font-bold focus:outline-none focus:ring-2 focus:ring-brand-orange/50 transition-all text-lg"
                                 placeholder="Misal: 10 atau -10"
                               />
