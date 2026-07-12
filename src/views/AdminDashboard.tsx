@@ -829,58 +829,86 @@ export const AdminDashboard = () => {
                   </label>
                 </div>
 
-                {/* Jam Buka & Tutup */}
+                {/* Jam Operasional Harian */}
                 <div className="bg-yellow-50/50 dark:bg-yellow-900/10 rounded-2xl shadow-sm border border-transparent hover:border-yellow-500/30 transition-all overflow-hidden">
                   <button onClick={() => toggleAccordion('jam')} className="w-full p-6 flex justify-between items-center text-left">
-                    <span className="text-sm font-bold uppercase opacity-80">Jam Operasional Toko</span>
+                    <span className="text-sm font-bold uppercase opacity-80">Jam Operasional Harian</span>
                     <ChevronDown className={`w-5 h-5 opacity-50 transition-transform ${openAccordions['jam'] ? 'rotate-180' : ''}`} />
                   </button>
                   <AnimatePresence>
                     {openAccordions['jam'] && (
                       <motion.div initial={{height: 0, opacity: 0}} animate={{height: 'auto', opacity: 1}} exit={{height: 0, opacity: 0}} className="px-6 pb-6 overflow-hidden">
-                        <div className="flex flex-col md:flex-row gap-4 pt-2 border-t border-black/5 dark:border-white/5">
-                          <div className="flex-1 flex items-center gap-3">
-                            <span className="font-bold opacity-80 w-24">Buka Jam:</span>
-                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
-                              <select 
-                                value={(config.storeSettings.openHour ?? "15:00").split(':')[0]}
-                                onChange={(e) => updateStoreSetting('openHour', `${e.target.value}:${(config.storeSettings.openHour ?? "15:00").split(':')[1]}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                              <span className="font-bold opacity-50 text-lg">:</span>
-                              <select 
-                                value={(config.storeSettings.openHour ?? "15:00").split(':')[1]}
-                                onChange={(e) => updateStoreSetting('openHour', `${(config.storeSettings.openHour ?? "15:00").split(':')[0]}:${e.target.value}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                            </div>
-                            <span className="font-bold opacity-50">WIB</span>
-                          </div>
-                          <div className="flex-1 flex items-center gap-3">
-                            <span className="font-bold opacity-80 w-24">Tutup Jam:</span>
-                            <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-3 py-2">
-                              <select 
-                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[0]}
-                                onChange={(e) => updateStoreSetting('closeHour', `${e.target.value}:${(config.storeSettings.closeHour ?? "23:00").split(':')[1]}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                              <span className="font-bold opacity-50 text-lg">:</span>
-                              <select 
-                                value={(config.storeSettings.closeHour ?? "23:00").split(':')[1]}
-                                onChange={(e) => updateStoreSetting('closeHour', `${(config.storeSettings.closeHour ?? "23:00").split(':')[0]}:${e.target.value}`)}
-                                className="bg-transparent font-bold text-lg focus:outline-none text-center cursor-pointer hover:text-brand-orange transition-colors appearance-none"
-                              >
-                                {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
-                              </select>
-                            </div>
-                            <span className="font-bold opacity-50">WIB</span>
-                          </div>
+                        <div className="flex flex-col gap-3 pt-4 border-t border-black/5 dark:border-white/5">
+                          {['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].map((dayName, dayIndex) => {
+                            const defaultHours = config.storeSettings.dailyHours || [];
+                            const daySettings = defaultHours.find((h: any) => h.day === dayIndex) || { day: dayIndex, open: config.storeSettings.openHour || "15:00", close: config.storeSettings.closeHour || "23:00", isClosed: false };
+                            
+                            const updateDay = (field: string, value: any) => {
+                              const newHours = [...(config.storeSettings.dailyHours || Array.from({length: 7}).map((_, i) => ({ day: i, open: config.storeSettings.openHour || "15:00", close: config.storeSettings.closeHour || "23:00", isClosed: false })))];
+                              const idx = newHours.findIndex(h => h.day === dayIndex);
+                              if (idx !== -1) {
+                                newHours[idx] = { ...newHours[idx], [field]: value };
+                              } else {
+                                newHours.push({ ...daySettings, [field]: value });
+                              }
+                              updateStoreSetting('dailyHours', newHours);
+                            };
+
+                            return (
+                              <div key={dayIndex} className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 bg-white/50 dark:bg-black/20 rounded-xl border border-black/5 dark:border-white/5 hover:border-brand-orange/50 transition-colors">
+                                <div className="flex items-center gap-3 w-32">
+                                  <span className="font-bold text-lg">{dayName}</span>
+                                </div>
+                                <div className="flex items-center gap-3 flex-wrap">
+                                  <label className="flex items-center gap-2 cursor-pointer bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                                    <input type="checkbox" checked={Boolean(daySettings.isClosed)} onChange={e => updateDay('isClosed', e.target.checked)} className="w-5 h-5 rounded accent-brand-orange cursor-pointer" />
+                                    <span className="font-bold opacity-80 text-sm">Libur</span>
+                                  </label>
+                                  
+                                  {!daySettings.isClosed && (
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-2 py-1">
+                                        <select 
+                                          value={(daySettings.open ?? "15:00").split(':')[0]}
+                                          onChange={(e) => updateDay('open', `${e.target.value}:${(daySettings.open ?? "15:00").split(':')[1]}`)}
+                                          className="bg-transparent font-bold focus:outline-none text-center cursor-pointer hover:text-brand-orange appearance-none"
+                                        >
+                                          {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                                        </select>
+                                        <span className="font-bold opacity-50">:</span>
+                                        <select 
+                                          value={(daySettings.open ?? "15:00").split(':')[1]}
+                                          onChange={(e) => updateDay('open', `${(daySettings.open ?? "15:00").split(':')[0]}:${e.target.value}`)}
+                                          className="bg-transparent font-bold focus:outline-none text-center cursor-pointer hover:text-brand-orange appearance-none"
+                                        >
+                                          {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                                        </select>
+                                      </div>
+                                      <span className="font-bold opacity-50">-</span>
+                                      <div className="flex items-center gap-1 bg-white dark:bg-black/50 border border-black/10 dark:border-white/10 rounded-xl px-2 py-1">
+                                        <select 
+                                          value={(daySettings.close ?? "23:00").split(':')[0]}
+                                          onChange={(e) => updateDay('close', `${e.target.value}:${(daySettings.close ?? "23:00").split(':')[1]}`)}
+                                          className="bg-transparent font-bold focus:outline-none text-center cursor-pointer hover:text-brand-orange appearance-none"
+                                        >
+                                          {Array.from({length: 24}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                                        </select>
+                                        <span className="font-bold opacity-50">:</span>
+                                        <select 
+                                          value={(daySettings.close ?? "23:00").split(':')[1]}
+                                          onChange={(e) => updateDay('close', `${(daySettings.close ?? "23:00").split(':')[0]}:${e.target.value}`)}
+                                          className="bg-transparent font-bold focus:outline-none text-center cursor-pointer hover:text-brand-orange appearance-none"
+                                        >
+                                          {Array.from({length: 60}).map((_, i) => <option className="text-black" key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}</option>)}
+                                        </select>
+                                      </div>
+                                      <span className="font-bold opacity-50 text-sm hidden md:inline-block">WIB</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </motion.div>
                     )}

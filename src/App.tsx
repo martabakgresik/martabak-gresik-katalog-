@@ -217,9 +217,19 @@ export default function App() {
     const checkStatus = () => {
       const now = new Date();
       const dateString = now.toISOString().split('T')[0];
+      const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, dll.
       
-      const openTimeStr = String(openHour || "15:00");
-      const closeTimeStr = String(closeHour || "23:00");
+      let currentDaySettings = storeSettings.dailyHours?.find(h => h.day === currentDay);
+      let openTimeStr = String(openHour || "15:00");
+      let closeTimeStr = String(closeHour || "23:00");
+      let isDayClosed = false;
+
+      if (currentDaySettings) {
+        openTimeStr = String(currentDaySettings.open || "15:00");
+        closeTimeStr = String(currentDaySettings.close || "23:00");
+        isDayClosed = Boolean(currentDaySettings.isClosed);
+      }
+      
       const [oH, oM] = openTimeStr.split(':').map(Number);
       const [cH, cM] = closeTimeStr.split(':').map(Number);
       
@@ -246,7 +256,7 @@ export default function App() {
       }
 
       let isOpenCalc = false;
-      if (!isStoreClosed) {
+      if (!isStoreClosed && !isDayClosed) {
         if (closeMins < openMins) {
           isOpenCalc = !holidayFound && !actuallyEmergencyClosed && (currentMins >= openMins || currentMins < closeMins);
         } else {
@@ -262,7 +272,7 @@ export default function App() {
     checkStatus();
     const timer = setInterval(checkStatus, 60000); // Re-check every minute
     return () => clearInterval(timer);
-  }, [holidays, isEmergencyClosed, isStoreClosed, storeSettings.maintenanceEndTime, openHour, closeHour, setUiState]);
+  }, [holidays, isEmergencyClosed, isStoreClosed, storeSettings.maintenanceEndTime, openHour, closeHour, storeSettings.dailyHours, setUiState]);
 
   // Add-ons modal state
   const [selectedItemForAddon, setSelectedItemForAddon] = useState<(Omit<CartItem, 'id' | 'quantity' | 'addons'> & { type: 'sweet' | 'savory' }) | null>(null);

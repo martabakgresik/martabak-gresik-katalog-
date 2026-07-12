@@ -20,6 +20,13 @@ import { UI_COPY } from '../data/i18n/appCopy';
 
 export type UiLang = "id" | "en";
 
+export interface DailyHour {
+  day: number;
+  open: string;
+  close: string;
+  isClosed: number | boolean;
+}
+
 const detectBrowserLanguage = (): UiLang => {
   return "id";
 };
@@ -51,6 +58,7 @@ interface StoreSettings {
   maintenanceLogo?: string | null;
   storeLogo: string;
   useShippingAPI?: boolean;
+  dailyHours?: DailyHour[] | null;
 }
 
 interface MenuState {
@@ -158,6 +166,7 @@ export const useAppStore = create<AppState>()(
           maintenanceLogo: null,
           storeLogo: "/logo.webp",
           useShippingAPI: false,
+          dailyHours: null,
         },
         
         setStoreSettings: (settings) =>

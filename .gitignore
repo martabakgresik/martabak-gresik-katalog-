@@ -36,3 +36,7 @@ metadata.json
 Thumbs.db
 *.swp
 *.swo
+
+# Agents Customizations
+.agents/
+agentic-awesome-skills/

@@ -17,7 +17,7 @@ export const onRequestGet = async (context) => {
       useShippingAPI: false,
       isEmergencyClosed: false, isStoreClosed: false, maintenanceEndTime: '', maintenanceReason: '', maintenanceTitle: '', promoStartAt: null, promoEndAt: null,
       eventModalActive: false, eventModalTitle: '', eventModalContent: '', eventModalImage: '', eventModalStart: '', eventModalEnd: '',
-      storeLogo: '/logo.webp', maintenanceLogo: ''
+      storeLogo: '/logo.webp', maintenanceLogo: '', dailyHours: null
     },
     menuSweet: MENU_SWEET,
     menuSavory: MENU_SAVORY,
@@ -46,6 +46,7 @@ export const onRequestGet = async (context) => {
         storeName: settingsRow.store_name,
         storeAddress: settingsRow.store_address,
         storePhone: settingsRow.store_phone,
+        dailyHours: settingsRow.daily_hours_json ? JSON.parse(settingsRow.daily_hours_json) : null,
         isEmergencyClosed: Boolean(settingsRow.is_emergency_closed),
         maintenanceEndTime: settingsRow.maintenance_end_time || '',
         maintenanceReason: settingsRow.maintenance_reason || '',
@@ -175,12 +176,12 @@ export const onRequestPost = async (context) => {
           open_hour = ?, close_hour = ?, active_promo_code = ?, active_promo_percent = ?,
           shipping_rate = ?, max_distance = ?, store_name = ?, store_address = ?, store_phone = ?, 
           is_emergency_closed = ?, is_store_closed = ?, maintenance_end_time = ?, maintenance_reason = ?, maintenance_title = ?, holidays_json = ?,
-          event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?, promo_start_at = ?, promo_end_at = ?, use_shipping_api = ?
+          event_modal_active = ?, event_modal_title = ?, event_modal_content = ?, event_modal_image = ?, event_modal_start = ?, event_modal_end = ?, store_logo = ?, maintenance_logo = ?, promo_start_at = ?, promo_end_at = ?, use_shipping_api = ?, daily_hours_json = ?
         WHERE id = 1
       `).bind(
         s.openHour ?? "15:00", s.closeHour ?? "23:00", s.activePromoCode ?? null, s.activePromoPercent ?? 0, s.shippingRate ?? 0, s.maxDistance ?? 0,
         s.storeName ?? null, s.storeAddress ?? null, s.storePhone ?? null, s.isEmergencyClosed ? 1 : 0, s.isStoreClosed ? 1 : 0, s.maintenanceEndTime ?? '', s.maintenanceReason ?? '', s.maintenanceTitle ?? '', JSON.stringify(s.holidays || []),
-        s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? '', s.promoStartAt ?? '', s.promoEndAt ?? '', s.useShippingAPI ? 1 : 0
+        s.eventModalActive ? 1 : 0, s.eventModalTitle ?? '', s.eventModalContent ?? '', s.eventModalImage ?? '', s.eventModalStart ?? '', s.eventModalEnd ?? '', s.storeLogo ?? '/logo.webp', s.maintenanceLogo ?? '', s.promoStartAt ?? '', s.promoEndAt ?? '', s.useShippingAPI ? 1 : 0, s.dailyHours ? JSON.stringify(s.dailyHours) : null
       )
     );
     batchStmts.push(d1.prepare("DELETE FROM menu_sweet_items"));
