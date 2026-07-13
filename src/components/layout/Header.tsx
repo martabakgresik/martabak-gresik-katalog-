@@ -57,6 +57,11 @@ export const Header: React.FC<HeaderProps> = ({
     storeLogo
   } = storeSettings;
 
+  const currentDay = new Date().getDay();
+  const currentDaySettings = storeSettings.dailyHours?.find(h => h.day === currentDay);
+  const displayOpenHour = String(currentDaySettings?.open || openHour || "15:00");
+  const displayCloseHour = String(currentDaySettings?.close || closeHour || "23:00");
+
   const currentLogo = storeLogo || "/logo.webp";
 
   const waPhone = (storePhone || "6281330763633").replace(/\D/g, '').replace(/^0/, '62');
@@ -177,7 +182,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
                 <div className={`px-3 py-0.5 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-1.5 border-2 ${isHoliday ? 'bg-orange-600 border-orange-700' : isOpen ? 'bg-green-500 border-green-600' : 'bg-red-500 border-red-600'} text-white whitespace-nowrap`}>
                   <div className={`w-2 h-2 rounded-full animate-pulse ${isHoliday || isOpen ? 'bg-white' : 'bg-white/50'}`} />
-                  {isHoliday ? t.holidayClosed : isOpen ? t.open : t.closedAt(openHour)}
+                  {isHoliday ? t.holidayClosed : isOpen ? t.open : t.closedAt(displayOpenHour)}
                 </div>
               </div>
               <h1
@@ -208,7 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div className="flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-brand-orange" />
-              <span>{t.openingHours}: {openHour} - {closeHour} WIB</span>
+              <span>{t.openingHours}: {displayOpenHour} - {displayCloseHour} WIB</span>
             </div>
           </div>
 
@@ -221,7 +226,7 @@ export const Header: React.FC<HeaderProps> = ({
               } font-bold text-[10px] md:text-xs uppercase tracking-[0.2em] shadow-lg backdrop-blur-md`}
             >
               <span className={`w-2 h-2 rounded-full animate-pulse ${isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
-              {isEmergencyClosed ? t.emergencyClosed : isHoliday ? t.holidayClosed : isOpen ? t.openNowReady : t.closedNowAt(openHour)}
+              {isEmergencyClosed ? t.emergencyClosed : isHoliday ? t.holidayClosed : isOpen ? t.openNowReady : t.closedNowAt(displayOpenHour)}
             </div>
           </div>
 

@@ -751,7 +751,15 @@ export const AdminDashboard = () => {
                     <Settings className="w-5 h-5" />
                   </div>
                   <span className="text-sm font-bold opacity-60">Jam Operasional</span>
-                  <span className="text-xl font-black">{config.storeSettings?.openHour ?? "15:00"} - {config.storeSettings?.closeHour ?? "23:00"} WIB</span>
+                  <span className="text-xl font-black">
+                    {(() => {
+                      const todayIdx = new Date().getDay();
+                      const todaySettings = config.storeSettings?.dailyHours?.find((h: any) => h.day === todayIdx);
+                      const displayOpen = todaySettings?.open || config.storeSettings?.openHour || "15:00";
+                      const displayClose = todaySettings?.close || config.storeSettings?.closeHour || "23:00";
+                      return `${displayOpen} - ${displayClose} WIB`;
+                    })()}
+                  </span>
                 </div>
 
                 <div className="bg-white/50 dark:bg-white/5 p-6 rounded-2xl border border-black/5 dark:border-white/5 shadow-sm flex flex-col gap-2">
